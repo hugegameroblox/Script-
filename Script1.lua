@@ -1,4 +1,4 @@
--- Speed Hub Style Script (Fixed Speed Controls & 3 Tabs)
+-- Speed Hub Style Script (Speed Max 500 & 2 Tabs)
 local Players = game:GetService("Players")
 local TeleportService = game:GetService("TeleportService")
 local HttpService = game:GetService("HttpService")
@@ -35,7 +35,7 @@ TitleLabel.Size = UDim2.new(1, -50, 0, 35)
 TitleLabel.Position = UDim2.new(0, 12, 0, 0)
 TitleLabel.BackgroundTransparency = 1
 TitleLabel.Font = Enum.Font.SourceSansBold
-TitleLabel.Text = "⚡ Huge Pro Hub | Full Control"
+TitleLabel.Text = "⚡ Huge Pro Hub | Speed Max 500"
 TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 TitleLabel.TextSize = 15
 TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
@@ -88,7 +88,7 @@ Container.Position = UDim2.new(0, 115, 0, 40)
 Container.BackgroundTransparency = 1
 Container.Parent = MainHub
 
--- Khung chứa nội dung từng Tab
+-- Khung chứa nội dung 2 Tab
 local MainTabContent = Instance.new("ScrollingFrame")
 MainTabContent.Size = UDim2.new(1, 0, 1, 0)
 MainTabContent.BackgroundTransparency = 1
@@ -97,30 +97,27 @@ MainTabContent.ScrollBarThickness = 4
 MainTabContent.Visible = true
 MainTabContent.Parent = Container
 
-local HopTabContent = Instance.new("Frame")
+local HopTabContent = Instance.new("ScrollingFrame")
 HopTabContent.Size = UDim2.new(1, 0, 1, 0)
 HopTabContent.BackgroundTransparency = 1
+HopTabContent.CanvasSize = UDim2.new(0, 0, 1.2, 0)
+HopTabContent.ScrollBarThickness = 4
 HopTabContent.Visible = false
 HopTabContent.Parent = Container
 
-local RejoinTabContent = Instance.new("Frame")
-RejoinTabContent.Size = UDim2.new(1, 0, 1, 0)
-RejoinTabContent.BackgroundTransparency = 1
-RejoinTabContent.Visible = false
-RejoinTabContent.Parent = Container
-
--- Nút Chuyển Tab
+-- Nút Chuyển Tab 1: Main
 local TabMainBtn = Instance.new("TextButton")
 TabMainBtn.Size = UDim2.new(0.9, 0, 0, 32)
 TabMainBtn.Position = UDim2.new(0.05, 0, 0.03, 0)
 TabMainBtn.BackgroundColor3 = Color3.fromRGB(0, 140, 230)
 TabMainBtn.Font = Enum.Font.SourceSansBold
-TabMainBtn.Text = "🏠 Main"
+TabMainBtn.Text = " Main "
 TabMainBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 TabMainBtn.TextSize = 12
 TabMainBtn.Parent = TabBar
 Instance.new("UICorner", TabMainBtn).CornerRadius = UDim.new(0, 6)
 
+-- Nút Chuyển Tab 2: Server Hop
 local TabHopBtn = Instance.new("TextButton")
 TabHopBtn.Size = UDim2.new(0.9, 0, 0, 32)
 TabHopBtn.Position = UDim2.new(0.05, 0, 0.16, 0)
@@ -132,35 +129,19 @@ TabHopBtn.TextSize = 12
 TabHopBtn.Parent = TabBar
 Instance.new("UICorner", TabHopBtn).CornerRadius = UDim.new(0, 6)
 
-local TabRejoinBtn = Instance.new("TextButton")
-TabRejoinBtn.Size = UDim2.new(0.9, 0, 0, 32)
-TabRejoinBtn.Position = UDim2.new(0.05, 0, 0.29, 0)
-TabRejoinBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-TabRejoinBtn.Font = Enum.Font.SourceSansBold
-TabRejoinBtn.Text = "🔄 Rejoin"
-TabRejoinBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
-TabRejoinBtn.TextSize = 12
-TabRejoinBtn.Parent = TabBar
-Instance.new("UICorner", TabRejoinBtn).CornerRadius = UDim.new(0, 6)
-
 local function SwitchTab(activeTab, activeBtn)
     MainTabContent.Visible = (activeTab == MainTabContent)
     HopTabContent.Visible = (activeTab == HopTabContent)
-    RejoinTabContent.Visible = (activeTab == RejoinTabContent)
 
     TabMainBtn.BackgroundColor3 = (activeBtn == TabMainBtn) and Color3.fromRGB(0, 140, 230) or Color3.fromRGB(45, 45, 45)
     TabMainBtn.TextColor3 = (activeBtn == TabMainBtn) and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(200, 200, 200)
 
     TabHopBtn.BackgroundColor3 = (activeBtn == TabHopBtn) and Color3.fromRGB(0, 140, 230) or Color3.fromRGB(45, 45, 45)
     TabHopBtn.TextColor3 = (activeBtn == TabHopBtn) and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(200, 200, 200)
-
-    TabRejoinBtn.BackgroundColor3 = (activeBtn == TabRejoinBtn) and Color3.fromRGB(0, 140, 230) or Color3.fromRGB(45, 45, 45)
-    TabRejoinBtn.TextColor3 = (activeBtn == TabRejoinBtn) and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(200, 200, 200)
 end
 
 TabMainBtn.MouseButton1Click:Connect(function() SwitchTab(MainTabContent, TabMainBtn) end)
 TabHopBtn.MouseButton1Click:Connect(function() SwitchTab(HopTabContent, TabHopBtn) end)
-TabRejoinBtn.MouseButton1Click:Connect(function() SwitchTab(RejoinTabContent, TabRejoinBtn) end)
 
 -- ==================== TAB 1: MAIN ====================
 local AntiAfkBtn = Instance.new("TextButton", MainTabContent)
@@ -199,7 +180,7 @@ DecSpeedBtn.Size = UDim2.new(0.44, 0, 0, 30)
 DecSpeedBtn.Position = UDim2.new(0.04, 0, 0.42, 0)
 DecSpeedBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 DecSpeedBtn.Font = Enum.Font.SourceSansBold
-DecSpeedBtn.Text = "◀ Giảm tốc (-0.2)"
+DecSpeedBtn.Text = "◀ Giảm tốc (-10)"
 DecSpeedBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 DecSpeedBtn.TextSize = 11
 Instance.new("UICorner", DecSpeedBtn).CornerRadius = UDim.new(0, 6)
@@ -209,15 +190,15 @@ IncSpeedBtn.Size = UDim2.new(0.44, 0, 0, 30)
 IncSpeedBtn.Position = UDim2.new(0.52, 0, 0.42, 0)
 IncSpeedBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 IncSpeedBtn.Font = Enum.Font.SourceSansBold
-IncSpeedBtn.Text = "Tăng tốc (+0.2) ▶"
+IncSpeedBtn.Text = "Tăng tốc (+10) ▶"
 IncSpeedBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 IncSpeedBtn.TextSize = 11
 Instance.new("UICorner", IncSpeedBtn).CornerRadius = UDim.new(0, 6)
 
--- ==================== TAB 2: HOP SERVER ====================
+-- ==================== TAB 2: SERVER HOP & REJOIN ====================
 local HopBtn = Instance.new("TextButton", HopTabContent)
-HopBtn.Size = UDim2.new(0.92, 0, 0, 45)
-HopBtn.Position = UDim2.new(0.04, 0, 0.05, 0)
+HopBtn.Size = UDim2.new(0.92, 0, 0, 42)
+HopBtn.Position = UDim2.new(0.04, 0, 0.03, 0)
 HopBtn.BackgroundColor3 = Color3.fromRGB(0, 160, 100)
 HopBtn.Font = Enum.Font.SourceSansBold
 HopBtn.Text = "🚀 Hop Server (Tìm Server Ít Người)"
@@ -225,13 +206,12 @@ HopBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 HopBtn.TextSize = 12
 Instance.new("UICorner", HopBtn).CornerRadius = UDim.new(0, 6)
 
--- ==================== TAB 3: REJOIN ====================
-local RejoinBtn = Instance.new("TextButton", RejoinTabContent)
-RejoinBtn.Size = UDim2.new(0.92, 0, 0, 45)
-RejoinBtn.Position = UDim2.new(0.04, 0, 0.05, 0)
+local RejoinBtn = Instance.new("TextButton", HopTabContent)
+RejoinBtn.Size = UDim2.new(0.92, 0, 0, 42)
+RejoinBtn.Position = UDim2.new(0.04, 0, 0.22, 0)
 RejoinBtn.BackgroundColor3 = Color3.fromRGB(230, 140, 0)
 RejoinBtn.Font = Enum.Font.SourceSansBold
-RejoinBtn.Text = "🔄 Rejoin (Vào Lại Server Này)"
+RejoinBtn.Text = "🔄 Rejoin Server (Vào Lại Server Này)"
 RejoinBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 RejoinBtn.TextSize = 12
 Instance.new("UICorner", RejoinBtn).CornerRadius = UDim.new(0, 6)
@@ -346,27 +326,27 @@ EspBtn.MouseButton1Click:Connect(function()
 end)
 
 local CFrameSpeedEnabled = false
-local SpeedMultiplier = 0.5
+local SpeedMultiplier = 10
 
 SpeedBtn.MouseButton1Click:Connect(function()
     CFrameSpeedEnabled = not CFrameSpeedEnabled
     SpeedBtn.BackgroundColor3 = CFrameSpeedEnabled and Color3.fromRGB(0, 180, 80) or Color3.fromRGB(60, 60, 60)
-    SpeedBtn.Text = CFrameSpeedEnabled and ("⚡ CFrame Speed: BẬT (" .. string.format("%.1f", SpeedMultiplier) .. ")") or "⚡ CFrame Speed: TẮT"
+    SpeedBtn.Text = CFrameSpeedEnabled and ("⚡ CFrame Speed: BẬT (" .. tostring(SpeedMultiplier) .. ")") or "⚡ CFrame Speed: TẮT"
 end)
 
 IncSpeedBtn.MouseButton1Click:Connect(function()
-    SpeedMultiplier = SpeedMultiplier + 0.2
-    if SpeedMultiplier > 3.0 then SpeedMultiplier = 3.0 end
+    SpeedMultiplier = SpeedMultiplier + 10
+    if SpeedMultiplier > 500 then SpeedMultiplier = 500 end
     if CFrameSpeedEnabled then
-        SpeedBtn.Text = "⚡ CFrame Speed: BẬT (" .. string.format("%.1f", SpeedMultiplier) .. ")"
+        SpeedBtn.Text = "⚡ CFrame Speed: BẬT (" .. tostring(SpeedMultiplier) .. ")"
     end
 end)
 
 DecSpeedBtn.MouseButton1Click:Connect(function()
-    SpeedMultiplier = SpeedMultiplier - 0.2
-    if SpeedMultiplier < 0.2 then SpeedMultiplier = 0.2 end
+    SpeedMultiplier = SpeedMultiplier - 10
+    if SpeedMultiplier < 10 then SpeedMultiplier = 10 end
     if CFrameSpeedEnabled then
-        SpeedBtn.Text = "⚡ CFrame Speed: BẬT (" .. string.format("%.1f", SpeedMultiplier) .. ")"
+        SpeedBtn.Text = "⚡ CFrame Speed: BẬT (" .. tostring(SpeedMultiplier) .. ")"
     end
 end)
 
@@ -378,7 +358,7 @@ RunService.RenderStepped:Connect(function()
                 local hum = char.Humanoid
                 local hrp = char.HumanoidRootPart
                 if hum.MoveDirection.Magnitude > 0 then
-                    hrp.CFrame = hrp.CFrame + (hum.MoveDirection * SpeedMultiplier)
+                    hrp.CFrame = hrp.CFrame + (hum.MoveDirection * (SpeedMultiplier * 0.1))
                 end
             end
         end)
