@@ -1,4 +1,4 @@
--- Speed Hub Style Script (Fixed Rejoin Location)
+-- Speed Hub Style Script (Fixed Speed Controls & 3 Tabs)
 local Players = game:GetService("Players")
 local TeleportService = game:GetService("TeleportService")
 local HttpService = game:GetService("HttpService")
@@ -20,8 +20,8 @@ if not ScreenGui.Parent then ScreenGui.Parent = LocalPlayer:WaitForChild("Player
 
 -- Khung chính của Hub
 local MainHub = Instance.new("Frame")
-MainHub.Size = UDim2.new(0, 450, 0, 300)
-MainHub.Position = UDim2.new(0.5, -225, 0.5, -150)
+MainHub.Size = UDim2.new(0, 450, 0, 310)
+MainHub.Position = UDim2.new(0.5, -225, 0.5, -155)
 MainHub.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 MainHub.BorderSizePixel = 0
 MainHub.Active = true
@@ -35,7 +35,7 @@ TitleLabel.Size = UDim2.new(1, -50, 0, 35)
 TitleLabel.Position = UDim2.new(0, 12, 0, 0)
 TitleLabel.BackgroundTransparency = 1
 TitleLabel.Font = Enum.Font.SourceSansBold
-TitleLabel.Text = "⚡ Huge Pro Hub | Fixed Mode"
+TitleLabel.Text = "⚡ Huge Pro Hub | Full Control"
 TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 TitleLabel.TextSize = 15
 TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
@@ -162,7 +162,7 @@ TabMainBtn.MouseButton1Click:Connect(function() SwitchTab(MainTabContent, TabMai
 TabHopBtn.MouseButton1Click:Connect(function() SwitchTab(HopTabContent, TabHopBtn) end)
 TabRejoinBtn.MouseButton1Click:Connect(function() SwitchTab(RejoinTabContent, TabRejoinBtn) end)
 
--- ==================== TAB 1: MAIN (Chỉ có Anti AFK, ESP, Speed) ====================
+-- ==================== TAB 1: MAIN ====================
 local AntiAfkBtn = Instance.new("TextButton", MainTabContent)
 AntiAfkBtn.Size = UDim2.new(0.92, 0, 0, 35)
 AntiAfkBtn.Position = UDim2.new(0.04, 0, 0.03, 0)
@@ -188,10 +188,31 @@ SpeedBtn.Size = UDim2.new(0.92, 0, 0, 35)
 SpeedBtn.Position = UDim2.new(0.04, 0, 0.29, 0)
 SpeedBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 SpeedBtn.Font = Enum.Font.SourceSansBold
-SpeedBtn.Text = "⚡ CFrame Speed (Bypass): TẮT"
+SpeedBtn.Text = "⚡ CFrame Speed: TẮT"
 SpeedBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 SpeedBtn.TextSize = 12
 Instance.new("UICorner", SpeedBtn).CornerRadius = UDim.new(0, 6)
+
+-- Nút tăng giảm tốc độ
+local DecSpeedBtn = Instance.new("TextButton", MainTabContent)
+DecSpeedBtn.Size = UDim2.new(0.44, 0, 0, 30)
+DecSpeedBtn.Position = UDim2.new(0.04, 0, 0.42, 0)
+DecSpeedBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+DecSpeedBtn.Font = Enum.Font.SourceSansBold
+DecSpeedBtn.Text = "◀ Giảm tốc (-0.2)"
+DecSpeedBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+DecSpeedBtn.TextSize = 11
+Instance.new("UICorner", DecSpeedBtn).CornerRadius = UDim.new(0, 6)
+
+local IncSpeedBtn = Instance.new("TextButton", MainTabContent)
+IncSpeedBtn.Size = UDim2.new(0.44, 0, 0, 30)
+IncSpeedBtn.Position = UDim2.new(0.52, 0, 0.42, 0)
+IncSpeedBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+IncSpeedBtn.Font = Enum.Font.SourceSansBold
+IncSpeedBtn.Text = "Tăng tốc (+0.2) ▶"
+IncSpeedBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+IncSpeedBtn.TextSize = 11
+Instance.new("UICorner", IncSpeedBtn).CornerRadius = UDim.new(0, 6)
 
 -- ==================== TAB 2: HOP SERVER ====================
 local HopBtn = Instance.new("TextButton", HopTabContent)
@@ -204,7 +225,7 @@ HopBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 HopBtn.TextSize = 12
 Instance.new("UICorner", HopBtn).CornerRadius = UDim.new(0, 6)
 
--- ==================== TAB 3: REJOIN (Đã gắn đúng vào RejoinTabContent) ====================
+-- ==================== TAB 3: REJOIN ====================
 local RejoinBtn = Instance.new("TextButton", RejoinTabContent)
 RejoinBtn.Size = UDim2.new(0.92, 0, 0, 45)
 RejoinBtn.Position = UDim2.new(0.04, 0, 0.05, 0)
@@ -330,7 +351,23 @@ local SpeedMultiplier = 0.5
 SpeedBtn.MouseButton1Click:Connect(function()
     CFrameSpeedEnabled = not CFrameSpeedEnabled
     SpeedBtn.BackgroundColor3 = CFrameSpeedEnabled and Color3.fromRGB(0, 180, 80) or Color3.fromRGB(60, 60, 60)
-    SpeedBtn.Text = CFrameSpeedEnabled and "⚡ CFrame Speed (Bypass): BẬT" or "⚡ CFrame Speed (Bypass): TẮT"
+    SpeedBtn.Text = CFrameSpeedEnabled and ("⚡ CFrame Speed: BẬT (" .. string.format("%.1f", SpeedMultiplier) .. ")") or "⚡ CFrame Speed: TẮT"
+end)
+
+IncSpeedBtn.MouseButton1Click:Connect(function()
+    SpeedMultiplier = SpeedMultiplier + 0.2
+    if SpeedMultiplier > 3.0 then SpeedMultiplier = 3.0 end
+    if CFrameSpeedEnabled then
+        SpeedBtn.Text = "⚡ CFrame Speed: BẬT (" .. string.format("%.1f", SpeedMultiplier) .. ")"
+    end
+end)
+
+DecSpeedBtn.MouseButton1Click:Connect(function()
+    SpeedMultiplier = SpeedMultiplier - 0.2
+    if SpeedMultiplier < 0.2 then SpeedMultiplier = 0.2 end
+    if CFrameSpeedEnabled then
+        SpeedBtn.Text = "⚡ CFrame Speed: BẬT (" .. string.format("%.1f", SpeedMultiplier) .. ")"
+    end
 end)
 
 RunService.RenderStepped:Connect(function()
