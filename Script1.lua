@@ -1,27 +1,41 @@
-     -- Delta / Mobile Executor Compatible Script
+-- Delta / Mobile Executor Compatible Script (Updated)
 local Players = game:GetService("Players")
 local TeleportService = game:GetService("TeleportService")
 local HttpService = game:GetService("HttpService")
 local RunService = game:GetService("RunService")
+local CoreGui = game:GetService("CoreGui")
 local LocalPlayer = Players.LocalPlayer
 
--- UI Root Setup
+-- Auto Execute Configuration (Tự động chạy lại script khi Rejoin/Hop)
+local AutoLoadEnabled = true
+local ScriptUrl = "https://raw.githubusercontent.com/hugegameroblox/Script-/main/Script1.lua"
+
+pcall(function()
+    if syn and syn.queue_on_teleport then
+        syn.queue_on_teleport('loadstring(game:HttpGet("' .. ScriptUrl .. '"))()')
+    elseif queue_on_teleport then
+        queue_on_teleport('loadstring(game:HttpGet("' .. ScriptUrl .. '"))()')
+    end
+end)
+
+-- Xóa GUI cũ nếu có để tránh trùng lặp
+pcall(function()
+    if CoreGui:FindFirstChild("HugeGameHub_StealAEgg") then
+        CoreGui.HugeGameHub_StealAEgg:Destroy()
+    end
+end)
+
+-- GUI Setup
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "HugeGameHub_StealAEgg"
 ScreenGui.ResetOnSpawn = false
-pcall(function()
-    ScreenGui.Parent = game:GetService("CoreGui")
-end)
-if not ScreenGui.Parent then
-    ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
-end
+pcall(function() ScreenGui.Parent = CoreGui end)
+if not ScreenGui.Parent then ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui") end
 
--- Main Window
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 240, 0, 220)
-MainFrame.Position = UDim2.new(0.5, -120, 0.4, -110)
+MainFrame.Size = UDim2.new(0, 240, 0, 310)
+MainFrame.Position = UDim2.new(0.5, -120, 0.4, -155)
 MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-MainFrame.BorderSizePixel = 0
 MainFrame.Active = true
 MainFrame.Draggable = true
 MainFrame.Parent = ScreenGui
@@ -29,7 +43,6 @@ MainFrame.Parent = ScreenGui
 local UICorner = Instance.new("UICorner", MainFrame)
 UICorner.CornerRadius = UDim.new(0, 8)
 
--- Title Bar
 local Title = Instance.new("TextLabel")
 Title.Size = UDim2.new(1, -35, 0, 35)
 Title.Position = UDim2.new(0, 10, 0, 0)
@@ -37,11 +50,10 @@ Title.BackgroundTransparency = 1
 Title.Font = Enum.Font.SourceSansBold
 Title.Text = "HugeGame Hub | Steal a Egg"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-Title.TextSize = 15
+Title.TextSize = 14
 Title.TextXAlignment = Enum.TextXAlignment.Left
 Title.Parent = MainFrame
 
--- Close Button (Thu nhỏ)
 local CloseBtn = Instance.new("TextButton")
 CloseBtn.Size = UDim2.new(0, 25, 0, 25)
 CloseBtn.Position = UDim2.new(1, -30, 0, 5)
@@ -55,7 +67,6 @@ CloseBtn.Parent = MainFrame
 local CloseCorner = Instance.new("UICorner", CloseBtn)
 CloseCorner.CornerRadius = UDim.new(0, 6)
 
--- Open Button (Nút nổi hình tròn góc màn hình)
 local OpenBtn = Instance.new("ImageButton")
 OpenBtn.Size = UDim2.new(0, 45, 0, 45)
 OpenBtn.Position = UDim2.new(0, 15, 0.5, -22)
@@ -69,52 +80,68 @@ OpenBtn.Parent = ScreenGui
 local OpenCorner = Instance.new("UICorner", OpenBtn)
 OpenCorner.CornerRadius = UDim.new(0, 22)
 
--- Hop Low Server Button
+-- Nút: Hop Low Server
 local HopBtn = Instance.new("TextButton")
-HopBtn.Size = UDim2.new(0.9, 0, 0, 35)
-HopBtn.Position = UDim2.new(0.05, 0, 0.22, 0)
+HopBtn.Size = UDim2.new(0.9, 0, 0, 32)
+HopBtn.Position = UDim2.new(0.05, 0, 0.15, 0)
 HopBtn.BackgroundColor3 = Color3.fromRGB(0, 140, 230)
 HopBtn.Font = Enum.Font.SourceSansBold
 HopBtn.Text = "🌐 Hop Low Server (Ít Người)"
 HopBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-HopBtn.TextSize = 13
+HopBtn.TextSize = 12
 HopBtn.Parent = MainFrame
+Instance.new("UICorner", HopBtn).CornerRadius = UDim.new(0, 6)
 
-local HopCorner = Instance.new("UICorner", HopBtn)
-HopCorner.CornerRadius = UDim.new(0, 6)
+-- Nút: Rejoin
+local RejoinBtn = Instance.new("TextButton")
+RejoinBtn.Size = UDim2.new(0.9, 0, 0, 32)
+RejoinBtn.Position = UDim2.new(0.05, 0, 0.28, 0)
+RejoinBtn.BackgroundColor3 = Color3.fromRGB(230, 140, 0)
+RejoinBtn.Font = Enum.Font.SourceSansBold
+RejoinBtn.Text = "🔄 Rejoin (Vào Lại Server)"
+RejoinBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+RejoinBtn.TextSize = 12
+RejoinBtn.Parent = MainFrame
+Instance.new("UICorner", RejoinBtn).CornerRadius = UDim.new(0, 6)
 
--- Player Dropdown/Input
-local TargetInput = Instance.new("TextBox")
-TargetInput.Size = UDim2.new(0.9, 0, 0, 35)
-TargetInput.Position = UDim2.new(0.05, 0, 0.43, 0)
-TargetInput.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-TargetInput.Font = Enum.Font.SourceSans
-TargetInput.PlaceholderText = "Nhập Tên / Chữ cái đầu mục tiêu..."
-TargetInput.Text = ""
-TargetInput.TextColor3 = Color3.fromRGB(255, 255, 255)
-TargetInput.TextSize = 12
-TargetInput.Parent = MainFrame
+-- Nút: Anti AFK
+local AntiAfkBtn = Instance.new("TextButton")
+AntiAfkBtn.Size = UDim2.new(0.9, 0, 0, 32)
+AntiAfkBtn.Position = UDim2.new(0.05, 0, 0.41, 0)
+AntiAfkBtn.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+AntiAfkBtn.Font = Enum.Font.SourceSansBold
+AntiAfkBtn.Text = "🛡️ Anti AFK: TẮT"
+AntiAfkBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+AntiAfkBtn.TextSize = 12
+AntiAfkBtn.Parent = MainFrame
+Instance.new("UICorner", AntiAfkBtn).CornerRadius = UDim.new(0, 6)
 
-local InputCorner = Instance.new("UICorner", TargetInput)
-InputCorner.CornerRadius = UDim.new(0, 6)
+-- Nút: ESP Player
+local EspBtn = Instance.new("TextButton")
+EspBtn.Size = UDim2.new(0.9, 0, 0, 32)
+EspBtn.Position = UDim2.new(0.05, 0, 0.54, 0)
+EspBtn.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+EspBtn.Font = Enum.Font.SourceSansBold
+EspBtn.Text = "👁️ ESP Người Khác: TẮT"
+EspBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+EspBtn.TextSize = 12
+EspBtn.Parent = MainFrame
+Instance.new("UICorner", EspBtn).CornerRadius = UDim.new(0, 6)
 
--- Fly & Fling Button
-local FlingBtn = Instance.new("TextButton")
-FlingBtn.Size = UDim2.new(0.9, 0, 0, 40)
-FlingBtn.Position = UDim2.new(0.05, 0, 0.65, 0)
-FlingBtn.BackgroundColor3 = Color3.fromRGB(220, 60, 60)
-FlingBtn.Font = Enum.Font.SourceSansBold
-FlingBtn.Text = "🚀 Bay Đến & Fling Mục Tiêu"
-FlingBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-FlingBtn.TextSize = 13
-FlingBtn.Parent = MainFrame
-
-local FlingCorner = Instance.new("UICorner", FlingBtn)
-FlingCorner.CornerRadius = UDim.new(0, 6)
+-- Nút: Toggle Auto Execute
+local AutoExecBtn = Instance.new("TextButton")
+AutoExecBtn.Size = UDim2.new(0.9, 0, 0, 32)
+AutoExecBtn.Position = UDim2.new(0.05, 0, 0.67, 0)
+AutoExecBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 80)
+AutoExecBtn.Font = Enum.Font.SourceSansBold
+AutoExecBtn.Text = "⚡ Tự Động Mở Lại Script: BẬT"
+AutoExecBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+AutoExecBtn.TextSize = 12
+AutoExecBtn.Parent = MainFrame
+Instance.new("UICorner", AutoExecBtn).CornerRadius = UDim.new(0, 6)
 
 --- LOGIC CHỨC NĂNG ---
 
--- 1. Tắt/Mở Menu
 CloseBtn.MouseButton1Click:Connect(function()
     MainFrame.Visible = false
     OpenBtn.Visible = true
@@ -125,76 +152,134 @@ OpenBtn.MouseButton1Click:Connect(function()
     OpenBtn.Visible = false
 end)
 
--- 2. Hop Server Ít Người
+-- 1. Hop Low Server
 HopBtn.MouseButton1Click:Connect(function()
-    HopBtn.Text = "Đang tìm máy chủ ít người..."
-    local placeId = game.PlaceId
-    local req = game:HttpGet("https://games.roblox.com/v1/games/" .. placeId .. "/servers/Public?sortOrder=Asc&limit=100")
+    HopBtn.Text = "Đang tìm server..."
+    local req = game:HttpGet("https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100")
     local body = HttpService:JSONDecode(req)
-
     if body and body.data then
         for _, server in pairs(body.data) do
             if server.playing < server.maxPlayers and server.id ~= game.JobId then
-                TeleportService:TeleportToPlaceInstance(placeId, server.id, LocalPlayer)
+                TeleportService:TeleportToPlaceInstance(game.PlaceId, server.id, LocalPlayer)
                 break
             end
         end
     end
 end)
 
--- Tìm người chơi theo tên rút gọn
-local function GetTarget(name)
-    name = name:lower()
-    for _, p in pairs(Players:GetPlayers()) do
-        if p ~= LocalPlayer and (p.Name:lower():sub(1, #name) == name or p.DisplayName:lower():sub(1, #name) == name) then
-            return p
-        end
+-- 2. Rejoin
+RejoinBtn.MouseButton1Click:Connect(function()
+    RejoinBtn.Text = "Đang kết nối lại..."
+    if #Players:GetPlayers() <= 1 then
+        LocalPlayer:Kick("\nĐang vào lại server...")
+        task.wait(1)
+        TeleportService:Teleport(game.PlaceId, LocalPlayer)
+    else
+        TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, LocalPlayer)
     end
-    return nil
+end)
+
+-- 3. Anti AFK
+local AntiAfkRunning = false
+local VirtualUser = game:GetService("VirtualUser")
+AntiAfkBtn.MouseButton1Click:Connect(function()
+    AntiAfkRunning = not AntiAfkRunning
+    if AntiAfkRunning then
+        AntiAfkBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 80)
+        AntiAfkBtn.Text = " Anti AFK: BẬT"
+    else
+        AntiAfkBtn.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+        AntiAfkBtn.Text = " Anti AFK: TẮT"
+    end
+end)
+
+LocalPlayer.Idled:Connect(function()
+    if AntiAfkRunning then
+        VirtualUser:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+        task.wait(1)
+        VirtualUser:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+    end
+end)
+
+-- 4. ESP Người Khác
+local EspEnabled = false
+local EspFolder = Instance.new("Folder", CoreGui)
+EspFolder.Name = "ESP_Container"
+
+local function AddEsp(player)
+    if player == LocalPlayer then return end
+    local function CreateBox(char)
+        if char:FindFirstChild("Highlight") then return end
+        local hl = Instance.new("Highlight")
+        hl.Name = "Highlight"
+        hl.Adornee = char
+        hl.FillColor = Color3.fromRGB(255, 0, 0)
+        hl.OutlineColor = Color3.fromRGB(255, 255, 255)
+        hl.FillTransparency = 0.5
+        hl.Parent = char
+    end
+    
+    player.CharacterAdded:Connect(function(char)
+        if EspEnabled then
+            task.wait(1)
+            CreateBox(char)
+        end
+    end)
+    if player.Character and EspEnabled then
+        CreateBox(player.Character)
+    end
 end
 
--- 3. Bay Đến & Fling
-local isFlinging = false
-FlingBtn.MouseButton1Click:Connect(function()
-    if isFlinging then return end
-    local target = GetTarget(TargetInput.Text)
+for _, p in pairs(Players:GetPlayers()) do AddEsp(p) end
+Players.PlayerAdded:Connect(AddEsp)
 
-    if not target or not target.Character or not target.Character:FindFirstChild("HumanoidRootPart") then
-        FlingBtn.Text = "❌ Không tìm thấy người chơi!"
-        task.wait(1.5)
-        FlingBtn.Text = "🚀 Bay Đến & Fling Mục Tiêu"
-        return
-    end
-
-    local myChar = LocalPlayer.Character
-    local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
-    if not myRoot then return end
-
-    isFlinging = true
-    FlingBtn.Text = "🔥 Đang Fling..."
-
-    -- Bật AngularVelocity để xoay với tốc độ cực đại (Fling Physics)
-    local bav = Instance.new("BodyAngularVelocity")
-    bav.AngularVelocity = Vector3.new(0, 99999, 0)
-    bav.MaxTorque = Vector3.new(0, math.huge, 0)
-    bav.P = math.huge
-    bav.Parent = myRoot
-
-    local targetRoot = target.Character.HumanoidRootPart
-    local startTime = tick()
-
-    -- Vòng lặp bám đuôi xoay người để hất tung
-    local connection
-    connection = RunService.Heartbeat:Connect(function()
-        if not isFlinging or not targetRoot or not targetRoot.Parent or (tick() - startTime > 3) then
-            connection:Disconnect()
-            bav:Destroy()
-            isFlinging = false
-            FlingBtn.Text = "🚀 Bay Đến & Fling Mục Tiêu"
-            return
+EspBtn.MouseButton1Click:Connect(function()
+    EspEnabled = not EspEnabled
+    if EspEnabled then
+        EspBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 80)
+        EspBtn.Text = " ESP : BẬT"
+        for _, p in pairs(Players:GetPlayers()) do
+            if p.Character then
+                if not p.Character:FindFirstChild("Highlight") then
+                    local hl = Instance.new("Highlight", p.Character)
+                    hl.Name = "Highlight"
+                    hl.Adornee = p.Character
+                    hl.FillColor = Color3.fromRGB(255, 0, 0)
+                    hl.FillTransparency = 0.5
+                end
+            end
         end
-        -- Dịch chuyển dính chặt vào mục tiêu
-        myRoot.CFrame = targetRoot.CFrame * CFrame.new(0, 0, 0)
-        myRoot.Velocity = Vector3.new(9999, 9999, 9999)
+    else
+        EspBtn.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+        EspBtn.Text = " ESP : TẮT"
+        for _, p in pairs(Players:GetPlayers()) do
+            if p.Character and p.Character:FindFirstChild("Highlight") then
+                p.Character.Highlight:Destroy()
+            end
+        end
+    end
+end)
+
+-- 5. Bật/Tắt Tự động mở lại script
+AutoExecBtn.MouseButton1Click:Connect(function()
+    AutoLoadEnabled = not AutoLoadEnabled
+    pcall(function()
+        if AutoLoadEnabled then
+            AutoExecBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 80)
+            AutoExecBtn.Text = "⚡ Tự Động Mở Lại Script: BẬT"
+            if syn and syn.queue_on_teleport then
+                syn.queue_on_teleport('loadstring(game:HttpGet("' .. ScriptUrl .. '"))()')
+            elseif queue_on_teleport then
+                queue_on_teleport('loadstring(game:HttpGet("' .. ScriptUrl .. '"))()')
+            end
+        else
+            AutoExecBtn.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+            AutoExecBtn.Text = "⚡ Tự Động Mở Lại Script: TẮT"
+            if syn and syn.queue_on_teleport then
+                syn.queue_on_teleport("")
+            elseif queue_on_teleport then
+                queue_on_teleport("")
+            end
+        end
     end)
 end)
