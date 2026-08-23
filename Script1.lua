@@ -1,4 +1,4 @@
--- Delta / Mobile Executor Compatible Script (ESP Player + Name + Speed + Hop Server Title)
+-- Speed Hub Style Script with Tab System (Main & Hop)
 local Players = game:GetService("Players")
 local TeleportService = game:GetService("TeleportService")
 local HttpService = game:GetService("HttpService")
@@ -6,186 +6,259 @@ local RunService = game:GetService("RunService")
 local CoreGui = game:GetService("CoreGui")
 local LocalPlayer = Players.LocalPlayer
 
--- Auto Execute Configuration
-local AutoLoadEnabled = true
-local ScriptUrl = "https://raw.githubusercontent.com/hugegameroblox/Script-/main/Script1.lua"
-
+-- Xóa GUI cũ nếu có
 pcall(function()
-    if syn and syn.queue_on_teleport then
-        syn.queue_on_teleport('loadstring(game:HttpGet("' .. ScriptUrl .. '"))()')
-    elseif queue_on_teleport then
-        queue_on_teleport('loadstring(game:HttpGet("' .. ScriptUrl .. '"))()')
+    if CoreGui:FindFirstChild("ProScriptHub") then
+        CoreGui.ProScriptHub:Destroy()
     end
 end)
 
--- Xóa GUI cũ
-pcall(function()
-    if CoreGui:FindFirstChild("HugeGameHub_HopServer") then
-        CoreGui.HugeGameHub_HopServer:Destroy()
-    end
-end)
-
--- GUI Setup
+-- Tạo ScreenGui chính
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "HugeGameHub_HopServer"
+ScreenGui.Name = "ProScriptHub"
 ScreenGui.ResetOnSpawn = false
 pcall(function() ScreenGui.Parent = CoreGui end)
 if not ScreenGui.Parent then ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui") end
 
-local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 240, 0, 390)
-MainFrame.Position = UDim2.new(0.5, -120, 0.4, -195)
-MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-MainFrame.Active = true
-MainFrame.Draggable = true
-MainFrame.Parent = ScreenGui
+-- Khung chính của Hub
+local MainHub = Instance.new("Frame")
+MainHub.Size = UDim2.new(0, 450, 0, 300)
+MainHub.Position = UDim2.new(0.5, -225, 0.5, -150)
+MainHub.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+MainHub.BorderSizePixel = 0
+MainHub.Active = true
+MainHub.Draggable = true
+MainHub.Parent = ScreenGui
+Instance.new("UICorner", MainHub).CornerRadius = UDim.new(0, 8)
 
-local UICorner = Instance.new("UICorner", MainFrame)
-UICorner.CornerRadius = UDim.new(0, 8)
+-- Tiêu đề Hub
+local TitleLabel = Instance.new("TextLabel")
+TitleLabel.Size = UDim2.new(1, -50, 0, 35)
+TitleLabel.Position = UDim2.new(0, 12, 0, 0)
+TitleLabel.BackgroundTransparency = 1
+TitleLabel.Font = Enum.Font.SourceSansBold
+TitleLabel.Text = "⚡ Huge Pro Hub | Roblox Script"
+TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+TitleLabel.TextSize = 15
+TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+TitleLabel.Parent = MainHub
 
-local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(1, -35, 0, 35)
-Title.Position = UDim2.new(0, 10, 0, 0)
-Title.BackgroundTransparency = 1
-Title.Font = Enum.Font.SourceSansBold
-Title.Text = "HugeGame Hub | Hop Server"
-Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-Title.TextSize = 14
-Title.TextXAlignment = Enum.TextXAlignment.Left
-Title.Parent = MainFrame
+-- Nút đóng mở nhanh (Minimize)
+local MinimizeBtn = Instance.new("TextButton")
+MinimizeBtn.Size = UDim2.new(0, 30, 0, 30)
+MinimizeBtn.Position = UDim2.new(1, -35, 0, 3)
+MinimizeBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+MinimizeBtn.Font = Enum.Font.SourceSansBold
+MinimizeBtn.Text = "-"
+MinimizeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+MinimizeBtn.TextSize = 18
+MinimizeBtn.Parent = MainHub
+Instance.new("UICorner", MinimizeBtn).CornerRadius = UDim.new(0, 6)
 
-local CloseBtn = Instance.new("TextButton")
-CloseBtn.Size = UDim2.new(0, 25, 0, 25)
-CloseBtn.Position = UDim2.new(1, -30, 0, 5)
-CloseBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-CloseBtn.Font = Enum.Font.SourceSansBold
-CloseBtn.Text = "-"
-CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-CloseBtn.TextSize = 18
-CloseBtn.Parent = MainFrame
-Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 6)
+-- Nút nổi khi thu gọn Hub
+local OpenHubBtn = Instance.new("ImageButton")
+OpenHubBtn.Size = UDim2.new(0, 45, 0, 45)
+OpenHubBtn.Position = UDim2.new(0, 20, 0.4, 0)
+OpenHubBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+OpenHubBtn.Image = "rbxassetid://18751493385"
+OpenHubBtn.Visible = false
+OpenHubBtn.Active = true
+OpenHubBtn.Draggable = true
+OpenHubBtn.Parent = ScreenGui
+Instance.new("UICorner", OpenHubBtn).CornerRadius = UDim.new(0, 22.5)
 
-local OpenBtn = Instance.new("ImageButton")
-OpenBtn.Size = UDim2.new(0, 45, 0, 45)
-OpenBtn.Position = UDim2.new(0, 15, 0.5, -22)
-OpenBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-OpenBtn.Image = "rbxassetid://18751493385"
-OpenBtn.Visible = false
-OpenBtn.Active = true
-OpenBtn.Draggable = true
-OpenBtn.Parent = ScreenGui
-Instance.new("UICorner", OpenBtn).CornerRadius = UDim.new(0, 22)
+MinimizeBtn.MouseButton1Click:Connect(function()
+    MainHub.Visible = false
+    OpenHubBtn.Visible = true
+end)
 
--- Các nút chức năng
-local HopBtn = Instance.new("TextButton", MainFrame)
-HopBtn.Size = UDim2.new(0.9, 0, 0, 32)
-HopBtn.Position = UDim2.new(0.05, 0, 0.12, 0)
-HopBtn.BackgroundColor3 = Color3.fromRGB(0, 140, 230)
-HopBtn.Font = Enum.Font.SourceSansBold
-HopBtn.Text = "🌐 Hop Low Server (Ít Người)"
-HopBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-HopBtn.TextSize = 12
-Instance.new("UICorner", HopBtn).CornerRadius = UDim.new(0, 6)
+OpenHubBtn.MouseButton1Click:Connect(function()
+    MainHub.Visible = true
+    OpenHubBtn.Visible = false
+end)
 
-local RejoinBtn = Instance.new("TextButton", MainFrame)
-RejoinBtn.Size = UDim2.new(0.9, 0, 0, 32)
-RejoinBtn.Position = UDim2.new(0.05, 0, 0.23, 0)
+-- Thanh Menu chọn Tab (Bên trái)
+local TabBar = Instance.new("Frame")
+TabBar.Size = UDim2.new(0, 110, 1, -45)
+TabBar.Position = UDim2.new(0, 0, 0, 40)
+TabBar.BackgroundColor3 = Color3.fromRGB(28, 28, 28)
+TabBar.BorderSizePixel = 0
+TabBar.Parent = MainHub
+
+-- Container chứa nội dung các Tab (Bên phải)
+local Container = Instance.new("Frame")
+Container.Size = UDim2.new(1, -120, 1, -45)
+Container.Position = UDim2.new(0, 115, 0, 40)
+Container.BackgroundTransparency = 1
+Container.Parent = MainHub
+
+-- Tạo giao diện các Tab nội dung
+local MainTabContent = Instance.new("ScrollingFrame")
+MainTabContent.Size = UDim2.new(1, 0, 1, 0)
+MainTabContent.BackgroundTransparency = 1
+MainTabContent.CanvasSize = UDim2.new(0, 0, 1.5, 0)
+MainTabContent.ScrollBarThickness = 4
+MainTabContent.Visible = true
+MainTabContent.Parent = Container
+
+local HopTabContent = Instance.new("Frame")
+HopTabContent.Size = UDim2.new(1, 0, 1, 0)
+HopTabContent.BackgroundTransparency = 1
+HopTabContent.Visible = false
+HopTabContent.Parent = Container
+
+-- Nút chuyển Tab Main
+local TabMainBtn = Instance.new("TextButton")
+TabMainBtn.Size = UDim2.new(0.9, 0, 0, 35)
+TabMainBtn.Position = UDim2.new(0.05, 0, 0.03, 0)
+TabMainBtn.BackgroundColor3 = Color3.fromRGB(0, 140, 230)
+TabMainBtn.Font = Enum.Font.SourceSansBold
+TabMainBtn.Text = "🏠 Main"
+TabMainBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+TabMainBtn.TextSize = 13
+TabMainBtn.Parent = TabBar
+Instance.new("UICorner", TabMainBtn).CornerRadius = UDim.new(0, 6)
+
+-- Nút chuyển Tab Hop
+local TabHopBtn = Instance.new("TextButton")
+TabHopBtn.Size = UDim2.new(0.9, 0, 0, 35)
+TabHopBtn.Position = UDim2.new(0.05, 0, 0.15, 0)
+TabHopBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+TabHopBtn.Font = Enum.Font.SourceSansBold
+TabHopBtn.Text = "🌐 Server Hop"
+TabHopBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
+TabHopBtn.TextSize = 13
+TabHopBtn.Parent = TabBar
+Instance.new("UICorner", TabHopBtn).CornerRadius = UDim.new(0, 6)
+
+-- Sự kiện chuyển qua lại giữa các Tab
+TabMainBtn.MouseButton1Click:Connect(function()
+    MainTabContent.Visible = true
+    HopTabContent.Visible = false
+    TabMainBtn.BackgroundColor3 = Color3.fromRGB(0, 140, 230)
+    TabMainBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    TabHopBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+    TabHopBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
+end)
+
+TabHopBtn.MouseButton1Click:Connect(function()
+    MainTabContent.Visible = false
+    HopTabContent.Visible = true
+    TabHopBtn.BackgroundColor3 = Color3.fromRGB(0, 140, 230)
+    TabHopBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    TabMainBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+    TabMainBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
+end)
+
+
+-- ==================== NỘI DUNG TAB MAIN ====================
+local RejoinBtn = Instance.new("TextButton", MainTabContent)
+RejoinBtn.Size = UDim2.new(0.92, 0, 0, 35)
+RejoinBtn.Position = UDim2.new(0.04, 0, 0.03, 0)
 RejoinBtn.BackgroundColor3 = Color3.fromRGB(230, 140, 0)
 RejoinBtn.Font = Enum.Font.SourceSansBold
-RejoinBtn.Text = "🔄 Rejoin (Vào Lại Server)"
+RejoinBtn.Text = "🔄 Rejoin Server"
 RejoinBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 RejoinBtn.TextSize = 12
 Instance.new("UICorner", RejoinBtn).CornerRadius = UDim.new(0, 6)
 
-local AntiAfkBtn = Instance.new("TextButton", MainFrame)
-AntiAfkBtn.Size = UDim2.new(0.9, 0, 0, 32)
-AntiAfkBtn.Position = UDim2.new(0.05, 0, 0.34, 0)
-AntiAfkBtn.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+local AntiAfkBtn = Instance.new("TextButton", MainTabContent)
+AntiAfkBtn.Size = UDim2.new(0.92, 0, 0, 35)
+AntiAfkBtn.Position = UDim2.new(0.04, 0, 0.16, 0)
+AntiAfkBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 AntiAfkBtn.Font = Enum.Font.SourceSansBold
 AntiAfkBtn.Text = "🛡️ Anti AFK: TẮT"
 AntiAfkBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 AntiAfkBtn.TextSize = 12
 Instance.new("UICorner", AntiAfkBtn).CornerRadius = UDim.new(0, 6)
 
-local EspBtn = Instance.new("TextButton", MainFrame)
-EspBtn.Size = UDim2.new(0.9, 0, 0, 32)
-EspBtn.Position = UDim2.new(0.05, 0, 0.45, 0)
-EspBtn.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+local EspBtn = Instance.new("TextButton", MainTabContent)
+EspBtn.Size = UDim2.new(0.92, 0, 0, 35)
+EspBtn.Position = UDim2.new(0.04, 0, 0.29, 0)
+EspBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 EspBtn.Font = Enum.Font.SourceSansBold
 EspBtn.Text = "👁️ ESP Khung & Tên: TẮT"
 EspBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 EspBtn.TextSize = 12
 Instance.new("UICorner", EspBtn).CornerRadius = UDim.new(0, 6)
 
--- Phần tốc độ (Speed)
-local SpeedBtn = Instance.new("TextButton", MainFrame)
-SpeedBtn.Size = UDim2.new(0.9, 0, 0, 32)
-SpeedBtn.Position = UDim2.new(0.05, 0, 0.56, 0)
-SpeedBtn.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+local SpeedBtn = Instance.new("TextButton", MainTabContent)
+SpeedBtn.Size = UDim2.new(0.92, 0, 0, 35)
+SpeedBtn.Position = UDim2.new(0.04, 0, 0.42, 0)
+SpeedBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 SpeedBtn.Font = Enum.Font.SourceSansBold
-SpeedBtn.Text = "⚡ Tốc Độ Chạy (Speed): TẮT (32)"
+SpeedBtn.Text = "⚡ Speed: TẮT (32)"
 SpeedBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 SpeedBtn.TextSize = 12
 Instance.new("UICorner", SpeedBtn).CornerRadius = UDim.new(0, 6)
 
--- Nút tăng giảm speed nhanh
-local SpeedSub = Instance.new("TextButton", MainFrame)
-SpeedSub.Size = UDim2.new(0.42, 0, 0, 28)
-SpeedSub.Position = UDim2.new(0.05, 0, 0.67, 0)
-SpeedSub.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+local SpeedSub = Instance.new("TextButton", MainTabContent)
+SpeedSub.Size = UDim2.new(0.44, 0, 0, 30)
+SpeedSub.Position = UDim2.new(0.04, 0, 0.55, 0)
+SpeedSub.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
 SpeedSub.Font = Enum.Font.SourceSansBold
-SpeedSub.Text = "◀ Giảm Speed (-5)"
+SpeedSub.Text = "◀ Giảm tốc (-5)"
 SpeedSub.TextColor3 = Color3.fromRGB(255, 255, 255)
 SpeedSub.TextSize = 11
 Instance.new("UICorner", SpeedSub).CornerRadius = UDim.new(0, 6)
 
-local SpeedAdd = Instance.new("TextButton", MainFrame)
-SpeedAdd.Size = UDim2.new(0.42, 0, 0, 28)
-SpeedAdd.Position = UDim2.new(0.53, 0, 0.67, 0)
-SpeedAdd.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+local SpeedAdd = Instance.new("TextButton", MainTabContent)
+SpeedAdd.Size = UDim2.new(0.44, 0, 0, 30)
+SpeedAdd.Position = UDim2.new(0.52, 0, 0.55, 0)
+SpeedAdd.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
 SpeedAdd.Font = Enum.Font.SourceSansBold
-SpeedAdd.Text = "Tăng Speed (+5) ▶"
+SpeedAdd.Text = "Tăng tốc (+5) ▶"
 SpeedAdd.TextColor3 = Color3.fromRGB(255, 255, 255)
 SpeedAdd.TextSize = 11
 Instance.new("UICorner", SpeedAdd).CornerRadius = UDim.new(0, 6)
 
-local AutoExecBtn = Instance.new("TextButton", MainFrame)
-AutoExecBtn.Size = UDim2.new(0.9, 0, 0, 32)
-AutoExecBtn.Position = UDim2.new(0.05, 0, 0.79, 0)
-AutoExecBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 80)
-AutoExecBtn.Font = Enum.Font.SourceSansBold
-AutoExecBtn.Text = "⚡ Tự Động Mở Lại Script: BẬT"
-AutoExecBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-AutoExecBtn.TextSize = 12
-Instance.new("UICorner", AutoExecBtn).CornerRadius = UDim.new(0, 6)
 
---- LOGIC ---
-CloseBtn.MouseButton1Click:Connect(function()
-    MainFrame.Visible = false
-    OpenBtn.Visible = true
-end)
+-- ==================== NỘI DUNG TAB HOP ====================
+local HopBtn = Instance.new("TextButton", HopTabContent)
+HopBtn.Size = UDim2.new(0.92, 0, 0, 45)
+HopBtn.Position = UDim2.new(0.04, 0, 0.05, 0)
+HopBtn.BackgroundColor3 = Color3.fromRGB(0, 160, 100)
+HopBtn.Font = Enum.Font.SourceSansBold
+HopBtn.Text = "🚀 Tìm & Vào Server Ít Người (Hop)"
+HopBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+HopBtn.TextSize = 12
+Instance.new("UICorner", HopBtn).CornerRadius = UDim.new(0, 6)
 
-OpenBtn.MouseButton1Click:Connect(function()
-    MainFrame.Visible = true
-    OpenBtn.Visible = false
-end)
+local HopInfo = Instance.new("TextLabel", HopTabContent)
+HopInfo.Size = UDim2.new(0.92, 0, 0, 60)
+HopInfo.Position = UDim2.new(0.04, 0, 0.25, 0)
+HopInfo.BackgroundTransparency = 1
+HopInfo.Font = Enum.Font.SourceSans
+HopInfo.Text = "Tính năng này giúp bạn tự động tìm các server công khai có số lượng người chơi ít hơn để tránh lag hoặc farm dễ hơn."
+HopInfo.TextColor3 = Color3.fromRGB(180, 180, 180)
+HopInfo.TextSize = 12
+HopInfo.TextWrapped = true
+HopInfo.TextXAlignment = Enum.TextXAlignment.Left
 
+
+-- ==================== LOGIC TÍNH NĂNG ====================
+
+-- Hop Server Logic
 HopBtn.MouseButton1Click:Connect(function()
-    HopBtn.Text = "Đang tìm server..."
-    local req = game:HttpGet("https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100")
-    local body = HttpService:JSONDecode(req)
-    if body and body.data then
-        for _, server in pairs(body.data) do
-            if server.playing < server.maxPlayers and server.id ~= game.JobId then
-                TeleportService:TeleportToPlaceInstance(game.PlaceId, server.id, LocalPlayer)
-                break
+    HopBtn.Text = "Đang tìm server trống..."
+    pcall(function()
+        local req = game:HttpGet("https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100")
+        local body = HttpService:JSONDecode(req)
+        if body and body.data then
+            for _, server in pairs(body.data) do
+                if server.playing < server.maxPlayers and server.id ~= game.JobId then
+                    TeleportService:TeleportToPlaceInstance(game.PlaceId, server.id, LocalPlayer)
+                    break
+                end
             end
         end
-    end
+    end)
+    task.wait(2)
+    HopBtn.Text = "🚀 Tìm & Vào Server Ít Người (Hop)"
 end)
 
+-- Rejoin Logic
 RejoinBtn.MouseButton1Click:Connect(function()
-    RejoinBtn.Text = "Đang kết nối lại..."
     if #Players:GetPlayers() <= 1 then
         LocalPlayer:Kick("\nVào lại server...")
         task.wait(1)
@@ -195,11 +268,12 @@ RejoinBtn.MouseButton1Click:Connect(function()
     end
 end)
 
+-- Anti AFK Logic
 local AntiAfkRunning = false
 local VirtualUser = game:GetService("VirtualUser")
 AntiAfkBtn.MouseButton1Click:Connect(function()
     AntiAfkRunning = not AntiAfkRunning
-    AntiAfkBtn.BackgroundColor3 = AntiAfkRunning and Color3.fromRGB(0, 180, 80) or Color3.fromRGB(100, 100, 100)
+    AntiAfkBtn.BackgroundColor3 = AntiAfkRunning and Color3.fromRGB(0, 180, 80) or Color3.fromRGB(60, 60, 60)
     AntiAfkBtn.Text = AntiAfkRunning and "🛡️ Anti AFK: BẬT" or "🛡️ Anti AFK: TẮT"
 end)
 
@@ -211,11 +285,10 @@ LocalPlayer.Idled:Connect(function()
     end
 end)
 
--- ESP Khung & Tên
+-- ESP Logic
 local EspEnabled = false
 local function ApplyEsp(player)
     if player == LocalPlayer then return end
-    
     local function SetupCharacter(char)
         if not char then return end
         task.wait(0.5)
@@ -236,26 +309,22 @@ local function ApplyEsp(player)
             bill.Size = UDim2.new(0, 100, 0, 40)
             bill.StudsOffset = Vector3.new(0, 2, 0)
             bill.AlwaysOnTop = true
-            
             local txt = Instance.new("TextLabel")
             txt.Size = UDim2.new(1, 0, 1, 0)
             txt.BackgroundTransparency = 1
             txt.Font = Enum.Font.SourceSansBold
             txt.Text = player.Name .. "\n[" .. player.DisplayName .. "]"
             txt.TextColor3 = Color3.fromRGB(255, 255, 0)
-            txt.TextSize = 12
+            txt.TextSize = 11
             txt.TextStrokeTransparency = 0
             txt.Parent = bill
             bill.Parent = head
         end
     end
-
     player.CharacterAdded:Connect(function(char)
         if EspEnabled then SetupCharacter(char) end
     end)
-    if player.Character and EspEnabled then
-        SetupCharacter(player.Character)
-    end
+    if player.Character and EspEnabled then SetupCharacter(player.Character) end
 end
 
 for _, p in pairs(Players:GetPlayers()) do ApplyEsp(p) end
@@ -265,13 +334,11 @@ EspBtn.MouseButton1Click:Connect(function()
     EspEnabled = not EspEnabled
     if EspEnabled then
         EspBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 80)
-        EspBtn.Text = " ESP Khung & Tên: BẬT"
-        for _, p in pairs(Players:GetPlayers()) do
-            if p.Character then ApplyEsp(p) end
-        end
+        EspBtn.Text = "👁️ ESP Khung & Tên: BẬT"
+        for _, p in pairs(Players:GetPlayers()) do if p.Character then ApplyEsp(p) end end
     else
-        EspBtn.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-        EspBtn.Text = " ESP Khung & Tên: TẮT"
+        EspBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+        EspBtn.Text = "👁️ ESP Khung & Tên: TẮT"
         for _, p in pairs(Players:GetPlayers()) do
             if p.Character then
                 if p.Character:FindFirstChild("EspHighlight") then p.Character.EspHighlight:Destroy() end
@@ -282,51 +349,41 @@ EspBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- Logic Speed Hack
+-- Speed Logic
 local SpeedEnabled = false
 local CustomSpeed = 32
 
 SpeedBtn.MouseButton1Click:Connect(function()
     SpeedEnabled = not SpeedEnabled
-    SpeedBtn.BackgroundColor3 = SpeedEnabled and Color3.fromRGB(0, 180, 80) or Color3.fromRGB(100, 100, 100)
-    SpeedBtn.Text = SpeedEnabled and (" Speed: BẬT (" .. CustomSpeed .. ")") or ("⚡ Tốc Độ Chạy (Speed): TẮT (" .. CustomSpeed .. ")")
+    SpeedBtn.BackgroundColor3 = SpeedEnabled and Color3.fromRGB(0, 180, 80) or Color3.fromRGB(60, 60, 60)
+    SpeedBtn.Text = SpeedEnabled and ("⚡ Speed: BẬT (" .. CustomSpeed .. ")") or ("⚡ Speed: TẮT (" .. CustomSpeed .. ")")
 end)
 
 SpeedAdd.MouseButton1Click:Connect(function()
     CustomSpeed = CustomSpeed + 5
     if CustomSpeed > 150 then CustomSpeed = 150 end
-    if SpeedEnabled then
-        SpeedBtn.Text = " Speed: BẬT (" .. CustomSpeed .. ")"
-    end
+    if SpeedEnabled then SpeedBtn.Text = "⚡ Speed: BẬT (" .. CustomSpeed .. ")" end
 end)
 
 SpeedSub.MouseButton1Click:Connect(function()
     CustomSpeed = CustomSpeed - 5
     if CustomSpeed < 16 then CustomSpeed = 16 end
-    if SpeedEnabled then
-        SpeedBtn.Text = " Speed: BẬT (" .. CustomSpeed .. ")"
-    end
+    if SpeedEnabled then SpeedBtn.Text = "⚡ Speed: BẬT (" .. CustomSpeed .. ")" end
 end)
 
-RunService.RenderStepped:Connect(function()
+RunService.Heartbeat:Connect(function()
     if SpeedEnabled then
         pcall(function()
-            local humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-            if humanoid then
-                humanoid.WalkSpeed = CustomSpeed
+            local char = LocalPlayer.Character
+            if char then
+                local humanoid = char:FindFirstChildOfClass("Humanoid")
+                local hrp = char:FindFirstChild("HumanoidRootPart")
+                if humanoid then humanoid.WalkSpeed = CustomSpeed end
+                if hrp and humanoid and humanoid.MoveDirection.Magnitude > 0 then
+                    local moveDir = humanoid.MoveDirection
+                    hrp.AssemblyLinearVelocity = Vector3.new(moveDir.X * CustomSpeed, hrp.AssemblyLinearVelocity.Y, moveDir.Z * CustomSpeed)
+                end
             end
         end)
     end
 end)
-
-AutoExecBtn.MouseButton1Click:Connect(function()
-    AutoLoadEnabled = not AutoLoadEnabled
-    AutoExecBtn.BackgroundColor3 = AutoLoadEnabled and Color3.fromRGB(0, 180, 80) or Color3.fromRGB(100, 100, 100)
-    AutoExecBtn.Text = AutoLoadEnabled and "⚡ Tự Động Mở Lại Script: BẬT" or "⚡ Tự Động Mở Lại Script: TẮT"
-    pcall(function()
-        local code = AutoLoadEnabled and 'loadstring(game:HttpGet("' .. ScriptUrl .. '"))()' or ""
-        if syn and syn.queue_on_teleport then syn.queue_on_teleport(code)
-        elseif queue_on_teleport then queue_on_teleport(code) end
-    end)
-end)
-
