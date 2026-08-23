@@ -1,4 +1,4 @@
--- ROCKET MENU - FULL FEATURES (Red Neon Theme)
+-- PRO HUGE HUB - FULL FEATURES (Red Neon Theme)
 local Players = game:GetService("Players")
 local TeleportService = game:GetService("TeleportService")
 local HttpService = game:GetService("HttpService")
@@ -50,13 +50,13 @@ LogoImg.ImageColor3 = Color3.fromRGB(230, 30, 40)
 LogoImg.Parent = Sidebar
 
 local LogoText = Instance.new("TextLabel")
-LogoText.Size = UDim2.new(1, 0, 0, 25)
+LogoText.Size = UDim2.new(1, 0, 0, 35)
 LogoText.Position = UDim2.new(0, 0, 0, 58)
 LogoText.BackgroundTransparency = 1
 LogoText.Font = Enum.Font.SourceSansBold
-LogoText.Text = "ROCKET\nMENU"
+LogoText.Text = "PRO HUGE\nHUB"
 LogoText.TextColor3 = Color3.fromRGB(230, 30, 40)
-LogoText.TextSize = 13
+LogoText.TextSize = 12
 LogoText.Parent = Sidebar
 
 -- Tab Buttons
@@ -133,9 +133,9 @@ HeaderTitle.Size = UDim2.new(1, -30, 0, 25)
 HeaderTitle.Position = UDim2.new(0, 0, 0, 0)
 HeaderTitle.BackgroundTransparency = 1
 HeaderTitle.Font = Enum.Font.SourceSansBold
-HeaderTitle.Text = "ROCKET MENU"
+HeaderTitle.Text = "⚡ Pro huge hub | hop server"
 HeaderTitle.TextColor3 = Color3.fromRGB(220, 30, 40)
-HeaderTitle.TextSize = 16
+HeaderTitle.TextSize = 14
 HeaderTitle.Parent = RightArea
 
 local MinBtn = Instance.new("TextButton")
