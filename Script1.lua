@@ -1,4 +1,4 @@
--- PRO HUGE HUB - FULL FEATURES (Red Neon Theme)
+-- PRO HUGE HUB - FIXED ESP & FULL FEATURES
 local Players = game:GetService("Players")
 local TeleportService = game:GetService("TeleportService")
 local HttpService = game:GetService("HttpService")
@@ -20,285 +20,236 @@ if not ScreenGui.Parent then ScreenGui.Parent = LocalPlayer:WaitForChild("Player
 
 -- MAIN FRAME
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 520, 0, 380)
-MainFrame.Position = UDim2.new(0.5, -260, 0.5, -190)
-MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 18)
-MainFrame.BorderSizePixel = 2
-MainFrame.BorderColor3 = Color3.fromRGB(220, 20, 30)
+MainFrame.Size = UDim2.new(0, 500, 0, 320)
+MainFrame.Position = UDim2.new(0.5, -250, 0.5, -160)
+MainFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 22)
+MainFrame.BorderSizePixel = 0
 MainFrame.Active = true
 MainFrame.Draggable = true
 MainFrame.Parent = ScreenGui
-Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 10)
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 8)
 
--- LEFT SIDEBAR
-local Sidebar = Instance.new("Frame")
-Sidebar.Size = UDim2.new(0, 130, 1, -20)
-Sidebar.Position = UDim2.new(0, 10, 0, 10)
-Sidebar.BackgroundColor3 = Color3.fromRGB(10, 10, 12)
-Sidebar.BorderSizePixel = 1
-Sidebar.BorderColor3 = Color3.fromRGB(200, 20, 30)
-Sidebar.Parent = MainFrame
-Instance.new("UICorner", Sidebar).CornerRadius = UDim.new(0, 8)
+-- TOP BAR (HEADER)
+local TopBar = Instance.new("Frame")
+TopBar.Size = UDim2.new(1, 0, 0, 35)
+TopBar.BackgroundColor3 = Color3.fromRGB(24, 24, 30)
+TopBar.BorderSizePixel = 0
+TopBar.Parent = MainFrame
+Instance.new("UICorner", TopBar).CornerRadius = UDim.new(0, 8)
 
--- Logo Rocket Icon & Title
-local LogoImg = Instance.new("ImageLabel")
-LogoImg.Size = UDim2.new(0, 45, 0, 45)
-LogoImg.Position = UDim2.new(0.5, -22.5, 0, 12)
-LogoImg.BackgroundTransparency = 1
-LogoImg.Image = "rbxassetid://6031082533"
-LogoImg.ImageColor3 = Color3.fromRGB(230, 30, 40)
-LogoImg.Parent = Sidebar
+local FixBar = Instance.new("Frame")
+FixBar.Size = UDim2.new(1, 0, 0, 5)
+FixBar.Position = UDim2.new(0, 0, 1, -5)
+FixBar.BackgroundColor3 = Color3.fromRGB(24, 24, 30)
+FixBar.BorderSizePixel = 0
+FixBar.Parent = TopBar
 
-local LogoText = Instance.new("TextLabel")
-LogoText.Size = UDim2.new(1, 0, 0, 35)
-LogoText.Position = UDim2.new(0, 0, 0, 58)
-LogoText.BackgroundTransparency = 1
-LogoText.Font = Enum.Font.SourceSansBold
-LogoText.Text = "PRO HUGE\nHUB"
-LogoText.TextColor3 = Color3.fromRGB(230, 30, 40)
-LogoText.TextSize = 12
-LogoText.Parent = Sidebar
-
--- Tab Buttons
-local MainTabBtn = Instance.new("TextButton")
-MainTabBtn.Size = UDim2.new(0.88, 0, 0, 32)
-MainTabBtn.Position = UDim2.new(0.06, 0, 0.32, 0)
-MainTabBtn.BackgroundColor3 = Color3.fromRGB(180, 20, 30)
-MainTabBtn.Font = Enum.Font.SourceSansBold
-MainTabBtn.Text = "🏠  MAIN"
-MainTabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-MainTabBtn.TextSize = 12
-MainTabBtn.Parent = Sidebar
-Instance.new("UICorner", MainTabBtn).CornerRadius = UDim.new(0, 6)
-
-local ServerTabBtn = Instance.new("TextButton")
-ServerTabBtn.Size = UDim2.new(0.88, 0, 0, 32)
-ServerTabBtn.Position = UDim2.new(0.06, 0, 0.43, 0)
-ServerTabBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
-ServerTabBtn.Font = Enum.Font.SourceSansBold
-ServerTabBtn.Text = "🌐  SERVER"
-ServerTabBtn.TextColor3 = Color3.fromRGB(180, 180, 180)
-ServerTabBtn.TextSize = 12
-ServerTabBtn.Parent = Sidebar
-Instance.new("UICorner", ServerTabBtn).CornerRadius = UDim.new(0, 6)
-
--- Close Button
-local CloseMenuBtn = Instance.new("TextButton")
-CloseMenuBtn.Size = UDim2.new(0.88, 0, 0, 32)
-CloseMenuBtn.Position = UDim2.new(0.06, 0, 0.88, 0)
-CloseMenuBtn.BackgroundColor3 = Color3.fromRGB(30, 10, 15)
-CloseMenuBtn.BorderSizePixel = 1
-CloseMenuBtn.BorderColor3 = Color3.fromRGB(180, 20, 30)
-CloseMenuBtn.Font = Enum.Font.SourceSansBold
-CloseMenuBtn.Text = "❌  CLOSE"
-CloseMenuBtn.TextColor3 = Color3.fromRGB(255, 60, 60)
-CloseMenuBtn.TextSize = 12
-CloseMenuBtn.Parent = Sidebar
-Instance.new("UICorner", CloseMenuBtn).CornerRadius = UDim.new(0, 6)
-
--- Toggle Icon Open Hub
-local OpenHubBtn = Instance.new("ImageButton")
-OpenHubBtn.Size = UDim2.new(0, 45, 0, 45)
-OpenHubBtn.Position = UDim2.new(0, 20, 0.4, 0)
-OpenHubBtn.BackgroundColor3 = Color3.fromRGB(15, 15, 18)
-OpenHubBtn.BorderSizePixel = 1
-OpenHubBtn.BorderColor3 = Color3.fromRGB(220, 20, 30)
-OpenHubBtn.Image = "rbxassetid://6031082533"
-OpenHubBtn.ImageColor3 = Color3.fromRGB(230, 30, 40)
-OpenHubBtn.Visible = false
-OpenHubBtn.Active = true
-OpenHubBtn.Draggable = true
-OpenHubBtn.Parent = ScreenGui
-Instance.new("UICorner", OpenHubBtn).CornerRadius = UDim.new(0, 22.5)
-
-CloseMenuBtn.MouseButton1Click:Connect(function()
-    MainFrame.Visible = false
-    OpenHubBtn.Visible = true
-end)
-
-OpenHubBtn.MouseButton1Click:Connect(function()
-    MainFrame.Visible = true
-    OpenHubBtn.Visible = false
-end)
-
--- RIGHT AREA
-local RightArea = Instance.new("Frame")
-RightArea.Size = UDim2.new(1, -155, 1, -20)
-RightArea.Position = UDim2.new(0, 145, 0, 10)
-RightArea.BackgroundTransparency = 1
-RightArea.Parent = MainFrame
-
-local HeaderTitle = Instance.new("TextLabel")
-HeaderTitle.Size = UDim2.new(1, -30, 0, 25)
-HeaderTitle.Position = UDim2.new(0, 0, 0, 0)
-HeaderTitle.BackgroundTransparency = 1
-HeaderTitle.Font = Enum.Font.SourceSansBold
-HeaderTitle.Text = "⚡ Pro huge hub | hop server"
-HeaderTitle.TextColor3 = Color3.fromRGB(220, 30, 40)
-HeaderTitle.TextSize = 14
-HeaderTitle.Parent = RightArea
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, -60, 1, 0)
+Title.Position = UDim2.new(0, 15, 0, 0)
+Title.BackgroundTransparency = 1
+Title.Font = Enum.Font.SourceSansBold
+Title.Text = "⚡ Pro huge hub | hop server"
+Title.TextColor3 = Color3.fromRGB(255, 60, 60)
+Title.TextSize = 14
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.Parent = TopBar
 
 local MinBtn = Instance.new("TextButton")
-MinBtn.Size = UDim2.new(0, 25, 0, 25)
-MinBtn.Position = UDim2.new(1, -25, 0, 0)
-MinBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+MinBtn.Size = UDim2.new(0, 30, 0, 30)
+MinBtn.Position = UDim2.new(1, -35, 0, 2)
+MinBtn.BackgroundTransparency = 1
 MinBtn.Font = Enum.Font.SourceSansBold
 MinBtn.Text = "-"
-MinBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-MinBtn.TextSize = 16
-MinBtn.Parent = RightArea
-Instance.new("UICorner", MinBtn).CornerRadius = UDim.new(0, 4)
+MinBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
+MinBtn.TextSize = 18
+MinBtn.Parent = TopBar
+
+-- OPEN BUTTON
+local OpenBtn = Instance.new("TextButton")
+OpenBtn.Size = UDim2.new(0, 120, 0, 35)
+OpenBtn.Position = UDim2.new(0, 20, 0, 20)
+OpenBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+OpenBtn.Font = Enum.Font.SourceSansBold
+OpenBtn.Text = "🚀 PRO HUGE HUB"
+OpenBtn.TextColor3 = Color3.fromRGB(255, 60, 60)
+OpenBtn.TextSize = 11
+OpenBtn.Visible = false
+OpenBtn.Active = true
+OpenBtn.Draggable = true
+OpenBtn.Parent = ScreenGui
+Instance.new("UICorner", OpenBtn).CornerRadius = UDim.new(0, 6)
 
 MinBtn.MouseButton1Click:Connect(function()
     MainFrame.Visible = false
-    OpenHubBtn.Visible = true
+    OpenBtn.Visible = true
 end)
 
--- TABS
+OpenBtn.MouseButton1Click:Connect(function()
+    MainFrame.Visible = true
+    OpenBtn.Visible = false
+end)
+
+-- SIDEBAR
+local Sidebar = Instance.new("ScrollingFrame")
+Sidebar.Size = UDim2.new(0, 130, 1, -45)
+Sidebar.Position = UDim2.new(0, 5, 0, 40)
+Sidebar.BackgroundTransparency = 1
+Sidebar.CanvasSize = UDim2.new(0, 0, 0, 0)
+Sidebar.ScrollBarThickness = 0
+Sidebar.Parent = MainFrame
+
+local function CreateTabButton(name, posY, active)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, 0, 0, 32)
+    btn.Position = UDim2.new(0, 0, 0, posY)
+    btn.BackgroundColor3 = active and Color3.fromRGB(220, 20, 30) or Color3.fromRGB(25, 25, 32)
+    btn.Font = Enum.Font.SourceSansBold
+    btn.Text = name
+    btn.TextColor3 = active and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(160, 160, 170)
+    btn.TextSize = 12
+    btn.Parent = Sidebar
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
+    return btn
+end
+
+local MainTabBtn = CreateTabButton("🏠  Main", 0, true)
+local ServerTabBtn = CreateTabButton("🌐  Server", 38, false)
+
+-- CONTENT AREA
+local ContentArea = Instance.new("Frame")
+ContentArea.Size = UDim2.new(1, -145, 1, -45)
+ContentArea.Position = UDim2.new(0, 140, 0, 40)
+ContentArea.BackgroundTransparency = 1
+ContentArea.Parent = MainFrame
+
 local MainContent = Instance.new("ScrollingFrame")
-MainContent.Size = UDim2.new(1, 0, 1, -35)
-MainContent.Position = UDim2.new(0, 0, 0, 35)
+MainContent.Size = UDim2.new(1, 0, 1, 0)
 MainContent.BackgroundTransparency = 1
-MainContent.CanvasSize = UDim2.new(0, 0, 1.45, 0)
+MainContent.CanvasSize = UDim2.new(0, 0, 1.4, 0)
 MainContent.ScrollBarThickness = 3
 MainContent.ScrollBarImageColor3 = Color3.fromRGB(200, 20, 30)
 MainContent.Visible = true
-MainContent.Parent = RightArea
+MainContent.Parent = ContentArea
 
 local ServerContent = Instance.new("ScrollingFrame")
-ServerContent.Size = UDim2.new(1, 0, 1, -35)
-ServerContent.Position = UDim2.new(0, 0, 0, 35)
+ServerContent.Size = UDim2.new(1, 0, 1, 0)
 ServerContent.BackgroundTransparency = 1
-ServerContent.CanvasSize = UDim2.new(0, 0, 1.1, 0)
+ServerContent.CanvasSize = UDim2.new(0, 0, 1, 0)
 ServerContent.ScrollBarThickness = 3
 ServerContent.ScrollBarImageColor3 = Color3.fromRGB(200, 20, 30)
 ServerContent.Visible = false
-ServerContent.Parent = RightArea
+ServerContent.Parent = ContentArea
 
-local function SwitchTab(activeTab, activeBtn)
-    MainContent.Visible = (activeTab == MainContent)
-    ServerContent.Visible = (activeTab == ServerContent)
+MainTabBtn.MouseButton1Click:Connect(function()
+    MainContent.Visible = true
+    ServerContent.Visible = false
+    MainTabBtn.BackgroundColor3 = Color3.fromRGB(220, 20, 30)
+    MainTabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    ServerTabBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 32)
+    ServerTabBtn.TextColor3 = Color3.fromRGB(160, 160, 170)
+end)
 
-    MainTabBtn.BackgroundColor3 = (activeBtn == MainTabBtn) and Color3.fromRGB(180, 20, 30) or Color3.fromRGB(25, 25, 30)
-    MainTabBtn.TextColor3 = (activeBtn == MainTabBtn) and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(180, 180, 180)
-
-    ServerTabBtn.BackgroundColor3 = (activeBtn == ServerTabBtn) and Color3.fromRGB(180, 20, 30) or Color3.fromRGB(25, 25, 30)
-    ServerTabBtn.TextColor3 = (activeBtn == ServerTabBtn) and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(180, 180, 180)
-end
-
-MainTabBtn.MouseButton1Click:Connect(function() SwitchTab(MainContent, MainTabBtn) end)
-ServerTabBtn.MouseButton1Click:Connect(function() SwitchTab(ServerContent, ServerTabBtn) end)
+ServerTabBtn.MouseButton1Click:Connect(function()
+    MainContent.Visible = false
+    ServerContent.Visible = true
+    ServerTabBtn.BackgroundColor3 = Color3.fromRGB(220, 20, 30)
+    ServerTabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    MainTabBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 32)
+    MainTabBtn.TextColor3 = Color3.fromRGB(160, 160, 170)
+end)
 
 -- UI HELPERS
-local function CreateCard(parent, posY, height, title, subText)
-    local card = Instance.new("Frame")
-    card.Size = UDim2.new(0.98, 0, 0, height)
-    card.Position = UDim2.new(0, 0, 0, posY)
-    card.BackgroundColor3 = Color3.fromRGB(22, 22, 26)
-    card.BorderSizePixel = 1
-    card.BorderColor3 = Color3.fromRGB(45, 15, 20)
-    card.Parent = parent
-    Instance.new("UICorner", card).CornerRadius = UDim.new(0, 8)
+local function CreateElement(parent, posY, title)
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(1, -10, 0, 40)
+    frame.Position = UDim2.new(0, 0, 0, posY)
+    frame.BackgroundColor3 = Color3.fromRGB(24, 24, 30)
+    frame.BorderSizePixel = 0
+    frame.Parent = parent
+    Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 6)
 
-    local tLabel = Instance.new("TextLabel")
-    tLabel.Size = UDim2.new(0.6, 0, 0, 20)
-    tLabel.Position = UDim2.new(0, 12, 0, 8)
-    tLabel.BackgroundTransparency = 1
-    tLabel.Font = Enum.Font.SourceSansBold
-    tLabel.Text = title
-    tLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    tLabel.TextSize = 13
-    tLabel.TextXAlignment = Enum.TextXAlignment.Left
-    tLabel.Parent = card
+    local lbl = Instance.new("TextLabel")
+    lbl.Size = UDim2.new(0.6, 0, 1, 0)
+    lbl.Position = UDim2.new(0, 12, 0, 0)
+    lbl.BackgroundTransparency = 1
+    lbl.Font = Enum.Font.SourceSansBold
+    lbl.Text = title
+    lbl.TextColor3 = Color3.fromRGB(240, 240, 240)
+    lbl.TextSize = 13
+    lbl.TextXAlignment = Enum.TextXAlignment.Left
+    lbl.Parent = frame
 
-    if subText then
-        local sLabel = Instance.new("TextLabel")
-        sLabel.Size = UDim2.new(0.6, 0, 0, 15)
-        sLabel.Position = UDim2.new(0, 12, 0, 26)
-        sLabel.BackgroundTransparency = 1
-        sLabel.Font = Enum.Font.SourceSans
-        sLabel.Text = subText
-        sLabel.TextColor3 = Color3.fromRGB(140, 140, 150)
-        sLabel.TextSize = 11
-        sLabel.TextXAlignment = Enum.TextXAlignment.Left
-        sLabel.Parent = card
-    end
-
-    return card
+    return frame
 end
 
-local function CreateToggle(card, defaultState, callback)
+local function CreateToggle(parent, posY, title, callback)
+    local frame = CreateElement(parent, posY, title)
+
     local toggleBtn = Instance.new("TextButton")
-    toggleBtn.Size = UDim2.new(0, 50, 0, 24)
-    toggleBtn.Position = UDim2.new(1, -62, 0.5, -12)
-    toggleBtn.BackgroundColor3 = defaultState and Color3.fromRGB(200, 20, 30) or Color3.fromRGB(40, 40, 45)
+    toggleBtn.Size = UDim2.new(0, 40, 0, 20)
+    toggleBtn.Position = UDim2.new(1, -50, 0.5, -10)
+    toggleBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
     toggleBtn.Text = ""
-    toggleBtn.Parent = card
-    Instance.new("UICorner", toggleBtn).CornerRadius = UDim.new(0, 12)
+    toggleBtn.Parent = frame
+    Instance.new("UICorner", toggleBtn).CornerRadius = UDim.new(0, 10)
 
     local circle = Instance.new("Frame")
-    circle.Size = UDim2.new(0, 18, 0, 18)
-    circle.Position = defaultState and UDim2.new(1, -21, 0.5, -9) or UDim2.new(0, 3, 0.5, -9)
+    circle.Size = UDim2.new(0, 16, 0, 16)
+    circle.Position = UDim2.new(0, 2, 0.5, -8)
     circle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     circle.Parent = toggleBtn
-    Instance.new("UICorner", circle).CornerRadius = UDim.new(0, 9)
+    Instance.new("UICorner", circle).CornerRadius = UDim.new(0, 8)
 
-    local stateText = Instance.new("TextLabel")
-    stateText.Size = UDim2.new(0, 25, 1, 0)
-    stateText.Position = defaultState and UDim2.new(0, 4, 0, 0) or UDim2.new(1, -29, 0, 0)
-    stateText.BackgroundTransparency = 1
-    stateText.Font = Enum.Font.SourceSansBold
-    stateText.Text = defaultState and "ON" or "OFF"
-    stateText.TextColor3 = Color3.fromRGB(255, 255, 255)
-    stateText.TextSize = 9
-    stateText.Parent = toggleBtn
-
-    local state = defaultState
+    local state = false
     toggleBtn.MouseButton1Click:Connect(function()
         state = not state
-        toggleBtn.BackgroundColor3 = state and Color3.fromRGB(200, 20, 30) or Color3.fromRGB(40, 40, 45)
-        circle.Position = state and UDim2.new(1, -21, 0.5, -9) or UDim2.new(0, 3, 0.5, -9)
-        stateText.Position = state and UDim2.new(0, 4, 0, 0) or UDim2.new(1, -29, 0, 0)
-        stateText.Text = state and "ON" or "OFF"
+        if state then
+            toggleBtn.BackgroundColor3 = Color3.fromRGB(220, 20, 30)
+            circle:TweenPosition(UDim2.new(1, -18, 0.5, -8), "Out", "Quad", 0.15, true)
+        else
+            toggleBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
+            circle:TweenPosition(UDim2.new(0, 2, 0.5, -8), "Out", "Quad", 0.15, true)
+        end
         callback(state)
     end)
 end
 
-local function CreateNumberControl(card, initialValue, step, maxVal, callback)
-    local decBtn = Instance.new("TextButton")
-    decBtn.Size = UDim2.new(0, 35, 0, 26)
-    decBtn.Position = UDim2.new(1, -145, 0.5, -13)
-    decBtn.BackgroundColor3 = Color3.fromRGB(150, 20, 30)
-    decBtn.Font = Enum.Font.SourceSansBold
-    decBtn.Text = "-"
-    decBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    decBtn.TextSize = 16
-    decBtn.Parent = card
-    Instance.new("UICorner", decBtn).CornerRadius = UDim.new(0, 6)
+local function CreateNumberControl(parent, posY, title, initialValue, step, maxVal, callback)
+    local frame = CreateElement(parent, posY, title)
+
+    local incBtn = Instance.new("TextButton")
+    incBtn.Size = UDim2.new(0, 25, 0, 24)
+    incBtn.Position = UDim2.new(1, -30, 0.5, -12)
+    incBtn.BackgroundColor3 = Color3.fromRGB(220, 20, 30)
+    incBtn.Font = Enum.Font.SourceSansBold
+    incBtn.Text = "+"
+    incBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    incBtn.TextSize = 14
+    incBtn.Parent = frame
+    Instance.new("UICorner", incBtn).CornerRadius = UDim.new(0, 4)
 
     local valBox = Instance.new("TextLabel")
-    valBox.Size = UDim2.new(0, 60, 0, 26)
-    valBox.Position = UDim2.new(1, -105, 0.5, -13)
-    valBox.BackgroundColor3 = Color3.fromRGB(12, 12, 15)
-    valBox.BorderSizePixel = 1
-    valBox.BorderColor3 = Color3.fromRGB(150, 20, 30)
+    valBox.Size = UDim2.new(0, 45, 0, 24)
+    valBox.Position = UDim2.new(1, -80, 0.5, -12)
+    valBox.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
     valBox.Font = Enum.Font.SourceSansBold
     valBox.Text = tostring(initialValue)
     valBox.TextColor3 = Color3.fromRGB(255, 255, 255)
     valBox.TextSize = 12
-    valBox.Parent = card
-    Instance.new("UICorner", valBox).CornerRadius = UDim.new(0, 6)
+    valBox.Parent = frame
+    Instance.new("UICorner", valBox).CornerRadius = UDim.new(0, 4)
 
-    local incBtn = Instance.new("TextButton")
-    incBtn.Size = UDim2.new(0, 35, 0, 26)
-    incBtn.Position = UDim2.new(1, -40, 0.5, -13)
-    incBtn.BackgroundColor3 = Color3.fromRGB(150, 20, 30)
-    incBtn.Font = Enum.Font.SourceSansBold
-    incBtn.Text = "+"
-    incBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    incBtn.TextSize = 16
-    incBtn.Parent = card
-    Instance.new("UICorner", incBtn).CornerRadius = UDim.new(0, 6)
+    local decBtn = Instance.new("TextButton")
+    decBtn.Size = UDim2.new(0, 25, 0, 24)
+    decBtn.Position = UDim2.new(1, -110, 0.5, -12)
+    decBtn.BackgroundColor3 = Color3.fromRGB(220, 20, 30)
+    decBtn.Font = Enum.Font.SourceSansBold
+    decBtn.Text = "-"
+    decBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    decBtn.TextSize = 14
+    decBtn.Parent = frame
+    Instance.new("UICorner", decBtn).CornerRadius = UDim.new(0, 4)
 
     local curVal = initialValue
     incBtn.MouseButton1Click:Connect(function()
@@ -317,8 +268,6 @@ local function CreateNumberControl(card, initialValue, step, maxVal, callback)
 end
 
 -- ==================== TAB MAIN ====================
--- 1. FLY
-local flyCard = CreateCard(MainContent, 0, 50, "🚀 FLY", "Bay tự do trong game")
 local flying = false
 local flySpeed = 50
 local bodyGyro, bodyVelocity
@@ -354,60 +303,44 @@ local function stopFly()
     if bodyVelocity then bodyVelocity:Destroy() end
 end
 
-CreateToggle(flyCard, false, function(state)
+CreateToggle(MainContent, 0, "🚀 Fly", function(state)
     flying = state
     if flying then startFly() else stopFly() end
 end)
 
--- 2. CFRAME SPEED
-local speedCard = CreateCard(MainContent, 57, 65, "⚡ SPEED", "Tốc độ di chuyển (Max 500)")
 local currentSpeed = 10
 local speedEnabled = false
-CreateToggle(speedCard, false, function(state)
+CreateToggle(MainContent, 48, "⚡ Speed (CFrame)", function(state)
     speedEnabled = state
 end)
-CreateNumberControl(speedCard, 10, 10, 500, function(newVal)
-    currentSpeed = newVal
+CreateNumberControl(MainContent, 96, "   ↳ Value Speed", 10, 10, 500, function(val)
+    currentSpeed = val
 end)
 
--- 3. ESP PLAYER
-local espCard = CreateCard(MainContent, 129, 50, "👁️ ESP PLAYER", "Hiển thị khung đỏ & tên người chơi")
 local espEnabled = false
-CreateToggle(espCard, false, function(state)
+CreateToggle(MainContent, 144, "👁️ ESP Player", function(state)
     espEnabled = state
-    for _, p in pairs(Players:GetPlayers()) do
-        if p.Character then
-            if not state then
-                if p.Character:FindFirstChild("EspHighlight") then p.Character.EspHighlight:Destroy() end
-                local head = p.Character:FindFirstChild("Head")
-                if head and head:FindFirstChild("EspNameTag") then head.EspNameTag:Destroy() end
-            end
-        end
-    end
 end)
 
--- 4. ANTI AFK
-local afkCard = CreateCard(MainContent, 186, 50, "🛡️ ANTI AFK", "Chống treo máy bị văng khỏi game")
 local afkEnabled = false
-CreateToggle(afkCard, false, function(state)
+CreateToggle(MainContent, 192, "🛡️ Anti AFK", function(state)
     afkEnabled = state
 end)
 
 -- ==================== TAB SERVER ====================
--- 1. HOP SERVER
-local hopCard = CreateCard(ServerContent, 0, 55, "🌐 HOP SERVER", "Tìm server ít người hơn")
-local hopActionBtn = Instance.new("TextButton", hopCard)
-hopActionBtn.Size = UDim2.new(0, 80, 0, 26)
-hopActionBtn.Position = UDim2.new(1, -90, 0.5, -13)
-hopActionBtn.BackgroundColor3 = Color3.fromRGB(200, 20, 30)
-hopActionBtn.Font = Enum.Font.SourceSansBold
-hopActionBtn.Text = "HOP"
-hopActionBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-hopActionBtn.TextSize = 12
-Instance.new("UICorner", hopActionBtn).CornerRadius = UDim.new(0, 6)
+local hopCard = CreateElement(ServerContent, 0, "🌐 Hop Server (Ít người)")
+local hopBtn = Instance.new("TextButton", hopCard)
+hopBtn.Size = UDim2.new(0, 70, 0, 24)
+hopBtn.Position = UDim2.new(1, -80, 0.5, -12)
+hopBtn.BackgroundColor3 = Color3.fromRGB(220, 20, 30)
+hopBtn.Font = Enum.Font.SourceSansBold
+hopBtn.Text = "HOP"
+hopBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+hopBtn.TextSize = 12
+Instance.new("UICorner", hopBtn).CornerRadius = UDim.new(0, 4)
 
-hopActionBtn.MouseButton1Click:Connect(function()
-    hopActionBtn.Text = "WAIT..."
+hopBtn.MouseButton1Click:Connect(function()
+    hopBtn.Text = "..."
     pcall(function()
         local req = game:HttpGet("https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100")
         local body = HttpService:JSONDecode(req)
@@ -421,23 +354,22 @@ hopActionBtn.MouseButton1Click:Connect(function()
         end
     end)
     task.wait(2)
-    hopActionBtn.Text = "HOP"
+    hopBtn.Text = "HOP"
 end)
 
--- 2. REJOIN SERVER
-local rejoinCard = CreateCard(ServerContent, 62, 55, "🔄 REJOIN SERVER", "Vào lại ngay server này")
-local rejoinActionBtn = Instance.new("TextButton", rejoinCard)
-rejoinActionBtn.Size = UDim2.new(0, 80, 0, 26)
-rejoinActionBtn.Position = UDim2.new(1, -90, 0.5, -13)
-rejoinActionBtn.BackgroundColor3 = Color3.fromRGB(200, 20, 30)
-rejoinActionBtn.Font = Enum.Font.SourceSansBold
-rejoinActionBtn.Text = "REJOIN"
-rejoinActionBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-rejoinActionBtn.TextSize = 12
-Instance.new("UICorner", rejoinActionBtn).CornerRadius = UDim.new(0, 6)
+local rejoinCard = CreateElement(ServerContent, 48, "🔄 Rejoin Server")
+local rejoinBtn = Instance.new("TextButton", rejoinCard)
+rejoinBtn.Size = UDim2.new(0, 70, 0, 24)
+rejoinBtn.Position = UDim2.new(1, -80, 0.5, -12)
+rejoinBtn.BackgroundColor3 = Color3.fromRGB(220, 20, 30)
+rejoinBtn.Font = Enum.Font.SourceSansBold
+rejoinBtn.Text = "REJOIN"
+rejoinBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+rejoinBtn.TextSize = 12
+Instance.new("UICorner", rejoinBtn).CornerRadius = UDim.new(0, 4)
 
-rejoinActionBtn.MouseButton1Click:Connect(function()
-    rejoinActionBtn.Text = "WAIT..."
+rejoinBtn.MouseButton1Click:Connect(function()
+    rejoinBtn.Text = "..."
     if #Players:GetPlayers() <= 1 then
         LocalPlayer:Kick("\nRejoining...")
         task.wait(1)
@@ -448,7 +380,6 @@ rejoinActionBtn.MouseButton1Click:Connect(function()
 end)
 
 -- ==================== SYSTEM LOGICS ====================
--- Speed Loop
 RunService.RenderStepped:Connect(function()
     if speedEnabled then
         pcall(function()
@@ -464,7 +395,66 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- Anti AFK
+-- Fixed Stable ESP Loop
+RunService.RenderStepped:Connect(function()
+    for _, p in pairs(Players:GetPlayers()) do
+        if p ~= LocalPlayer and p.Character then
+            local char = p.Character
+            local head = char:FindFirstChild("Head")
+            
+            if espEnabled then
+                -- Highlight Khung
+                local hl = char:FindFirstChild("EspHighlight")
+                if not hl then
+                    hl = Instance.new("Highlight")
+                    hl.Name = "EspHighlight"
+                    hl.Adornee = char
+                    hl.FillColor = Color3.fromRGB(255, 0, 0)
+                    hl.OutlineColor = Color3.fromRGB(255, 255, 255)
+                    hl.FillTransparency = 0.5
+                    hl.Parent = char
+                end
+                
+                -- Billboard Tên
+                if head then
+                    local bill = head:FindFirstChild("EspNameTag")
+                    if not bill then
+                        bill = Instance.new("BillboardGui")
+                        bill.Name = "EspNameTag"
+                        bill.Adornee = head
+                        bill.Size = UDim2.new(0, 100, 0, 40)
+                        bill.StudsOffset = Vector3.new(0, 2, 0)
+                        bill.AlwaysOnTop = true
+                        
+                        local txt = Instance.new("TextLabel")
+                        txt.Name = "Text"
+                        txt.Size = UDim2.new(1, 0, 1, 0)
+                        txt.BackgroundTransparency = 1
+                        txt.Font = Enum.Font.SourceSansBold
+                        txt.TextColor3 = Color3.fromRGB(255, 60, 60)
+                        txt.TextSize = 11
+                        txt.TextStrokeTransparency = 0
+                        txt.Parent = bill
+                        bill.Parent = head
+                    end
+                    local txt = bill:FindFirstChild("Text")
+                    if txt then
+                        txt.Text = p.Name .. "\n[" .. p.DisplayName .. "]"
+                    end
+                end
+            else
+                -- Xóa ESP khi tắt
+                local hl = char:FindFirstChild("EspHighlight")
+                if hl then hl:Destroy() end
+                if head then
+                    local bill = head:FindFirstChild("EspNameTag")
+                    if bill then bill:Destroy() end
+                end
+            end
+        end
+    end
+end)
+
 local VirtualUser = game:GetService("VirtualUser")
 LocalPlayer.Idled:Connect(function()
     if afkEnabled then
@@ -473,47 +463,3 @@ LocalPlayer.Idled:Connect(function()
         VirtualUser:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
     end
 end)
-
--- ESP Logic
-local function ApplyEsp(player)
-    if player == LocalPlayer then return end
-    local function SetupCharacter(char)
-        if not char then return end
-        task.wait(0.5)
-        if espEnabled then
-            if not char:FindFirstChild("EspHighlight") then
-                local hl = Instance.new("Highlight")
-                hl.Name = "EspHighlight"
-                hl.Adornee = char
-                hl.FillColor = Color3.fromRGB(255, 0, 0)
-                hl.OutlineColor = Color3.fromRGB(255, 255, 255)
-                hl.FillTransparency = 0.5
-                hl.Parent = char
-            end
-            local head = char:FindFirstChild("Head")
-            if head and not head:FindFirstChild("EspNameTag") then
-                local bill = Instance.new("BillboardGui")
-                bill.Name = "EspNameTag"
-                bill.Adornee = head
-                bill.Size = UDim2.new(0, 100, 0, 40)
-                bill.StudsOffset = Vector3.new(0, 2, 0)
-                bill.AlwaysOnTop = true
-                local txt = Instance.new("TextLabel")
-                txt.Size = UDim2.new(1, 0, 1, 0)
-                txt.BackgroundTransparency = 1
-                txt.Font = Enum.Font.SourceSansBold
-                txt.Text = player.Name .. "\n[" .. player.DisplayName .. "]"
-                txt.TextColor3 = Color3.fromRGB(255, 60, 60)
-                txt.TextSize = 11
-                txt.TextStrokeTransparency = 0
-                txt.Parent = bill
-                bill.Parent = head
-            end
-        end
-    end
-    player.CharacterAdded:Connect(SetupCharacter)
-    if player.Character then SetupCharacter(player.Character) end
-end
-
-for _, p in pairs(Players:GetPlayers()) do ApplyEsp(p) end
-Players.PlayerAdded:Connect(ApplyEsp)
