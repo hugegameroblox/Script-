@@ -1,8 +1,9 @@
--- PRO HUGE HUB - FIXED ESP & SET TP FEATURE
+-- PRO HUGE HUB - FIXED ESP, SET TP & AUTO CLICK WITH SPEED ADJUST
 local Players = game:GetService("Players")
 local TeleportService = game:GetService("TeleportService")
 local HttpService = game:GetService("HttpService")
 local RunService = game:GetService("RunService")
+local VirtualUser = game:GetService("VirtualUser")
 local CoreGui = game:GetService("CoreGui")
 local LocalPlayer = Players.LocalPlayer
 
@@ -126,7 +127,7 @@ ContentArea.Parent = MainFrame
 local MainContent = Instance.new("ScrollingFrame")
 MainContent.Size = UDim2.new(1, 0, 1, 0)
 MainContent.BackgroundTransparency = 1
-MainContent.CanvasSize = UDim2.new(0, 0, 1.8, 0)
+MainContent.CanvasSize = UDim2.new(0, 0, 2.6, 0)
 MainContent.ScrollBarThickness = 3
 MainContent.ScrollBarImageColor3 = Color3.fromRGB(200, 20, 30)
 MainContent.Visible = true
@@ -215,7 +216,7 @@ local function CreateToggle(parent, posY, title, callback)
     end)
 end
 
-local function CreateNumberControl(parent, posY, title, initialValue, step, maxVal, callback)
+local function CreateNumberControl(parent, posY, title, initialValue, step, minVal, maxVal, isFloat, callback)
     local frame = CreateElement(parent, posY, title)
 
     local incBtn = Instance.new("TextButton")
@@ -234,7 +235,7 @@ local function CreateNumberControl(parent, posY, title, initialValue, step, maxV
     valBox.Position = UDim2.new(1, -80, 0.5, -12)
     valBox.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
     valBox.Font = Enum.Font.SourceSansBold
-    valBox.Text = tostring(initialValue)
+    valBox.Text = isFloat and string.format("%.2f", initialValue) or tostring(initialValue)
     valBox.TextColor3 = Color3.fromRGB(255, 255, 255)
     valBox.TextSize = 12
     valBox.Parent = frame
@@ -255,14 +256,14 @@ local function CreateNumberControl(parent, posY, title, initialValue, step, maxV
     incBtn.MouseButton1Click:Connect(function()
         curVal = curVal + step
         if curVal > maxVal then curVal = maxVal end
-        valBox.Text = tostring(curVal)
+        valBox.Text = isFloat and string.format("%.2f", curVal) or tostring(curVal)
         callback(curVal)
     end)
 
     decBtn.MouseButton1Click:Connect(function()
         curVal = curVal - step
-        if curVal < 10 then curVal = 10 end
-        valBox.Text = tostring(curVal)
+        if curVal < minVal then curVal = minVal end
+        valBox.Text = isFloat and string.format("%.2f", curVal) or tostring(curVal)
         callback(curVal)
     end)
 end
@@ -313,7 +314,7 @@ local speedEnabled = false
 CreateToggle(MainContent, 48, "⚡ Speed (CFrame)", function(state)
     speedEnabled = state
 end)
-CreateNumberControl(MainContent, 96, "   ↳ Value Speed", 10, 10, 500, function(val)
+CreateNumberControl(MainContent, 96, "   ↳ Value Speed", 10, 10, 10, 500, false, function(val)
     currentSpeed = val
 end)
 
@@ -327,10 +328,32 @@ CreateToggle(MainContent, 192, "🛡️ Anti AFK", function(state)
     afkEnabled = state
 end)
 
+-- AUTO CLICK (NON-BLOCKING MOVEMENT & ADJUSTABLE SPEED)
+local autoClickEnabled = false
+local clickDelay = 0.05
+
+CreateToggle(MainContent, 240, "🖱️ Auto Click", function(state)
+    autoClickEnabled = state
+    if autoClickEnabled then
+        task.spawn(function()
+            while autoClickEnabled do
+                VirtualUser:Button1Down(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
+                task.wait(0.01)
+                VirtualUser:Button1Up(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
+                task.wait(clickDelay)
+            end
+        end)
+    end
+end)
+
+CreateNumberControl(MainContent, 288, "   ↳ Click Delay (s)", 0.05, 0.01, 0.01, 1.0, true, function(val)
+    clickDelay = val
+end)
+
 -- SET POSITION & TELEPORT
 local savedCFrame = nil
 
-local setTpCard = CreateElement(MainContent, 240, "📍 Set Pos & Teleport")
+local setTpCard = CreateElement(MainContent, 336, "📍 Set Pos & Teleport")
 
 local setPosBtn = Instance.new("TextButton", setTpCard)
 setPosBtn.Size = UDim2.new(0, 60, 0, 24)
@@ -496,7 +519,6 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
-local VirtualUser = game:GetService("VirtualUser")
 LocalPlayer.Idled:Connect(function()
     if afkEnabled then
         VirtualUser:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
