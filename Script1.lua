@@ -1,22 +1,25 @@
--- PRO HUGE HUB - CATCH & TAME SPECIAL EDITION
+-- PRO HUGE HUB - FIXED UI & TOGGLE BUTTON (REMOVED TAME TAB)
 local Players = game:GetService("Players")
 local TeleportService = game:GetService("TeleportService")
 local HttpService = game:GetService("HttpService")
 local RunService = game:GetService("RunService")
-local VirtualInputManager = game:GetService("VirtualInputManager")
 local VirtualUser = game:GetService("VirtualUser")
 local CoreGui = game:GetService("CoreGui")
 local LocalPlayer = Players.LocalPlayer
 
-pcall(function()
-    if CoreGui:FindFirstChild("RocketMenuUI") then
-        CoreGui.RocketMenuUI:Destroy()
+-- Xóa UI cũ nếu đang tồn tại
+for _, gui in pairs({CoreGui, LocalPlayer:FindFirstChild("PlayerGui")}) do
+    if gui then
+        local old = gui:FindFirstChild("RocketMenuUI")
+        if old then old:Destroy() end
     end
-end)
+end
 
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "RocketMenuUI"
 ScreenGui.ResetOnSpawn = false
+
+-- Parent UI vào CoreGui hoặc PlayerGui
 pcall(function() ScreenGui.Parent = CoreGui end)
 if not ScreenGui.Parent then ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui") end
 
@@ -28,8 +31,27 @@ MainFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 22)
 MainFrame.BorderSizePixel = 0
 MainFrame.Active = true
 MainFrame.Draggable = true
+MainFrame.Visible = true
 MainFrame.Parent = ScreenGui
 Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 8)
+
+-- NÚT NỔI BẬT/TẮT MENU (KÉO THẢ ĐƯỢC)
+local ToggleBtn = Instance.new("TextButton")
+ToggleBtn.Size = UDim2.new(0, 50, 0, 50)
+ToggleBtn.Position = UDim2.new(0, 15, 0.5, -25)
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(220, 20, 30)
+ToggleBtn.Font = Enum.Font.SourceSansBold
+ToggleBtn.Text = "HUB"
+ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleBtn.TextSize = 14
+ToggleBtn.Active = true
+ToggleBtn.Draggable = true
+ToggleBtn.Parent = ScreenGui
+Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(0, 25)
+
+ToggleBtn.MouseButton1Click:Connect(function()
+    MainFrame.Visible = not MainFrame.Visible
+end)
 
 -- TOP BAR (HEADER)
 local TopBar = Instance.new("Frame")
@@ -39,57 +61,29 @@ TopBar.BorderSizePixel = 0
 TopBar.Parent = MainFrame
 Instance.new("UICorner", TopBar).CornerRadius = UDim.new(0, 8)
 
-local FixBar = Instance.new("Frame")
-FixBar.Size = UDim2.new(1, 0, 0, 5)
-FixBar.Position = UDim2.new(0, 0, 1, -5)
-FixBar.BackgroundColor3 = Color3.fromRGB(24, 24, 30)
-FixBar.BorderSizePixel = 0
-FixBar.Parent = TopBar
-
 local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(1, -60, 1, 0)
+Title.Size = UDim2.new(1, -50, 1, 0)
 Title.Position = UDim2.new(0, 15, 0, 0)
 Title.BackgroundTransparency = 1
 Title.Font = Enum.Font.SourceSansBold
-Title.Text = "⚡ Pro Huge Hub | Bắt & Thuần Hóa"
+Title.Text = "⚡ Pro Huge Hub"
 Title.TextColor3 = Color3.fromRGB(255, 60, 60)
 Title.TextSize = 14
 Title.TextXAlignment = Enum.TextXAlignment.Left
 Title.Parent = TopBar
 
-local MinBtn = Instance.new("TextButton")
-MinBtn.Size = UDim2.new(0, 30, 0, 30)
-MinBtn.Position = UDim2.new(1, -35, 0, 2)
-MinBtn.BackgroundTransparency = 1
-MinBtn.Font = Enum.Font.SourceSansBold
-MinBtn.Text = "-"
-MinBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
-MinBtn.TextSize = 18
-MinBtn.Parent = TopBar
+local CloseBtn = Instance.new("TextButton")
+CloseBtn.Size = UDim2.new(0, 30, 0, 30)
+CloseBtn.Position = UDim2.new(1, -35, 0, 2)
+CloseBtn.BackgroundTransparency = 1
+CloseBtn.Font = Enum.Font.SourceSansBold
+CloseBtn.Text = "X"
+CloseBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
+CloseBtn.TextSize = 14
+CloseBtn.Parent = TopBar
 
--- OPEN BUTTON
-local OpenBtn = Instance.new("TextButton")
-OpenBtn.Size = UDim2.new(0, 120, 0, 35)
-OpenBtn.Position = UDim2.new(0, 20, 0, 20)
-OpenBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
-OpenBtn.Font = Enum.Font.SourceSansBold
-OpenBtn.Text = "🚀 PRO HUGE HUB"
-OpenBtn.TextColor3 = Color3.fromRGB(255, 60, 60)
-OpenBtn.TextSize = 11
-OpenBtn.Visible = false
-OpenBtn.Active = true
-OpenBtn.Draggable = true
-OpenBtn.Parent = ScreenGui
-Instance.new("UICorner", OpenBtn).CornerRadius = UDim.new(0, 6)
-
-MinBtn.MouseButton1Click:Connect(function()
+CloseBtn.MouseButton1Click:Connect(function()
     MainFrame.Visible = false
-    OpenBtn.Visible = true
-end)
-
-OpenBtn.MouseButton1Click:Connect(function()
-    MainFrame.Visible = true
-    OpenBtn.Visible = false
 end)
 
 -- SIDEBAR
@@ -115,9 +109,8 @@ local function CreateTabButton(name, posY, active)
     return btn
 end
 
-local TameTabBtn = CreateTabButton("🦖  Bắt & Thuần", 0, true)
-local MainTabBtn = CreateTabButton("🏠  Main", 38, false)
-local ServerTabBtn = CreateTabButton("🌐  Server", 76, false)
+local MainTabBtn = CreateTabButton("🏠  Main", 0, true)
+local ServerTabBtn = CreateTabButton("🌐  Server", 38, false)
 
 -- CONTENT AREA
 local ContentArea = Instance.new("Frame")
@@ -130,7 +123,7 @@ local function CreateContentContainer()
     local sc = Instance.new("ScrollingFrame")
     sc.Size = UDim2.new(1, 0, 1, 0)
     sc.BackgroundTransparency = 1
-    sc.CanvasSize = UDim2.new(0, 0, 2.5, 0)
+    sc.CanvasSize = UDim2.new(0, 0, 2, 0)
     sc.ScrollBarThickness = 3
     sc.ScrollBarImageColor3 = Color3.fromRGB(200, 20, 30)
     sc.Visible = false
@@ -138,18 +131,17 @@ local function CreateContentContainer()
     return sc
 end
 
-local TameContent = CreateContentContainer()
 local MainContent = CreateContentContainer()
 local ServerContent = CreateContentContainer()
 
-TameContent.Visible = true
+MainContent.Visible = true
 
 local function SwitchTab(activeBtn, activeContent)
-    for _, btn in pairs({MainTabBtn, TameTabBtn, ServerTabBtn}) do
+    for _, btn in pairs({MainTabBtn, ServerTabBtn}) do
         btn.BackgroundColor3 = Color3.fromRGB(25, 25, 32)
         btn.TextColor3 = Color3.fromRGB(160, 160, 170)
     end
-    for _, cnt in pairs({MainContent, TameContent, ServerContent}) do
+    for _, cnt in pairs({MainContent, ServerContent}) do
         cnt.Visible = false
     end
     activeBtn.BackgroundColor3 = Color3.fromRGB(220, 20, 30)
@@ -158,7 +150,6 @@ local function SwitchTab(activeBtn, activeContent)
 end
 
 MainTabBtn.MouseButton1Click:Connect(function() SwitchTab(MainTabBtn, MainContent) end)
-TameTabBtn.MouseButton1Click:Connect(function() SwitchTab(TameTabBtn, TameContent) end)
 ServerTabBtn.MouseButton1Click:Connect(function() SwitchTab(ServerTabBtn, ServerContent) end)
 
 -- UI HELPERS
@@ -268,75 +259,6 @@ local function CreateNumberControl(parent, posY, title, initialValue, step, minV
         callback(curVal)
     end)
 end
-
--- ==================== TAB BẮT & THUẦN HÓA (CATCH & TAME) ====================
-local autoHitGame = false
-local hitSpeedDelay = 0.05
-
-CreateToggle(TameContent, 0, "💥 Auto Tấn Công / Thuần Hóa", function(state)
-    autoHitGame = state
-    if autoHitGame then
-        task.spawn(function()
-            while autoHitGame do
-                -- 1. Kích hoạt vũ khí/gậy trên tay
-                pcall(function()
-                    local char = LocalPlayer.Character
-                    if char then
-                        local tool = char:FindFirstChildOfClass("Tool")
-                        if tool then
-                            tool:Activate()
-                        end
-                    end
-                end)
-
-                -- 2. Tìm và kích hoạt Remote Event tấn công của game
-                pcall(function()
-                    local ReplicatedStorage = game:GetService("ReplicatedStorage")
-                    for _, v in pairs(ReplicatedStorage:GetDescendants()) do
-                        if v:IsA("RemoteEvent") and (string.find(string.lower(v.Name), "hit") or string.find(string.lower(v.Name), "attack") or string.find(string.lower(v.Name), "tame") or string.find(string.lower(v.Name), "catch")) then
-                            v:FireServer()
-                        end
-                    end
-                end)
-
-                -- 3. Click ảo màn hình
-                local vp = workspace.CurrentCamera.ViewportSize
-                VirtualInputManager:SendMouseButtonEvent(vp.X / 2, vp.Y / 2, 0, true, game, 1)
-                task.wait(0.01)
-                VirtualInputManager:SendMouseButtonEvent(vp.X / 2, vp.Y / 2, 0, false, game, 1)
-
-                task.wait(hitSpeedDelay)
-            end
-        end)
-    end
-end)
-
-CreateNumberControl(TameContent, 48, "   ↳ Tốc Độ Tấn Công (s)", 0.05, 0.01, 0.01, 0.5, true, function(val)
-    hitSpeedDelay = val
-end)
-
-local autoLoot = false
-CreateToggle(TameContent, 96, "🧲 Auto Hút Vật Phẩm / Xu", function(state)
-    autoLoot = state
-    if autoLoot then
-        task.spawn(function()
-            while autoLoot do
-                pcall(function()
-                    local char = LocalPlayer.Character
-                    if char and char:FindFirstChild("HumanoidRootPart") then
-                        local hrp = char.HumanoidRootPart
-                        for _, item in pairs(workspace:GetDescendants()) do
-                            if item:IsA("BasePart") and (item.Name == "Coin" or item.Name == "Drop" or string.find(string.lower(item.Name), "item")) then
-                                item.CFrame = hrp.CFrame
-                            end
-                        end
-                    end
-                end)
-                task.wait(0.3)
-            end
-        end)
-    end
-end)
 
 -- ==================== TAB MAIN ====================
 local flying = false
@@ -543,4 +465,31 @@ RunService.RenderStepped:Connect(function()
                         txt.Font = Enum.Font.SourceSansBold
                         txt.TextColor3 = Color3.fromRGB(255, 60, 60)
                         txt.TextSize = 11
-      
+                        txt.TextStrokeTransparency = 0
+                        txt.Parent = bill
+                        bill.Parent = head
+                    end
+                    local txt = bill:FindFirstChild("Text")
+                    if txt then
+                        txt.Text = p.Name .. "\n[" .. p.DisplayName .. "]"
+                    end
+                end
+            else
+                local hl = char:FindFirstChild("EspHighlight")
+                if hl then hl:Destroy() end
+                if head then
+                    local bill = head:FindFirstChild("EspNameTag")
+                    if bill then bill:Destroy() end
+                end
+            end
+        end
+    end
+end)
+
+LocalPlayer.Idled:Connect(function()
+    if afkEnabled then
+        VirtualUser:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+        task.wait(1)
+        VirtualUser:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+    end
+end)
