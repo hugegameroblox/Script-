@@ -610,8 +610,156 @@ RunService.RenderStepped:Connect(function()
 
             -- Kéo nhẹ tâm (Aim Assist) về phía mục tiêu tìm được
             if closestTarget then
-                Camera.CFrame = Camera.CFrame:Lerp(CFrame.new(Camera.CFrame.Position, closestTarget.Position), 0.25)
+                Camera.CFrame = Camera.CFrame:Lerp(CFrame.new(Camera.CFrame.Position, closestTarget.Position), 0.50)
             end
         end)
     end
+end)
+-- FLY MODE + FLY CONTROL GUI (ĐIỀU KHIỂN TRÊN MÀN HÌNH)
+local flyEnabled = false
+local flySpeed = 50
+
+-- Tạo bảng điều khiển Fly nhỏ gọn trên màn hình
+local FlyGui = Instance.new("ScreenGui")
+FlyGui.Name = "FlyControlGui"
+FlyGui.ResetOnSpawn = false
+pcall(function() FlyGui.Parent = CoreGui end)
+if not FlyGui.Parent then FlyGui.Parent = LocalPlayer:WaitForChild("PlayerGui") end
+FlyGui.Enabled = false
+
+local FlyFrame = Instance.new("Frame")
+FlyFrame.Size = UDim2.new(0, 160, 0, 140)
+FlyFrame.Position = UDim2.new(0.8, -80, 0.4, -70)
+FlyFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+FlyFrame.BorderSizePixel = 0
+FlyFrame.Active = true
+FlyFrame.Draggable = true
+FlyFrame.Parent = FlyGui
+Instance.new("UICorner", FlyFrame).CornerRadius = UDim.new(0, 8)
+
+local FlyStroke = Instance.new("UIStroke")
+FlyStroke.Color = Color3.fromRGB(220, 20, 30)
+FlyStroke.Thickness = 2
+FlyStroke.Parent = FlyFrame
+
+local FlyTitle = Instance.new("TextLabel")
+FlyTitle.Size = UDim2.new(1, 0, 0, 25)
+FlyTitle.BackgroundTransparency = 1
+FlyTitle.Font = Enum.Font.SourceSansBold
+FlyTitle.Text = "🚀 FLY CONTROLS"
+FlyTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+FlyTitle.TextSize = 12
+FlyTitle.Parent = FlyFrame
+
+-- Nút UP (Bay lên)
+local UpBtn = Instance.new("TextButton")
+UpBtn.Size = UDim2.new(0, 65, 0, 35)
+UpBtn.Position = UDim2.new(0, 10, 0, 35)
+UpBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+UpBtn.Font = Enum.Font.SourceSansBold
+UpBtn.Text = "UP (▲)"
+UpBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+UpBtn.TextSize = 11
+UpBtn.Parent = FlyFrame
+Instance.new("UICorner", UpBtn).CornerRadius = UDim.new(0, 6)
+
+-- Nút DOWN (Hạ xuống)
+local DownBtn = Instance.new("TextButton")
+DownBtn.Size = UDim2.new(0, 65, 0, 35)
+DownBtn.Position = UDim2.new(0, 85, 0, 35)
+DownBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+DownBtn.Font = Enum.Font.SourceSansBold
+DownBtn.Text = "DOWN (▼)"
+DownBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+DownBtn.TextSize = 11
+DownBtn.Parent = FlyFrame
+Instance.new("UICorner", DownBtn).CornerRadius = UDim.new(0, 6)
+
+-- Hiển thị tốc độ bay
+local SpeedLbl = Instance.new("TextLabel")
+SpeedLbl.Size = UDim2.new(1, 0, 0, 20)
+SpeedLbl.Position = UDim2.new(0, 0, 0, 75)
+SpeedLbl.BackgroundTransparency = 1
+SpeedLbl.Font = Enum.Font.SourceSansBold
+SpeedLbl.Text = "Speed: 50"
+SpeedLbl.TextColor3 = Color3.fromRGB(220, 20, 30)
+SpeedLbl.TextSize = 11
+SpeedLbl.Parent = FlyFrame
+
+-- Nút tăng/giảm tốc độ bay
+local PlusFly = Instance.new("TextButton")
+PlusFly.Size = UDim2.new(0, 65, 0, 25)
+PlusFly.Position = UDim2.new(0, 85, 0, 100)
+PlusFly.BackgroundColor3 = Color3.fromRGB(220, 20, 30)
+PlusFly.Font = Enum.Font.SourceSansBold
+PlusFly.Text = "Tốc độ +"
+PlusFly.TextColor3 = Color3.fromRGB(255, 255, 255)
+PlusFly.TextSize = 10
+PlusFly.Parent = FlyFrame
+Instance.new("UICorner", PlusFly).CornerRadius = UDim.new(0, 4)
+
+local MinusFly = Instance.new("TextButton")
+MinusFly.Size = UDim2.new(0, 65, 0, 25)
+MinusFly.Position = UDim2.new(0, 10, 0, 100)
+MinusFly.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+MinusFly.Font = Enum.Font.SourceSansBold
+MinusFly.Text = "Tốc độ -"
+MinusFly.TextColor3 = Color3.fromRGB(255, 255, 255)
+MinusFly.TextSize = 10
+MinusFly.Parent = FlyFrame
+Instance.new("UICorner", MinusFly).CornerRadius = UDim.new(0, 4)
+
+PlusFly.MouseButton1Click:Connect(function()
+    flySpeed = math.clamp(flySpeed + 15, 20, 200)
+    SpeedLbl.Text = "Speed: " .. tostring(flySpeed)
+end)
+
+MinusFly.MouseButton1Click:Connect(function()
+    flySpeed = math.clamp(flySpeed - 15, 20, 200)
+    SpeedLbl.Text = "Speed: " .. tostring(flySpeed)
+end)
+
+-- Toggle bật/tắt Fly chính trong Hub
+CreateToggle(CombatContent, 336, "Fly Mode + Fly GUI", function(state)
+    flyEnabled = state
+    FlyGui.Enabled = state
+end)
+
+local flyingUp = false
+local flyingDown = false
+
+UpBtn.MouseButton1Down:Connect(function() flyingUp = true end)
+UpBtn.MouseButton1Up:Connect(function() flyingUp = false end)
+DownBtn.MouseButton1Down:Connect(function() flyingDown = true end)
+DownBtn.MouseButton1Up:Connect(function() flyingDown = false end)
+
+RunService.RenderStepped:Connect(function()
+    pcall(function()
+        local char = LocalPlayer.Character
+        if char and char:FindFirstChild("HumanoidRootPart") then
+            local hrp = char.HumanoidRootPart
+            local humanoid = char:FindFirstChildOfClass("Humanoid")
+            
+            if flyEnabled then
+                humanoid.PlatformStand = true
+                local moveDir = humanoid.MoveDirection
+                local velocity = moveDir * flySpeed
+                
+                if flyingUp then
+                    velocity = velocity + Vector3.new(0, flySpeed, 0)
+                elseif flyingDown then
+                    velocity = velocity + Vector3.new(0, -flySpeed, 0)
+                else
+                    velocity = velocity + Vector3.new(0, 0.1, 0) -- Giữ lơ lửng không bị rơi
+                end
+                
+                hrp.Velocity = velocity
+                hrp.CFrame = CFrame.new(hrp.Position, hrp.Position + Camera.CFrame.LookVector)
+            else
+                if humanoid and humanoid.PlatformStand then
+                    humanoid.PlatformStand = false
+                end
+            end
+        end
+    end)
 end)
