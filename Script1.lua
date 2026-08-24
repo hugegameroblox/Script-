@@ -1,4 +1,4 @@
--- PRO HUGE HUB - FIXED ESP, SET TP & WORKING AUTO CLICK
+-- PRO HUGE HUB - FIXED SYNTAX, ESP, SET TP & WORKING AUTO CLICK
 local Players = game:GetService("Players")
 local TeleportService = game:GetService("TeleportService")
 local HttpService = game:GetService("HttpService")
@@ -307,7 +307,7 @@ end
 
 CreateToggle(MainContent, 0, "🚀 Fly", function(state)
     flying = state
-    if flying me startFly() else stopFly() end
+    if flying then startFly() else stopFly() end
 end)
 
 local currentSpeed = 10
@@ -338,13 +338,11 @@ CreateToggle(MainContent, 240, "🖱️ Auto Click", function(state)
     if autoClickEnabled then
         task.spawn(function()
             while autoClickEnabled do
-                -- Mẹo 1: Mô phỏng Click phần cứng ở giữa màn hình
                 local vp = workspace.CurrentCamera.ViewportSize
                 VirtualInputManager:SendMouseButtonEvent(vp.X / 2, vp.Y / 2, 0, true, game, 1)
                 task.wait(0.01)
                 VirtualInputManager:SendMouseButtonEvent(vp.X / 2, vp.Y / 2, 0, false, game, 1)
 
-                -- Mẹo 2: Kích hoạt Tool đang cầm trên tay (Nếu game dùng Tool)
                 pcall(function()
                     local char = LocalPlayer.Character
                     if char then
