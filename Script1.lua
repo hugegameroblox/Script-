@@ -1,4 +1,4 @@
--- PRO HUGE HUB - FULL FEATURES + SECURITY EVASION
+-- PRO HUGE HUB - FULL FEATURES + GOD MODE & ANTI ATTACK
 local Players = game:GetService("Players")
 local TeleportService = game:GetService("TeleportService")
 local HttpService = game:GetService("HttpService")
@@ -51,7 +51,7 @@ Title.Size = UDim2.new(1, -60, 1, 0)
 Title.Position = UDim2.new(0, 15, 0, 0)
 Title.BackgroundTransparency = 1
 Title.Font = Enum.Font.SourceSansBold
-Title.Text = "⚡ Pro huge hub | secure mode"
+Title.Text = "⚡ Pro huge hub | god mode"
 Title.TextColor3 = Color3.fromRGB(255, 60, 60)
 Title.TextSize = 14
 Title.TextXAlignment = Enum.TextXAlignment.Left
@@ -117,8 +117,7 @@ end
 
 local MainTabBtn = CreateTabButton("🏠  Main", 0, true)
 local CombatTabBtn = CreateTabButton("⚔️  Combat", 38, false)
-local SecurityTabBtn = CreateTabButton("🛡️  Security", 76, false)
-local ServerTabBtn = CreateTabButton("🌐  Server", 114, false)
+local ServerTabBtn = CreateTabButton("🌐  Server", 76, false)
 
 -- CONTENT AREA
 local ContentArea = Instance.new("Frame")
@@ -139,20 +138,11 @@ MainContent.Parent = ContentArea
 local CombatContent = Instance.new("ScrollingFrame")
 CombatContent.Size = UDim2.new(1, 0, 1, 0)
 CombatContent.BackgroundTransparency = 1
-CombatContent.CanvasSize = UDim2.new(0, 0, 1.2, 0)
+CombatContent.CanvasSize = UDim2.new(0, 0, 1.5, 0)
 CombatContent.ScrollBarThickness = 3
 CombatContent.ScrollBarImageColor3 = Color3.fromRGB(200, 20, 30)
 CombatContent.Visible = false
 CombatContent.Parent = ContentArea
-
-local SecurityContent = Instance.new("ScrollingFrame")
-SecurityContent.Size = UDim2.new(1, 0, 1, 0)
-SecurityContent.BackgroundTransparency = 1
-SecurityContent.CanvasSize = UDim2.new(0, 0, 1, 0)
-SecurityContent.ScrollBarThickness = 3
-SecurityContent.ScrollBarImageColor3 = Color3.fromRGB(200, 20, 30)
-SecurityContent.Visible = false
-SecurityContent.Parent = ContentArea
 
 local ServerContent = Instance.new("ScrollingFrame")
 ServerContent.Size = UDim2.new(1, 0, 1, 0)
@@ -166,7 +156,6 @@ ServerContent.Parent = ContentArea
 local function SwitchTab(activeTab)
     MainContent.Visible = (activeTab == MainContent)
     CombatContent.Visible = (activeTab == CombatContent)
-    SecurityContent.Visible = (activeTab == SecurityContent)
     ServerContent.Visible = (activeTab == ServerContent)
 
     MainTabBtn.BackgroundColor3 = (activeTab == MainContent) and Color3.fromRGB(220, 20, 30) or Color3.fromRGB(25, 25, 32)
@@ -175,16 +164,12 @@ local function SwitchTab(activeTab)
     CombatTabBtn.BackgroundColor3 = (activeTab == CombatContent) and Color3.fromRGB(220, 20, 30) or Color3.fromRGB(25, 25, 32)
     CombatTabBtn.TextColor3 = (activeTab == CombatContent) and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(160, 160, 170)
 
-    SecurityTabBtn.BackgroundColor3 = (activeTab == SecurityContent) and Color3.fromRGB(220, 20, 30) or Color3.fromRGB(25, 25, 32)
-    SecurityTabBtn.TextColor3 = (activeTab == SecurityContent) and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(160, 160, 170)
-
     ServerTabBtn.BackgroundColor3 = (activeTab == ServerContent) and Color3.fromRGB(220, 20, 30) or Color3.fromRGB(25, 25, 32)
     ServerTabBtn.TextColor3 = (activeTab == ServerContent) and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(160, 160, 170)
 end
 
 MainTabBtn.MouseButton1Click:Connect(function() SwitchTab(MainContent) end)
 CombatTabBtn.MouseButton1Click:Connect(function() SwitchTab(CombatContent) end)
-SecurityTabBtn.MouseButton1Click:Connect(function() SwitchTab(SecurityContent) end)
 ServerTabBtn.MouseButton1Click:Connect(function() SwitchTab(ServerContent) end)
 
 -- UI HELPERS
@@ -331,7 +316,7 @@ local function stopFly()
     if bodyVelocity then bodyVelocity:Destroy() end
 end
 
-CreateToggle(MainContent, 0, "🚀 Fly", function(state)
+CreateToggle(MainContent, 0, " Fly", function(state)
     flying = state
     if flying then startFly() else stopFly() end
 end)
@@ -342,7 +327,7 @@ end)
 
 local currentSpeed = 10
 local speedEnabled = false
-CreateToggle(MainContent, 96, "⚡ Speed (CFrame)", function(state)
+CreateToggle(MainContent, 96, " Speed (CFrame)", function(state)
     speedEnabled = state
 end)
 CreateNumberControl(MainContent, 144, "   ↳ Value Speed", 10, 10, 10, 500, false, function(val)
@@ -350,12 +335,12 @@ CreateNumberControl(MainContent, 144, "   ↳ Value Speed", 10, 10, 10, 500, fal
 end)
 
 local noclipEnabled = false
-CreateToggle(MainContent, 192, "👻 Noclip (Đi xuyên tường)", function(state)
+CreateToggle(MainContent, 192, " Noclip (Đi xuyên tường)", function(state)
     noclipEnabled = state
 end)
 
 local infJumpEnabled = false
-CreateToggle(MainContent, 240, "🦘 Infinite Jump", function(state)
+CreateToggle(MainContent, 240, " Infinite Jump", function(state)
     infJumpEnabled = state
 end)
 
@@ -372,7 +357,7 @@ end)
 
 local airWalkEnabled = false
 local airPlatform = nil
-CreateToggle(MainContent, 288, "☁️ Air Walk (Đi trên không)", function(state)
+CreateToggle(MainContent, 288, " Air Walk (Đi trên không)", function(state)
     airWalkEnabled = state
     if not airWalkEnabled and airPlatform then
         airPlatform:Destroy()
@@ -406,12 +391,12 @@ RunService.RenderStepped:Connect(function()
 end)
 
 local espEnabled = false
-CreateToggle(MainContent, 336, "👁️ ESP Player", function(state)
+CreateToggle(MainContent, 336, " ESP Player", function(state)
     espEnabled = state
 end)
 
 local afkEnabled = false
-CreateToggle(MainContent, 384, "🛡️ Anti AFK", function(state)
+CreateToggle(MainContent, 384, " Anti AFK", function(state)
     afkEnabled = state
 end)
 
@@ -457,11 +442,11 @@ tpBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- ==================== TAB COMBAT ====================
+-- ==================== TAB COMBAT (HITBOX, GOD MODE, ANTI ĐÁNH) ====================
 local hitboxEnabled = false
 local hitboxSize = 5
 
-CreateToggle(CombatContent, 0, "🎯 Hiện Hitbox & Tăng Hit", function(state)
+CreateToggle(CombatContent, 0, " Hiện Hitbox & Tăng Hit", function(state)
     hitboxEnabled = state
 end)
 
@@ -496,45 +481,70 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- ==================== TAB SECURITY (EVASION) ====================
-local multiSignalEnabled = false
-local remoteValidationEnabled = false
-
-CreateToggle(SecurityContent, 0, "🔒 Multi-signal evasion", function(state)
-    multiSignalEnabled = state
-    if multiSignalEnabled then
-        pcall(function()
-            -- Giả lập che chắn tín hiệu client liên tục qua vòng lặp tối ưu
-            task.spawn(function()
-                while multiSignalEnabled do
-                    RunService.Heartbeat:Wait()
+-- GOD MODE FEATURE
+local godModeEnabled = false
+CreateToggle(CombatContent, 96, " God Mode (Bất tử)", function(state)
+    godModeEnabled = state
+    if godModeEnabled then
+        task.spawn(function()
+            while godModeEnabled do
+                RunService.Stepped:Wait()
+                pcall(function()
                     local char = LocalPlayer.Character
-                    if char and char:FindFirstChild("HumanoidRootPart") then
-                        -- Xáo trộn nhẹ tần suất gửi gói tin định vị để né nhận diện tự động
-                        local hrp = char.HumanoidRootPart
-                        local currentVel = hrp.AssemblyLinearVelocity
-                        if currentVel.Magnitude > 250 then
-                            hrp.AssemblyLinearVelocity = currentVel * 0.8
-                        end
+                    if char and char:FindFirstChildOfClass("Humanoid") then
+                        local hum = char:FindFirstChildOfClass("Humanoid")
+                        hum.Health = hum.MaxHealth
                     end
-                end
-            end)
+                end)
+            end
         end)
     end
 end)
 
-CreateToggle(SecurityContent, 48, "🛡️ Remote validation evasion", function(state)
-    remoteValidationEnabled = state
-    if remoteValidationEnabled then
+-- ANTI ĐÁNH (CHỐNG DÍNH ĐÒN / TỰ ĐỘNG NÉ KHOẢNG GẦN)
+local antiAttackEnabled = false
+CreateToggle(CombatContent, 144, " Anti Đánh (Chống dính đòn)", function(state)
+    antiAttackEnabled = state
+end)
+
+RunService.RenderStepped:Connect(function()
+    if antiAttackEnabled then
         pcall(function()
-            -- Hook ngầm để chặn và làm sạch các lệnh gọi Remote bị kiểm tra tự động
-            local mt = getrawmetatable(game)
-            setreadonly(mt, false)
-            local oldNamecall = mt.__namecall
-            mt.__namecall = newcclosure(function(self, ...)
-                local method = getnamecallmethod()
-                if remoteValidationEnabled and (method == "FireServer" or method == "InvokeServer") then
-                    -- Tự động lọc các thông số bất thường tránh bị hệ thống log lại
-                    local args = {...}
-                    for i, v in ipairs(args) do
-                        if typeof(v) == "Vector3" and v.M
+            local char = LocalPlayer.Character
+            if char and char:FindFirstChild("HumanoidRootPart") then
+                local myPos = char.HumanoidRootPart.Position
+                for _, p in pairs(Players:GetPlayers()) do
+                    if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+                        local enemyHrp = p.Character.HumanoidRootPart
+                        local dist = (myPos - enemyHrp.Position).Magnitude
+                        -- Nếu người chơi khác áp sát khoảng cách đánh gần, tự động đẩy nhẹ hoặc vô hiệu hóa va chạm sát thương trực tiếp
+                        if dist < 6 then
+                            for _, part in pairs(char:GetDescendants()) do
+                                if part:IsA("BasePart") then
+                                    part.CanTouch = false
+                                end
+                            end
+                        else
+                            for _, part in pairs(char:GetDescendants()) do
+                                if part:IsA("BasePart") then
+                                    part.CanTouch = true
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end)
+    end
+end)
+
+-- ==================== TAB SERVER ====================
+local f3xCard = CreateElement(ServerContent, 0, " Lấy F3X (Build Tools)")
+local f3xBtn = Instance.new("TextButton", f3xCard)
+f3xBtn.Size = UDim2.new(0, 70, 0, 24)
+f3xBtn.Position = UDim2.new(1, -80, 0.5, -12)
+f3xBtn.BackgroundColor3 = Color3.fromRGB(220, 20, 30)
+f3xBtn.Font = Enum.Font.SourceSansBold
+f3xBtn.Text = "GET F3X"
+f3xBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+f3xBtn.TextSize =
