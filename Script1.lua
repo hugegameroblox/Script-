@@ -1,8 +1,9 @@
--- PRO HUGE HUB - FIXED ESP, SET TP, FLY, F3X & NOCLIP
+-- PRO HUGE HUB - FULL FEATURES (FLY, SPEED, NOCLIP, ESP, INF JUMP, AIR WALK, HITBOX, F3X, HOP)
 local Players = game:GetService("Players")
 local TeleportService = game:GetService("TeleportService")
 local HttpService = game:GetService("HttpService")
 local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
 local VirtualUser = game:GetService("VirtualUser")
 local CoreGui = game:GetService("CoreGui")
 local LocalPlayer = Players.LocalPlayer
@@ -115,7 +116,8 @@ local function CreateTabButton(name, posY, active)
 end
 
 local MainTabBtn = CreateTabButton("🏠  Main", 0, true)
-local ServerTabBtn = CreateTabButton("🌐  Server", 38, false)
+local CombatTabBtn = CreateTabButton("⚔️  Combat", 38, false)
+local ServerTabBtn = CreateTabButton("🌐  Server", 76, false)
 
 -- CONTENT AREA
 local ContentArea = Instance.new("Frame")
@@ -127,11 +129,20 @@ ContentArea.Parent = MainFrame
 local MainContent = Instance.new("ScrollingFrame")
 MainContent.Size = UDim2.new(1, 0, 1, 0)
 MainContent.BackgroundTransparency = 1
-MainContent.CanvasSize = UDim2.new(0, 0, 2.6, 0)
+MainContent.CanvasSize = UDim2.new(0, 0, 3.4, 0)
 MainContent.ScrollBarThickness = 3
 MainContent.ScrollBarImageColor3 = Color3.fromRGB(200, 20, 30)
 MainContent.Visible = true
 MainContent.Parent = ContentArea
+
+local CombatContent = Instance.new("ScrollingFrame")
+CombatContent.Size = UDim2.new(1, 0, 1, 0)
+CombatContent.BackgroundTransparency = 1
+CombatContent.CanvasSize = UDim2.new(0, 0, 1.2, 0)
+CombatContent.ScrollBarThickness = 3
+CombatContent.ScrollBarImageColor3 = Color3.fromRGB(200, 20, 30)
+CombatContent.Visible = false
+CombatContent.Parent = ContentArea
 
 local ServerContent = Instance.new("ScrollingFrame")
 ServerContent.Size = UDim2.new(1, 0, 1, 0)
@@ -144,20 +155,38 @@ ServerContent.Parent = ContentArea
 
 MainTabBtn.MouseButton1Click:Connect(function()
     MainContent.Visible = true
+    CombatContent.Visible = false
     ServerContent.Visible = false
     MainTabBtn.BackgroundColor3 = Color3.fromRGB(220, 20, 30)
     MainTabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    CombatTabBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 32)
+    CombatTabBtn.TextColor3 = Color3.fromRGB(160, 160, 170)
+    ServerTabBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 32)
+    ServerTabBtn.TextColor3 = Color3.fromRGB(160, 160, 170)
+end)
+
+CombatTabBtn.MouseButton1Click:Connect(function()
+    MainContent.Visible = false
+    CombatContent.Visible = true
+    ServerContent.Visible = false
+    CombatTabBtn.BackgroundColor3 = Color3.fromRGB(220, 20, 30)
+    CombatTabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    MainTabBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 32)
+    MainTabBtn.TextColor3 = Color3.fromRGB(160, 160, 170)
     ServerTabBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 32)
     ServerTabBtn.TextColor3 = Color3.fromRGB(160, 160, 170)
 end)
 
 ServerTabBtn.MouseButton1Click:Connect(function()
     MainContent.Visible = false
+    CombatContent.Visible = false
     ServerContent.Visible = true
     ServerTabBtn.BackgroundColor3 = Color3.fromRGB(220, 20, 30)
     ServerTabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
     MainTabBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 32)
     MainTabBtn.TextColor3 = Color3.fromRGB(160, 160, 170)
+    CombatTabBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 32)
+    CombatTabBtn.TextColor3 = Color3.fromRGB(160, 160, 170)
 end)
 
 -- UI HELPERS
@@ -304,7 +333,7 @@ local function stopFly()
     if bodyVelocity then bodyVelocity:Destroy() end
 end
 
-CreateToggle(MainContent, 0, "Fly", function(state)
+CreateToggle(MainContent, 0, "🚀 Fly", function(state)
     flying = state
     if flying then startFly() else stopFly() end
 end)
@@ -315,33 +344,85 @@ end)
 
 local currentSpeed = 10
 local speedEnabled = false
-CreateToggle(MainContent, 96, " Speed (CFrame)", function(state)
+CreateToggle(MainContent, 96, "⚡ Speed (CFrame)", function(state)
     speedEnabled = state
 end)
-CreateNumberControl(MainContent, 144, "   Value Speed", 10, 10, 10, 500, false, function(val)
+CreateNumberControl(MainContent, 144, "   ↳ Value Speed", 10, 10, 10, 500, false, function(val)
     currentSpeed = val
 end)
 
 -- NOCLIP FEATURE
 local noclipEnabled = false
-CreateToggle(MainContent, 192, " Noclip (Đi xuyên tường)", function(state)
+CreateToggle(MainContent, 192, "👻 Noclip (Đi xuyên tường)", function(state)
     noclipEnabled = state
 end)
 
+-- INFINITE JUMP FEATURE
+local infJumpEnabled = false
+CreateToggle(MainContent, 240, "🦘 Infinite Jump", function(state)
+    infJumpEnabled = state
+end)
+
+UserInputService.JumpRequest:Connect(function()
+    if infJumpEnabled then
+        pcall(function()
+            local char = LocalPlayer.Character
+            if char and char:FindFirstChildOfClass("Humanoid") then
+                char:FindFirstChildOfClass("Humanoid"):ChangeState(Enum.HumanoidStateType.Jumping)
+            end
+        end)
+    end
+end)
+
+-- AIR WALK FEATURE
+local airWalkEnabled = false
+local airPlatform = nil
+CreateToggle(MainContent, 288, "☁️ Air Walk (Đi trên không)", function(state)
+    airWalkEnabled = state
+    if not airWalkEnabled and airPlatform then
+        airPlatform:Destroy()
+        airPlatform = nil
+    end
+end)
+
+RunService.RenderStepped:Connect(function()
+    if airWalkEnabled then
+        pcall(function()
+            local char = LocalPlayer.Character
+            if char and char:FindFirstChild("HumanoidRootPart") then
+                local hrp = char.HumanoidRootPart
+                if not airPlatform then
+                    airPlatform = Instance.new("Part")
+                    airPlatform.Name = "AirWalkPlatform"
+                    airPlatform.Size = Vector3.new(4, 1, 4)
+                    airPlatform.Transparency = 1
+                    airPlatform.Anchored = true
+                    airPlatform.Parent = workspace
+                end
+                airPlatform.Position = hrp.Position - Vector3.new(0, 3.5, 0)
+            end
+        end)
+    else
+        if airPlatform then
+            airPlatform:Destroy()
+            airPlatform = nil
+        end
+    end
+end)
+
 local espEnabled = false
-CreateToggle(MainContent, 240, " ESP Player", function(state)
+CreateToggle(MainContent, 336, "👁️ ESP Player", function(state)
     espEnabled = state
 end)
 
 local afkEnabled = false
-CreateToggle(MainContent, 288, " Anti AFK", function(state)
+CreateToggle(MainContent, 384, "🛡️ Anti AFK", function(state)
     afkEnabled = state
 end)
 
 -- SET POSITION & TELEPORT
 local savedCFrame = nil
-
-local setTpCard = CreateElement(MainContent, 336, " Set Pos & Teleport")
+local setTpCard = CreateElement(MainContent, 432, "📍 Set Pos & Teleport")
 
 local setPosBtn = Instance.new("TextButton", setTpCard)
 setPosBtn.Size = UDim2.new(0, 60, 0, 24)
@@ -382,8 +463,46 @@ tpBtn.MouseButton1Click:Connect(function()
     end
 end)
 
+-- ==================== TAB COMBAT (HITBOX + TĂNG HIT) ====================
+local hitboxEnabled = false
+local hitboxSize = 5
+
+CreateToggle(CombatContent, 0, "🎯 Hiện Hitbox & Tăng Hit", function(state)
+    hitboxEnabled = state
+end)
+
+CreateNumberControl(CombatContent, 48, "   ↳ Kích thước Hitbox", 5, 2, 2, 25, false, function(val)
+    hitboxSize = val
+end)
+
+RunService.RenderStepped:Connect(function()
+    if hitboxEnabled then
+        pcall(function()
+            for _, p in pairs(Players:GetPlayers()) do
+                if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+                    local hrp = p.Character.HumanoidRootPart
+                    hrp.Size = Vector3.new(hitboxSize, hitboxSize, hitboxSize)
+                    hrp.Transparency = 0.6
+                    hrp.BrickColor = BrickColor.new("Bright red")
+                    hrp.Material = Enum.Material.Neon
+                    hrp.CanCollide = false
+                end
+            end
+        end)
+    else
+        pcall(function()
+            for _, p in pairs(Players:GetPlayers()) do
+                if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+                    local hrp = p.Character.HumanoidRootPart
+                    hrp.Size = Vector3.new(2, 2, 1) -- Kích thước mặc định Roblox
+                    hrp.Transparency = 1
+                end
+            end
+        end)
+    end
+end)
+
 -- ==================== TAB SERVER ====================
--- F3X TOOL BUTTON
 local f3xCard = CreateElement(ServerContent, 0, "🛠️ Lấy F3X (Build Tools)")
 local f3xBtn = Instance.new("TextButton", f3xCard)
 f3xBtn.Size = UDim2.new(0, 70, 0, 24)
@@ -440,117 +559,4 @@ local rejoinBtn = Instance.new("TextButton", rejoinCard)
 rejoinBtn.Size = UDim2.new(0, 70, 0, 24)
 rejoinBtn.Position = UDim2.new(1, -80, 0.5, -12)
 rejoinBtn.BackgroundColor3 = Color3.fromRGB(220, 20, 30)
-rejoinBtn.Font = Enum.Font.SourceSansBold
-rejoinBtn.Text = "REJOIN"
-rejoinBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-rejoinBtn.TextSize = 12
-Instance.new("UICorner", rejoinBtn).CornerRadius = UDim.new(0, 4)
-
-rejoinBtn.MouseButton1Click:Connect(function()
-    rejoinBtn.Text = "..."
-    if #Players:GetPlayers() <= 1 then
-        LocalPlayer:Kick("\nRejoining...")
-        task.wait(1)
-        TeleportService:Teleport(game.PlaceId, LocalPlayer)
-    else
-        TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, LocalPlayer)
-    end
-end)
-
--- ==================== SYSTEM LOGICS ====================
--- Speed Logic
-RunService.RenderStepped:Connect(function()
-    if speedEnabled then
-        pcall(function()
-            local char = LocalPlayer.Character
-            if char and char:FindFirstChild("Humanoid") and char:FindFirstChild("HumanoidRootPart") then
-                local hum = char.Humanoid
-                local hrp = char.HumanoidRootPart
-                if hum.MoveDirection.Magnitude > 0 then
-                    hrp.CFrame = hrp.CFrame + (hum.MoveDirection * (currentSpeed * 0.1))
-                end
-            end
-        end)
-    end
-end)
-
--- Noclip Logic
-RunService.Stepped:Connect(function()
-    if noclipEnabled then
-        pcall(function()
-            local char = LocalPlayer.Character
-            if char then
-                for _, part in pairs(char:GetDescendants()) do
-                    if part:IsA("BasePart") then
-                        part.CanCollide = false
-                    end
-                end
-            end
-        end)
-    end
-end)
-
--- Fixed Stable ESP Loop
-RunService.RenderStepped:Connect(function()
-    for _, p in pairs(Players:GetPlayers()) do
-        if p ~= LocalPlayer and p.Character then
-            local char = p.Character
-            local head = char:FindFirstChild("Head")
-            
-            if espEnabled then
-                local hl = char:FindFirstChild("EspHighlight")
-                if not hl then
-                    hl = Instance.new("Highlight")
-                    hl.Name = "EspHighlight"
-                    hl.Adornee = char
-                    hl.FillColor = Color3.fromRGB(255, 0, 0)
-                    hl.OutlineColor = Color3.fromRGB(255, 255, 255)
-                    hl.FillTransparency = 0.5
-                    hl.Parent = char
-                end
-                
-                if head then
-                    local bill = head:FindFirstChild("EspNameTag")
-                    if not bill then
-                        bill = Instance.new("BillboardGui")
-                        bill.Name = "EspNameTag"
-                        bill.Adornee = head
-                        bill.Size = UDim2.new(0, 100, 0, 40)
-                        bill.StudsOffset = Vector3.new(0, 2, 0)
-                        bill.AlwaysOnTop = true
-                        
-                        local txt = Instance.new("TextLabel")
-                        txt.Name = "Text"
-                        txt.Size = UDim2.new(1, 0, 1, 0)
-                        txt.BackgroundTransparency = 1
-                        txt.Font = Enum.Font.SourceSansBold
-                        txt.TextColor3 = Color3.fromRGB(255, 60, 60)
-                        txt.TextSize = 11
-                        txt.TextStrokeTransparency = 0
-                        txt.Parent = bill
-                        bill.Parent = head
-                    end
-                    local txt = bill:FindFirstChild("Text")
-                    if txt then
-                        txt.Text = p.Name .. "\n[" .. p.DisplayName .. "]"
-                    end
-                end
-            else
-                local hl = char:FindFirstChild("EspHighlight")
-                if hl then hl:Destroy() end
-                if head then
-                    local bill = head:FindFirstChild("EspNameTag")
-                    if bill then bill:Destroy() end
-                end
-            end
-        end
-    end
-end)
-
-LocalPlayer.Idled:Connect(function()
-    if afkEnabled then
-        VirtualUser:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
-        task.wait(1)
-        VirtualUser:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
-    end
-end)
+rejoinBtn.Font = Enum.Fo
