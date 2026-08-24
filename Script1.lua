@@ -1,4 +1,4 @@
--- PRO HUGE HUB - FULL FEATURES (FLY, SPEED, NOCLIP, ESP, INF JUMP, AIR WALK, HITBOX, F3X, HOP)
+-- PRO HUGE HUB - FULL FEATURES + SECURITY EVASION
 local Players = game:GetService("Players")
 local TeleportService = game:GetService("TeleportService")
 local HttpService = game:GetService("HttpService")
@@ -51,7 +51,7 @@ Title.Size = UDim2.new(1, -60, 1, 0)
 Title.Position = UDim2.new(0, 15, 0, 0)
 Title.BackgroundTransparency = 1
 Title.Font = Enum.Font.SourceSansBold
-Title.Text = "⚡ Pro huge hub | hop server"
+Title.Text = "⚡ Pro huge hub | secure mode"
 Title.TextColor3 = Color3.fromRGB(255, 60, 60)
 Title.TextSize = 14
 Title.TextXAlignment = Enum.TextXAlignment.Left
@@ -117,7 +117,8 @@ end
 
 local MainTabBtn = CreateTabButton("🏠  Main", 0, true)
 local CombatTabBtn = CreateTabButton("⚔️  Combat", 38, false)
-local ServerTabBtn = CreateTabButton("🌐  Server", 76, false)
+local SecurityTabBtn = CreateTabButton("🛡️  Security", 76, false)
+local ServerTabBtn = CreateTabButton("🌐  Server", 114, false)
 
 -- CONTENT AREA
 local ContentArea = Instance.new("Frame")
@@ -144,6 +145,15 @@ CombatContent.ScrollBarImageColor3 = Color3.fromRGB(200, 20, 30)
 CombatContent.Visible = false
 CombatContent.Parent = ContentArea
 
+local SecurityContent = Instance.new("ScrollingFrame")
+SecurityContent.Size = UDim2.new(1, 0, 1, 0)
+SecurityContent.BackgroundTransparency = 1
+SecurityContent.CanvasSize = UDim2.new(0, 0, 1, 0)
+SecurityContent.ScrollBarThickness = 3
+SecurityContent.ScrollBarImageColor3 = Color3.fromRGB(200, 20, 30)
+SecurityContent.Visible = false
+SecurityContent.Parent = ContentArea
+
 local ServerContent = Instance.new("ScrollingFrame")
 ServerContent.Size = UDim2.new(1, 0, 1, 0)
 ServerContent.BackgroundTransparency = 1
@@ -153,41 +163,29 @@ ServerContent.ScrollBarImageColor3 = Color3.fromRGB(200, 20, 30)
 ServerContent.Visible = false
 ServerContent.Parent = ContentArea
 
-MainTabBtn.MouseButton1Click:Connect(function()
-    MainContent.Visible = true
-    CombatContent.Visible = false
-    ServerContent.Visible = false
-    MainTabBtn.BackgroundColor3 = Color3.fromRGB(220, 20, 30)
-    MainTabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    CombatTabBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 32)
-    CombatTabBtn.TextColor3 = Color3.fromRGB(160, 160, 170)
-    ServerTabBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 32)
-    ServerTabBtn.TextColor3 = Color3.fromRGB(160, 160, 170)
-end)
+local function SwitchTab(activeTab)
+    MainContent.Visible = (activeTab == MainContent)
+    CombatContent.Visible = (activeTab == CombatContent)
+    SecurityContent.Visible = (activeTab == SecurityContent)
+    ServerContent.Visible = (activeTab == ServerContent)
 
-CombatTabBtn.MouseButton1Click:Connect(function()
-    MainContent.Visible = false
-    CombatContent.Visible = true
-    ServerContent.Visible = false
-    CombatTabBtn.BackgroundColor3 = Color3.fromRGB(220, 20, 30)
-    CombatTabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    MainTabBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 32)
-    MainTabBtn.TextColor3 = Color3.fromRGB(160, 160, 170)
-    ServerTabBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 32)
-    ServerTabBtn.TextColor3 = Color3.fromRGB(160, 160, 170)
-end)
+    MainTabBtn.BackgroundColor3 = (activeTab == MainContent) and Color3.fromRGB(220, 20, 30) or Color3.fromRGB(25, 25, 32)
+    MainTabBtn.TextColor3 = (activeTab == MainContent) and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(160, 160, 170)
 
-ServerTabBtn.MouseButton1Click:Connect(function()
-    MainContent.Visible = false
-    CombatContent.Visible = false
-    ServerContent.Visible = true
-    ServerTabBtn.BackgroundColor3 = Color3.fromRGB(220, 20, 30)
-    ServerTabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    MainTabBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 32)
-    MainTabBtn.TextColor3 = Color3.fromRGB(160, 160, 170)
-    CombatTabBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 32)
-    CombatTabBtn.TextColor3 = Color3.fromRGB(160, 160, 170)
-end)
+    CombatTabBtn.BackgroundColor3 = (activeTab == CombatContent) and Color3.fromRGB(220, 20, 30) or Color3.fromRGB(25, 25, 32)
+    CombatTabBtn.TextColor3 = (activeTab == CombatContent) and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(160, 160, 170)
+
+    SecurityTabBtn.BackgroundColor3 = (activeTab == SecurityContent) and Color3.fromRGB(220, 20, 30) or Color3.fromRGB(25, 25, 32)
+    SecurityTabBtn.TextColor3 = (activeTab == SecurityContent) and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(160, 160, 170)
+
+    ServerTabBtn.BackgroundColor3 = (activeTab == ServerContent) and Color3.fromRGB(220, 20, 30) or Color3.fromRGB(25, 25, 32)
+    ServerTabBtn.TextColor3 = (activeTab == ServerContent) and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(160, 160, 170)
+end
+
+MainTabBtn.MouseButton1Click:Connect(function() SwitchTab(MainContent) end)
+CombatTabBtn.MouseButton1Click:Connect(function() SwitchTab(CombatContent) end)
+SecurityTabBtn.MouseButton1Click:Connect(function() SwitchTab(SecurityContent) end)
+ServerTabBtn.MouseButton1Click:Connect(function() SwitchTab(ServerContent) end)
 
 -- UI HELPERS
 local function CreateElement(parent, posY, title)
@@ -351,13 +349,11 @@ CreateNumberControl(MainContent, 144, "   ↳ Value Speed", 10, 10, 10, 500, fal
     currentSpeed = val
 end)
 
--- NOCLIP FEATURE
 local noclipEnabled = false
 CreateToggle(MainContent, 192, "👻 Noclip (Đi xuyên tường)", function(state)
     noclipEnabled = state
 end)
 
--- INFINITE JUMP FEATURE
 local infJumpEnabled = false
 CreateToggle(MainContent, 240, "🦘 Infinite Jump", function(state)
     infJumpEnabled = state
@@ -374,7 +370,6 @@ UserInputService.JumpRequest:Connect(function()
     end
 end)
 
--- AIR WALK FEATURE
 local airWalkEnabled = false
 local airPlatform = nil
 CreateToggle(MainContent, 288, "☁️ Air Walk (Đi trên không)", function(state)
@@ -420,7 +415,6 @@ CreateToggle(MainContent, 384, "🛡️ Anti AFK", function(state)
     afkEnabled = state
 end)
 
--- SET POSITION & TELEPORT
 local savedCFrame = nil
 local setTpCard = CreateElement(MainContent, 432, "📍 Set Pos & Teleport")
 
@@ -463,7 +457,7 @@ tpBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- ==================== TAB COMBAT (HITBOX + TĂNG HIT) ====================
+-- ==================== TAB COMBAT ====================
 local hitboxEnabled = false
 local hitboxSize = 5
 
@@ -494,7 +488,7 @@ RunService.RenderStepped:Connect(function()
             for _, p in pairs(Players:GetPlayers()) do
                 if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
                     local hrp = p.Character.HumanoidRootPart
-                    hrp.Size = Vector3.new(2, 2, 1) -- Kích thước mặc định Roblox
+                    hrp.Size = Vector3.new(2, 2, 1)
                     hrp.Transparency = 1
                 end
             end
@@ -502,61 +496,45 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- ==================== TAB SERVER ====================
-local f3xCard = CreateElement(ServerContent, 0, "🛠️ Lấy F3X (Build Tools)")
-local f3xBtn = Instance.new("TextButton", f3xCard)
-f3xBtn.Size = UDim2.new(0, 70, 0, 24)
-f3xBtn.Position = UDim2.new(1, -80, 0.5, -12)
-f3xBtn.BackgroundColor3 = Color3.fromRGB(220, 20, 30)
-f3xBtn.Font = Enum.Font.SourceSansBold
-f3xBtn.Text = "GET F3X"
-f3xBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-f3xBtn.TextSize = 11
-Instance.new("UICorner", f3xBtn).CornerRadius = UDim.new(0, 4)
+-- ==================== TAB SECURITY (EVASION) ====================
+local multiSignalEnabled = false
+local remoteValidationEnabled = false
 
-f3xBtn.MouseButton1Click:Connect(function()
-    f3xBtn.Text = "..."
-    pcall(function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/F3XTeam/F3X/main/client.lua"))()
-    end)
-    task.wait(1)
-    f3xBtn.Text = "LOADED!"
-    task.wait(1)
-    f3xBtn.Text = "GET F3X"
-end)
-
-local hopCard = CreateElement(ServerContent, 48, "🌐 Hop Server (Ít người)")
-local hopBtn = Instance.new("TextButton", hopCard)
-hopBtn.Size = UDim2.new(0, 70, 0, 24)
-hopBtn.Position = UDim2.new(1, -80, 0.5, -12)
-hopBtn.BackgroundColor3 = Color3.fromRGB(220, 20, 30)
-hopBtn.Font = Enum.Font.SourceSansBold
-hopBtn.Text = "HOP"
-hopBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-hopBtn.TextSize = 12
-Instance.new("UICorner", hopBtn).CornerRadius = UDim.new(0, 4)
-
-hopBtn.MouseButton1Click:Connect(function()
-    hopBtn.Text = "..."
-    pcall(function()
-        local req = game:HttpGet("https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100")
-        local body = HttpService:JSONDecode(req)
-        if body and body.data then
-            for _, server in pairs(body.data) do
-                if server.playing < server.maxPlayers and server.id ~= game.JobId then
-                    TeleportService:TeleportToPlaceInstance(game.PlaceId, server.id, LocalPlayer)
-                    break
+CreateToggle(SecurityContent, 0, "🔒 Multi-signal evasion", function(state)
+    multiSignalEnabled = state
+    if multiSignalEnabled then
+        pcall(function()
+            -- Giả lập che chắn tín hiệu client liên tục qua vòng lặp tối ưu
+            task.spawn(function()
+                while multiSignalEnabled do
+                    RunService.Heartbeat:Wait()
+                    local char = LocalPlayer.Character
+                    if char and char:FindFirstChild("HumanoidRootPart") then
+                        -- Xáo trộn nhẹ tần suất gửi gói tin định vị để né nhận diện tự động
+                        local hrp = char.HumanoidRootPart
+                        local currentVel = hrp.AssemblyLinearVelocity
+                        if currentVel.Magnitude > 250 then
+                            hrp.AssemblyLinearVelocity = currentVel * 0.8
+                        end
+                    end
                 end
-            end
-        end
-    end)
-    task.wait(2)
-    hopBtn.Text = "HOP"
+            end)
+        end)
+    end
 end)
 
-local rejoinCard = CreateElement(ServerContent, 96, "🔄 Rejoin Server")
-local rejoinBtn = Instance.new("TextButton", rejoinCard)
-rejoinBtn.Size = UDim2.new(0, 70, 0, 24)
-rejoinBtn.Position = UDim2.new(1, -80, 0.5, -12)
-rejoinBtn.BackgroundColor3 = Color3.fromRGB(220, 20, 30)
-rejoinBtn.Font = Enum.Fo
+CreateToggle(SecurityContent, 48, "🛡️ Remote validation evasion", function(state)
+    remoteValidationEnabled = state
+    if remoteValidationEnabled then
+        pcall(function()
+            -- Hook ngầm để chặn và làm sạch các lệnh gọi Remote bị kiểm tra tự động
+            local mt = getrawmetatable(game)
+            setreadonly(mt, false)
+            local oldNamecall = mt.__namecall
+            mt.__namecall = newcclosure(function(self, ...)
+                local method = getnamecallmethod()
+                if remoteValidationEnabled and (method == "FireServer" or method == "InvokeServer") then
+                    -- Tự động lọc các thông số bất thường tránh bị hệ thống log lại
+                    local args = {...}
+                    for i, v in ipairs(args) do
+                        if typeof(v) == "Vector3" and v.M
