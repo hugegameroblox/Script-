@@ -1,9 +1,8 @@
--- PRO HUGE HUB - FIXED SYNTAX, ESP, SET TP & WORKING AUTO CLICK
+-- PRO HUGE HUB - FIXED ESP, SET TP & AUTO CLICK WITH SPEED ADJUST
 local Players = game:GetService("Players")
 local TeleportService = game:GetService("TeleportService")
 local HttpService = game:GetService("HttpService")
 local RunService = game:GetService("RunService")
-local VirtualInputManager = game:GetService("VirtualInputManager")
 local VirtualUser = game:GetService("VirtualUser")
 local CoreGui = game:GetService("CoreGui")
 local LocalPlayer = Players.LocalPlayer
@@ -329,7 +328,7 @@ CreateToggle(MainContent, 192, "🛡️ Anti AFK", function(state)
     afkEnabled = state
 end)
 
--- AUTO CLICK HARDWARE HYBRID (FIXED WORK FOR ALL GAMES)
+-- AUTO CLICK (NON-BLOCKING MOVEMENT & ADJUSTABLE SPEED)
 local autoClickEnabled = false
 local clickDelay = 0.05
 
@@ -338,21 +337,9 @@ CreateToggle(MainContent, 240, "🖱️ Auto Click", function(state)
     if autoClickEnabled then
         task.spawn(function()
             while autoClickEnabled do
-                local vp = workspace.CurrentCamera.ViewportSize
-                VirtualInputManager:SendMouseButtonEvent(vp.X / 2, vp.Y / 2, 0, true, game, 1)
+                VirtualUser:Button1Down(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
                 task.wait(0.01)
-                VirtualInputManager:SendMouseButtonEvent(vp.X / 2, vp.Y / 2, 0, false, game, 1)
-
-                pcall(function()
-                    local char = LocalPlayer.Character
-                    if char then
-                        local tool = char:FindFirstChildOfClass("Tool")
-                        if tool then
-                            tool:Activate()
-                        end
-                    end
-                end)
-
+                VirtualUser:Button1Up(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
                 task.wait(clickDelay)
             end
         end)
