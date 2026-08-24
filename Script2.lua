@@ -524,3 +524,94 @@ RunService.Stepped:Connect(function()
         end)
     end
 end)
+-- AIM ASSIST + FOV CIRCLE + VISIBILITY CHECK
+local aimAssistEnabled = false
+local fovCircleEnabled = true
+local fovRadius = 120 -- Bán kính vòng tròn FOV
+
+CreateToggle(CombatContent, 192, "Aim Assist & FOV Targeting", function(state) 
+    aimAssistEnabled = state 
+end)
+
+CreateToggle(CombatContent, 240, "   ↳ Hiển thị vòng tròn FOV", function(state) 
+    fovCircleEnabled = state 
+    if FOVring then FOVring.Visible = state end
+end)
+
+CreateNumberControl(CombatContent, 288, "   ↳ Cỡ FOV Radius", 120, 10, 50, 400, function(val) 
+    fovRadius = val 
+end)
+
+-- Tạo vòng tròn hiển thị FOV trên màn hình
+local FOVring = Drawing.new("Circle")
+FOVring.Visible = false
+FOVring.Filled = false
+FOVring.Thickness = 1.5
+FOVring.Color = Color3.fromRGB(220, 20, 30)
+FOVring.NumSides = 64
+
+RunService.RenderStepped:Connect(function()
+    local screenCenter = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
+    
+    -- Cập nhật vòng tròn FOV
+    if aimAssistEnabled and fovCircleEnabled then
+        FOVring.Visible = true
+        FOVring.Radius = fovRadius
+        FOVring.Position = screenCenter
+    else
+        FOVring.Visible = false
+    end
+
+    if aimAssistEnabled then
+        pcall(function()
+            local closestTarget = nil
+            local shortestDist = fovRadius
+
+            for _, p in pairs(Players:GetPlayers()) do
+                if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("Head") then
+                    local humanoid = p.Character:FindFirstChildOfClass("Humanoid")
+                    local head = p.Character.Head
+                    
+                    if humanoid and humanoid.Health > 0 then
+                        local pos, onScreen = Camera:WorldToViewportPoint(head.Position)
+                        
+                        if onScreen then
+                            -- Check Aim: Kiểm tra xem có bị vật cản (tường, đồ vật) che giữa mình và địch không
+                            local origin = Camera.CFrame.Position
+                            local direction = (head.Position - origin)
+                            local raycastParams = RaycastParams.new()
+                            raycastParams.FilterDescendantsInstances = {LocalPlayer.Character}
+                            raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
+                            raycastParams.IgnoreWater = true
+                            
+                            local raycastResult = Workspace:Raycast(origin, direction, raycastParams)
+                            local isVisible = true
+                            
+                            if raycastResult then
+                                -- Nếu tia raycast va phải vật thể không phải là nhân vật của địch thì tính là bị che
+                                local hitInstance = raycastResult.Instance
+                                if not hitInstance:IsDescendantOf(p.Character) then
+                                    isVisible = false
+                                end
+                            end
+
+                            -- Nếu không bị che khuất thì tính khoảng cách tới tâm màn hình
+                            if isVisible then
+                                local screenDist = (Vector2.new(pos.X, pos.Y) - screenCenter).Magnitude
+                                if screenDist < shortestDist then
+                                    shortestDist = screenDist
+                                    closestTarget = head
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+
+            -- Kéo nhẹ tâm (Aim Assist) về phía mục tiêu tìm được
+            if closestTarget then
+                Camera.CFrame = Camera.CFrame:Lerp(CFrame.new(Camera.CFrame.Position, closestTarget.Position), 0.25)
+            end
+        end)
+    end
+end)
