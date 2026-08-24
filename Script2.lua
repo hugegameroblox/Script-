@@ -1,4 +1,4 @@
--- PRO PVP HUB - ULTIMATE COMBAT EDITION
+-- PRO PVP HUB - ULTIMATE COMBAT EDITION (PHẦN 1)
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
@@ -11,6 +11,9 @@ pcall(function()
     if CoreGui:FindFirstChild("PvPHubUI") then
         CoreGui.PvPHubUI:Destroy()
     end
+    if CoreGui:FindFirstChild("FlyControlGui") then
+        CoreGui.FlyControlGui:Destroy()
+    end
 end)
 
 local ScreenGui = Instance.new("ScreenGui")
@@ -21,10 +24,10 @@ if not ScreenGui.Parent then
     ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui") 
 end
 
--- MAIN FRAME (ĐEN - VIỀN ĐỎ)
+-- MAIN FRAME
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 480, 0, 340)
-MainFrame.Position = UDim2.new(0.5, -240, 0.5, -170)
+MainFrame.Size = UDim2.new(0, 480, 0, 370)
+MainFrame.Position = UDim2.new(0.5, -240, 0.5, -185)
 MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
 MainFrame.BorderSizePixel = 0
 MainFrame.Active = true
@@ -33,7 +36,7 @@ MainFrame.Parent = ScreenGui
 Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 8)
 
 local UIStroke = Instance.new("UIStroke")
-UIStroke.Color = Color3.fromRGB(220, 20, 30) -- Viền Đỏ
+UIStroke.Color = Color3.fromRGB(220, 20, 30)
 UIStroke.Thickness = 2
 UIStroke.Parent = MainFrame
 
@@ -50,7 +53,7 @@ Title.Size = UDim2.new(1, -50, 1, 0)
 Title.Position = UDim2.new(0, 15, 0, 0)
 Title.BackgroundTransparency = 1
 Title.Font = Enum.Font.SourceSansBold
-Title.Text = "⚔️ ULTIMATE PVP HUB | ALL COMBAT TOOLS"
+Title.Text = "⚔️ ULTIMATE PVP HUB | MULTI-TAB"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.TextSize = 13
 Title.TextXAlignment = Enum.TextXAlignment.Left
@@ -95,17 +98,72 @@ OpenBtn.MouseButton1Click:Connect(function()
     OpenBtn.Visible = false
 end)
 
--- CONTENT AREA (TĂNG CANVAS CHO NHIỀU TÍNH NĂNG)
-local CombatContent = Instance.new("ScrollingFrame")
-CombatContent.Size = UDim2.new(1, -20, 1, -50)
-CombatContent.Position = UDim2.new(0, 10, 0, 45)
-CombatContent.BackgroundTransparency = 1
-CombatContent.CanvasSize = UDim2.new(0, 0, 2.8, 0)
-CombatContent.ScrollBarThickness = 3
-CombatContent.ScrollBarImageColor3 = Color3.fromRGB(220, 20, 30)
-CombatContent.Parent = MainFrame
+-- TAB SYSTEM
+local TabBar = Instance.new("Frame")
+TabBar.Size = UDim2.new(1, -20, 0, 30)
+TabBar.Position = UDim2.new(0, 10, 0, 42)
+TabBar.BackgroundTransparency = 1
+TabBar.Parent = MainFrame
 
--- UI HELPERS
+local MainTabBtn = Instance.new("TextButton")
+MainTabBtn.Size = UDim2.new(0.5, -5, 1, 0)
+MainTabBtn.BackgroundColor3 = Color3.fromRGB(220, 20, 30)
+MainTabBtn.Font = Enum.Font.SourceSansBold
+MainTabBtn.Text = "MAIN (Hỗ trợ)"
+MainTabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+MainTabBtn.TextSize = 13
+MainTabBtn.Parent = TabBar
+Instance.new("UICorner", MainTabBtn).CornerRadius = UDim.new(0, 6)
+
+local AimTabBtn = Instance.new("TextButton")
+AimTabBtn.Size = UDim2.new(0.5, -5, 1, 0)
+AimTabBtn.Position = UDim2.new(0.5, 5, 0, 0)
+AimTabBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+AimTabBtn.Font = Enum.Font.SourceSansBold
+AimTabBtn.Text = "AIM (Ngắm bắn)"
+AimTabBtn.TextColor3 = Color3.fromRGB(180, 180, 180)
+AimTabBtn.TextSize = 13
+AimTabBtn.Parent = TabBar
+Instance.new("UICorner", AimTabBtn).CornerRadius = UDim.new(0, 6)
+
+local MainContent = Instance.new("ScrollingFrame")
+MainContent.Size = UDim2.new(1, -20, 1, -85)
+MainContent.Position = UDim2.new(0, 10, 0, 78)
+MainContent.BackgroundTransparency = 1
+MainContent.CanvasSize = UDim2.new(0, 0, 2.5, 0)
+MainContent.ScrollBarThickness = 3
+MainContent.ScrollBarImageColor3 = Color3.fromRGB(220, 20, 30)
+MainContent.Visible = true
+MainContent.Parent = MainFrame
+
+local AimContent = Instance.new("ScrollingFrame")
+AimContent.Size = UDim2.new(1, -20, 1, -85)
+AimContent.Position = UDim2.new(0, 10, 0, 78)
+AimContent.BackgroundTransparency = 1
+AimContent.CanvasSize = UDim2.new(0, 0, 2.0, 0)
+AimContent.ScrollBarThickness = 3
+AimContent.ScrollBarImageColor3 = Color3.fromRGB(220, 20, 30)
+AimContent.Visible = false
+AimContent.Parent = MainFrame
+
+MainTabBtn.MouseButton1Click:Connect(function()
+    MainContent.Visible = true
+    AimContent.Visible = false
+    MainTabBtn.BackgroundColor3 = Color3.fromRGB(220, 20, 30)
+    MainTabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    AimTabBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    AimTabBtn.TextColor3 = Color3.fromRGB(180, 180, 180)
+end)
+
+AimTabBtn.MouseButton1Click:Connect(function()
+    MainContent.Visible = false
+    AimContent.Visible = true
+    AimTabBtn.BackgroundColor3 = Color3.fromRGB(220, 20, 30)
+    AimTabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    MainTabBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    MainTabBtn.TextColor3 = Color3.fromRGB(180, 180, 180)
+end)
+
 local function CreateElement(parent, posY, title)
     local frame = Instance.new("Frame")
     frame.Size = UDim2.new(1, 0, 0, 40)
@@ -136,7 +194,6 @@ end
 
 local function CreateToggle(parent, posY, title, callback)
     local frame = CreateElement(parent, posY, title)
-
     local toggleBtn = Instance.new("TextButton")
     toggleBtn.Size = UDim2.new(0, 40, 0, 20)
     toggleBtn.Position = UDim2.new(1, -50, 0.5, -10)
@@ -168,7 +225,6 @@ end
 
 local function CreateNumberControl(parent, posY, title, initialValue, step, minVal, maxVal, callback)
     local frame = CreateElement(parent, posY, title)
-
     local incBtn = Instance.new("TextButton")
     incBtn.Size = UDim2.new(0, 25, 0, 24)
     incBtn.Position = UDim2.new(1, -30, 0.5, -12)
@@ -209,7 +265,6 @@ local function CreateNumberControl(parent, posY, title, initialValue, step, minV
         valBox.Text = tostring(curVal)
         callback(curVal)
     end)
-
     decBtn.MouseButton1Click:Connect(function()
         curVal = curVal - step
         if curVal < minVal then curVal = minVal end
@@ -217,20 +272,12 @@ local function CreateNumberControl(parent, posY, title, initialValue, step, minV
         callback(curVal)
     end)
 end
+-- ==================== TAB 1: MAIN CONTENT (PHẦN 2) ====================
 
--- ==================== TẤT CẢ TÍNH NĂNG PVP ====================
-
--- 1. Hitbox Mở Rộng
 local hitboxEnabled = false
 local hitboxSize = 5
-
-CreateToggle(CombatContent, 0, "Mở rộng Hitbox (Tăng tầm đánh)", function(state)
-    hitboxEnabled = state
-end)
-
-CreateNumberControl(CombatContent, 48, "   ↳ Kích thước Hitbox", 5, 2, 2, 1000 , function(val)
-    hitboxSize = val
-end)
+CreateToggle(MainContent, 0, "Mở rộng Hitbox (Tăng tầm đánh)", function(state) hitboxEnabled = state end)
+CreateNumberControl(MainContent, 48, "   ↳ Kích thước Hitbox", 5, 2, 2, 1000, function(val) hitboxSize = val end)
 
 RunService.RenderStepped:Connect(function()
     if hitboxEnabled then
@@ -259,11 +306,8 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- 2. Anti Knockback (Chống bật lùi)
 local antiKbEnabled = false
-CreateToggle(CombatContent, 96, "Anti Knockback (Chống bật lùi)", function(state)
-    antiKbEnabled = state
-end)
+CreateToggle(MainContent, 96, "Anti Knockback (Chống bật lùi)", function(state) antiKbEnabled = state end)
 
 RunService.Stepped:Connect(function()
     if antiKbEnabled then
@@ -279,9 +323,8 @@ RunService.Stepped:Connect(function()
     end
 end)
 
--- 3 ESP BOX + TÊN NGƯỜI CHƠI
 local espEnabled = false
-CreateToggle(CombatContent, 144, "ESP Player (Nhìn xuyên tường + Tên)", function(state) espEnabled = state end)
+CreateToggle(MainContent, 144, "ESP Player (Xuyên tường + Tên)", function(state) espEnabled = state end)
 
 RunService.RenderStepped:Connect(function()
     pcall(function()
@@ -296,7 +339,6 @@ RunService.RenderStepped:Connect(function()
                     local nameTag = head:FindFirstChild("ESPNameTag")
                     
                     if espEnabled then
-                        -- Tạo Box nhìn xuyên tường
                         if not box then
                             box = Instance.new("BoxHandleAdornment")
                             box.Name = "ESPBox"
@@ -308,8 +350,6 @@ RunService.RenderStepped:Connect(function()
                             box.ZIndex = 5
                             box.Parent = p.Character
                         end
-                        
-                        -- Tạo hiện tên trên đầu
                         if not nameTag then
                             nameTag = Instance.new("BillboardGui")
                             nameTag.Name = "ESPNameTag"
@@ -340,66 +380,10 @@ RunService.RenderStepped:Connect(function()
     end)
 end)
 
-
--- 4. CamLock / Aimbot (Khóa camera theo kẻ địch gần nhất)
-local camLockEnabled = false
-CreateToggle(CombatContent, 192, "CamLock / Aimbot (Khóa tâm địch)", function(state)
-    camLockEnabled = state
-end)
-
-RunService.RenderStepped:Connect(function()
-    if camLockEnabled then
-        pcall(function()
-            local closestPlayer = nil
-            local shortestDist = math.huge
-            for _, p in pairs(Players:GetPlayers()) do
-                if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("Head") then
-                    local humanoid = p.Character:FindFirstChildOfClass("Humanoid")
-                    if humanoid and humanoid.Health > 0 then
-                        local pos, onScreen = Camera:WorldToViewportPoint(p.Character.Head.Position)
-                        if onScreen then
-                            local dist = (Vector2.new(pos.X, pos.Y) - Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)).Magnitude
-                            if dist < shortestDist then
-                                shortestDist = dist
-                                closestPlayer = p
-                            end
-                        end
-                    end
-                end
-            end
-            if closestPlayer and closestPlayer.Character:FindFirstChild("Head") then
-                Camera.CFrame = CFrame.new(Camera.CFrame.Position, closestPlayer.Character.Head.Position)
-            end
-        end)
-    end
-end)
-
--- 5. Speed Boost (Tăng tốc độ chạy)
-local speedEnabled = false
-local speedVal = 24
-CreateToggle(CombatContent, 240, "Speed Boost (Tăng tốc chạy)", function(state)
-    speedEnabled = state
-end)
-
-CreateNumberControl(CombatContent, 288, "   ↳ Tốc độ (WalkSpeed)", 24, 4, 16, 1000, function(val)
-    speedVal = val
-end)
-
-RunService.Stepped:Connect(function()
-    if speedEnabled then
-        pcall(function()
-            local char = LocalPlayer.Character
-            if char and char:FindFirstChildOfClass("Humanoid") then
-                char:FindFirstChildOfClass("Humanoid").WalkSpeed = speedVal
-            end
-        end)
-    end
-end)
--- 6 SPEED BOOST FIX (DÙNG CFRAME BẤT CHẤP ANTI-CHEAT)
 local speedEnabled = false
 local speedVal = 1
-CreateToggle(CombatContent, 240, "Speed Boost (Tốc độ CFrame)", function(state) speedEnabled = state end)
-CreateNumberControl(CombatContent, 288, "   ↳ Độ phóng (Multi)", 1, 1, 1, 5, function(val) speedVal = val end)
+CreateToggle(MainContent, 192, "Speed Boost (Tốc độ CFrame)", function(state) speedEnabled = state end)
+CreateNumberControl(MainContent, 240, "   ↳ Độ phóng (Multi)", 1, 1, 1, 5, function(val) speedVal = val end)
 
 RunService.RenderStepped:Connect(function()
     if speedEnabled then
@@ -416,210 +400,9 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- 7. Fly (Bay lượn né giao tranh)
-local flyEnabled = false
-CreateToggle(CombatContent, 336, "Fly Mode (Bay lượn PvP)", function(state)
-    flyEnabled = state
-end)
-
-RunService.RenderStepped:Connect(function()
-    pcall(function()
-        local char = LocalPlayer.Character
-        if char and char:FindFirstChild("HumanoidRootPart") then
-            local hrp = char.HumanoidRootPart
-            local humanoid = char:FindFirstChildOfClass("Humanoid")
-            if flyEnabled then
-                humanoid.PlatformStand = true
-                hrp.Velocity = Vector3.new(0, 1, 0)
-                if UserInputService:IsKeyDown(Enum.KeyCode.W) then
-                    hrp.CFrame = hrp.CFrame + (Camera.CFrame.LookVector * 1.5)
-                end
-                if UserInputService:IsKeyDown(Enum.KeyCode.S) then
-                    hrp.CFrame = hrp.CFrame - (Camera.CFrame.LookVector * 1.5)
-                end
-                if UserInputService:IsKeyDown(Enum.KeyCode.A) then
-                    hrp.CFrame = hrp.CFrame - (Camera.CFrame.RightVector * 1.5)
-                end
-                if UserInputService:IsKeyDown(Enum.KeyCode.D) then
-                    hrp.CFrame = hrp.CFrame + (Camera.CFrame.RightVector * 1.5)
-                end
-            else
-                if humanoid and humanoid.PlatformStand then
-                    humanoid.PlatformStand = false
-                end
-            end
-        end
-    end)
-end)
--- 8. INFINITE JUMP (Nhảy liên tục vô hạn trên không)
-local infJumpEnabled = false
-CreateToggle(CombatContent, 432, "Infinite Jump (Nhảy vô hạn)", function(state) 
-    infJumpEnabled = state 
-end)
-
-UserInputService.JumpRequest:Connect(function()
-    if infJumpEnabled then
-        pcall(function()
-            local char = LocalPlayer.Character
-            if char and char:FindFirstChildOfClass("Humanoid") then
-                char:FindFirstChildOfClass("Humanoid"):ChangeState(Enum.HumanoidStateType.Jumping)
-            end
-        end)
-    end
-end)
-
--- 9. AIR WALK (Đứng/đi lơ lửng trên không như trên mặt đất)
-local airWalkEnabled = false
-local airWalkPart = nil
-CreateToggle(CombatContent, 480, "Air Walk (Đi bộ trên không)", function(state) 
-    airWalkEnabled = state 
-    if not airWalkEnabled and airWalkPart then
-        airWalkPart:Destroy()
-        airWalkPart = nil
-    end
-end)
-
-RunService.RenderStepped:Connect(function()
-    if airWalkEnabled then
-        pcall(function()
-            local char = LocalPlayer.Character
-            if char and char:FindFirstChild("HumanoidRootPart") then
-                local hrp = char.HumanoidRootPart
-                if not airWalkPart or not airWalkPart.Parent then
-                    airWalkPart = Instance.new("Part")
-                    airWalkPart.Name = "AirWalkPlatform"
-                    airWalkPart.Size = Vector3.new(4, 1, 4)
-                    airWalkPart.Transparency = 1 -- Ẩn tàng hình nền đi (muốn test thấy thì đổi thành 0.5)
-                    airWalkPart.Anchored = true
-                    airWalkPart.Parent = Workspace
-                end
-                airWalkPart.CFrame = hrp.CFrame - Vector3.new(0, 3.5, 0)
-            end
-        end)
-    else
-        if airWalkPart then
-            airWalkPart:Destroy()
-            airWalkPart = nil
-        end
-    end
-end)
-
--- 10 . Godmode 
-local godmodeEnabled = false
-CreateToggle(CombatContent, 384, "Godmode (Hỗ trợ máu vô hạn giả lập)", function(state)
-    godmodeEnabled = state
-end)
-
-RunService.Stepped:Connect(function()
-    if godmodeEnabled then
-        pcall(function()
-            local char = LocalPlayer.Character
-            if char then
-                local humanoid = char:FindFirstChildOfClass("Humanoid")
-                if humanoid then
-                    humanoid.MaxHealth = math.huge
-                    humanoid.Health = math.huge
-                end
-            end
-        end)
-    end
-end)
--- AIM ASSIST + FOV CIRCLE + VISIBILITY CHECK
-local aimAssistEnabled = false
-local fovCircleEnabled = true
-local fovRadius = 120 -- Bán kính vòng tròn FOV
-
-CreateToggle(CombatContent, 192, "Aim Assist & FOV Targeting", function(state) 
-    aimAssistEnabled = state 
-end)
-
-CreateToggle(CombatContent, 240, "   ↳ Hiển thị vòng tròn FOV", function(state) 
-    fovCircleEnabled = state 
-    if FOVring then FOVring.Visible = state end
-end)
-
-CreateNumberControl(CombatContent, 288, "   ↳ Cỡ FOV Radius", 120, 10, 50, 400, function(val) 
-    fovRadius = val 
-end)
-
--- Tạo vòng tròn hiển thị FOV trên màn hình
-local FOVring = Drawing.new("Circle")
-FOVring.Visible = false
-FOVring.Filled = false
-FOVring.Thickness = 1.5
-FOVring.Color = Color3.fromRGB(220, 20, 30)
-FOVring.NumSides = 64
-
-RunService.RenderStepped:Connect(function()
-    local screenCenter = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
-    
-    -- Cập nhật vòng tròn FOV
-    if aimAssistEnabled and fovCircleEnabled then
-        FOVring.Visible = true
-        FOVring.Radius = fovRadius
-        FOVring.Position = screenCenter
-    else
-        FOVring.Visible = false
-    end
-
-    if aimAssistEnabled then
-        pcall(function()
-            local closestTarget = nil
-            local shortestDist = fovRadius
-
-            for _, p in pairs(Players:GetPlayers()) do
-                if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("Head") then
-                    local humanoid = p.Character:FindFirstChildOfClass("Humanoid")
-                    local head = p.Character.Head
-                    
-                    if humanoid and humanoid.Health > 0 then
-                        local pos, onScreen = Camera:WorldToViewportPoint(head.Position)
-                        
-                        if onScreen then
-                            -- Check Aim: Kiểm tra xem có bị vật cản (tường, đồ vật) che giữa mình và địch không
-                            local origin = Camera.CFrame.Position
-                            local direction = (head.Position - origin)
-                            local raycastParams = RaycastParams.new()
-                            raycastParams.FilterDescendantsInstances = {LocalPlayer.Character}
-                            raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
-                            raycastParams.IgnoreWater = true
-                            
-                            local raycastResult = Workspace:Raycast(origin, direction, raycastParams)
-                            local isVisible = true
-                            
-                            if raycastResult then
-                                -- Nếu tia raycast va phải vật thể không phải là nhân vật của địch thì tính là bị che
-                                local hitInstance = raycastResult.Instance
-                                if not hitInstance:IsDescendantOf(p.Character) then
-                                    isVisible = false
-                                end
-                            end
-
-                            -- Nếu không bị che khuất thì tính khoảng cách tới tâm màn hình
-                            if isVisible then
-                                local screenDist = (Vector2.new(pos.X, pos.Y) - screenCenter).Magnitude
-                                if screenDist < shortestDist then
-                                    shortestDist = screenDist
-                                    closestTarget = head
-                                end
-                            end
-                        end
-                    end
-                end
-            end
-
-            -- Kéo nhẹ tâm (Aim Assist) về phía mục tiêu tìm được
-            if closestTarget then
-                Camera.CFrame = Camera.CFrame:Lerp(CFrame.new(Camera.CFrame.Position, closestTarget.Position), 0.50)
-            end
-        end)
-    end
-end)
--- FLY MODE + FLY CONTROL GUI (ĐIỀU KHIỂN TRÊN MÀN HÌNH)
 local flyEnabled = false
 local flySpeed = 50
 
--- Tạo bảng điều khiển Fly nhỏ gọn trên màn hình
 local FlyGui = Instance.new("ScreenGui")
 FlyGui.Name = "FlyControlGui"
 FlyGui.ResetOnSpawn = false
@@ -651,7 +434,6 @@ FlyTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
 FlyTitle.TextSize = 12
 FlyTitle.Parent = FlyFrame
 
--- Nút UP (Bay lên)
 local UpBtn = Instance.new("TextButton")
 UpBtn.Size = UDim2.new(0, 65, 0, 35)
 UpBtn.Position = UDim2.new(0, 10, 0, 35)
@@ -663,7 +445,6 @@ UpBtn.TextSize = 11
 UpBtn.Parent = FlyFrame
 Instance.new("UICorner", UpBtn).CornerRadius = UDim.new(0, 6)
 
--- Nút DOWN (Hạ xuống)
 local DownBtn = Instance.new("TextButton")
 DownBtn.Size = UDim2.new(0, 65, 0, 35)
 DownBtn.Position = UDim2.new(0, 85, 0, 35)
@@ -675,7 +456,6 @@ DownBtn.TextSize = 11
 DownBtn.Parent = FlyFrame
 Instance.new("UICorner", DownBtn).CornerRadius = UDim.new(0, 6)
 
--- Hiển thị tốc độ bay
 local SpeedLbl = Instance.new("TextLabel")
 SpeedLbl.Size = UDim2.new(1, 0, 0, 20)
 SpeedLbl.Position = UDim2.new(0, 0, 0, 75)
@@ -686,7 +466,6 @@ SpeedLbl.TextColor3 = Color3.fromRGB(220, 20, 30)
 SpeedLbl.TextSize = 11
 SpeedLbl.Parent = FlyFrame
 
--- Nút tăng/giảm tốc độ bay
 local PlusFly = Instance.new("TextButton")
 PlusFly.Size = UDim2.new(0, 65, 0, 25)
 PlusFly.Position = UDim2.new(0, 85, 0, 100)
@@ -719,15 +498,13 @@ MinusFly.MouseButton1Click:Connect(function()
     SpeedLbl.Text = "Speed: " .. tostring(flySpeed)
 end)
 
--- Toggle bật/tắt Fly chính trong Hub
-CreateToggle(CombatContent, 336, "Fly Mode + Fly GUI", function(state)
+CreateToggle(MainContent, 288, "Fly Mode + Fly GUI", function(state)
     flyEnabled = state
     FlyGui.Enabled = state
 end)
 
 local flyingUp = false
 local flyingDown = false
-
 UpBtn.MouseButton1Down:Connect(function() flyingUp = true end)
 UpBtn.MouseButton1Up:Connect(function() flyingUp = false end)
 DownBtn.MouseButton1Down:Connect(function() flyingDown = true end)
@@ -739,70 +516,110 @@ RunService.RenderStepped:Connect(function()
         if char and char:FindFirstChild("HumanoidRootPart") then
             local hrp = char.HumanoidRootPart
             local humanoid = char:FindFirstChildOfClass("Humanoid")
-            
             if flyEnabled then
                 humanoid.PlatformStand = true
                 local moveDir = humanoid.MoveDirection
                 local velocity = moveDir * flySpeed
-                
-                if flyingUp then
-                    velocity = velocity + Vector3.new(0, flySpeed, 0)
-                elseif flyingDown then
-                    velocity = velocity + Vector3.new(0, -flySpeed, 0)
-                else
-                    velocity = velocity + Vector3.new(0, 0.1, 0) -- Giữ lơ lửng không bị rơi
-                end
-                
+                if flyingUp then velocity = velocity + Vector3.new(0, flySpeed, 0)
+                elseif flyingDown then velocity = velocity + Vector3.new(0, -flySpeed, 0)
+                else velocity = velocity + Vector3.new(0, 0.1, 0) end
                 hrp.Velocity = velocity
                 hrp.CFrame = CFrame.new(hrp.Position, hrp.Position + Camera.CFrame.LookVector)
             else
-                if humanoid and humanoid.PlatformStand then
-                    humanoid.PlatformStand = false
-                end
+                if humanoid and humanoid.PlatformStand then humanoid.PlatformStand = false end
             end
         end
     end)
 end)
--- AIMBOT (TỰ ĐỘNG KHÓA VÀ BÁM SÁT ĐẦU ĐỊCH)
-local aimbotEnabled = false
-CreateToggle(CombatContent, 384, "Aimbot (Tự động khóa đầu)", function(state) 
-    aimbotEnabled = state 
+
+CreateToggle(MainContent, 336, "Godmode (Máu vô hạn giả lập)", function(state)
+    _G.Godmode = state
 end)
+
+RunService.Stepped:Connect(function()
+    if _G.Godmode then
+        pcall(function()
+            local char = LocalPlayer.Character
+            if char and char:FindFirstChildOfClass("Humanoid") then
+                char:FindFirstChildOfClass("Humanoid").MaxHealth = math.huge
+                char:FindFirstChildOfClass("Humanoid").Health = math.huge
+            end
+        end)
+    end
+end)
+
+CreateToggle(MainContent, 384, "Infinite Jump (Nhảy vô hạn)", function(state) 
+    _G.InfJump = state 
+end)
+
+UserInputService.JumpRequest:Connect(function()
+    if _G.InfJump then
+        pcall(function()
+            local char = LocalPlayer.Character
+            if char and char:FindFirstChildOfClass("Humanoid") then
+                char:FindFirstChildOfClass("Humanoid"):ChangeState(Enum.HumanoidStateType.Jumping)
+            end
+        end)
+    end
+end)
+
+local airWalkPart = nil
+CreateToggle(MainContent, 432, "Air Walk (Đi bộ trên không)", function(state) 
+    _G.AirWalk = state 
+    if not _G.AirWalk and airWalkPart then
+        airWalkPart:Destroy()
+        airWalkPart = nil
+    end
+end)
+
+RunService.RenderStepped:Connect(function()
+    if _G.AirWalk then
+        pcall(function()
+            local char = LocalPlayer.Character
+            if char and char:FindFirstChild("HumanoidRootPart") then
+                local hrp = char.HumanoidRootPart
+                if not airWalkPart or not airWalkPart.Parent then
+                    airWalkPart = Instance.new("Part")
+                    airWalkPart.Name = "AirWalkPlatform"
+                    airWalkPart.Size = Vector3.new(4, 1, 4)
+                    airWalkPart.Transparency = 1
+                    airWalkPart.Anchored = true
+                    airWalkPart.Parent = Workspace
+                end
+                airWalkPart.CFrame = hrp.CFrame - Vector3.new(0, 3.5, 0)
+            end
+        end)
+    else
+        if airWalkPart then airWalkPart:Destroy(); airWalkPart = nil end
+    end
+end)
+-- ==================== TAB 2: AIM CONTENT (PHẦN 3) ====================
+
+local aimbotEnabled = false
+CreateToggle(AimContent, 0, "Aimbot (Tự động khóa đầu)", function(state) aimbotEnabled = state end)
 
 RunService.RenderStepped:Connect(function()
     if aimbotEnabled then
         pcall(function()
             local closestTarget = nil
             local shortestDist = math.huge
-
             for _, p in pairs(Players:GetPlayers()) do
                 if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("Head") then
                     local humanoid = p.Character:FindFirstChildOfClass("Humanoid")
                     local head = p.Character.Head
-                    
                     if humanoid and humanoid.Health > 0 then
                         local pos, onScreen = Camera:WorldToViewportPoint(head.Position)
-                        
                         if onScreen then
-                            -- Kiểm tra xem có bị vật cản (tường) che khuất không
                             local origin = Camera.CFrame.Position
                             local direction = (head.Position - origin)
                             local raycastParams = RaycastParams.new()
                             raycastParams.FilterDescendantsInstances = {LocalPlayer.Character}
                             raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
-                            raycastParams.IgnoreWater = true
-                            
                             local raycastResult = Workspace:Raycast(origin, direction, raycastParams)
                             local isVisible = true
-                            
-                            if raycastResult then
-                                local hitInstance = raycastResult.Instance
-                                if not hitInstance:IsDescendantOf(p.Character) then
-                                    isVisible = false
-                                end
+                            if raycastResult and not raycastResult.Instance:IsDescendantOf(p.Character) then
+                                isVisible = false
                             end
-
-                            -- Nếu thấy địch thì chọn mục tiêu gần tâm màn hình nhất
                             if isVisible then
                                 local screenCenter = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
                                 local screenDist = (Vector2.new(pos.X, pos.Y) - screenCenter).Magnitude
@@ -815,35 +632,121 @@ RunService.RenderStepped:Connect(function()
                     end
                 end
             end
-
-            -- Khóa góc nhìn thẳng vào đầu mục tiêu tìm được
             if closestTarget then
                 Camera.CFrame = CFrame.new(Camera.CFrame.Position, closestTarget.Position)
             end
         end)
     end
 end)
--- SILENT AIM (AIM KHÔNG CẦN NHÌN / TỰ BẺ LƯỚI ĐẠN ĐẾN ĐẦU ĐỊCH)
-local silentAimEnabled = false
-CreateToggle(CombatContent, 432, "Silent Aim (Aim không cần nhìn)", function(state) 
-    silentAimEnabled = state 
+
+local aimAssistEnabled = false
+local fovCircleEnabled = true
+local fovRadius = 120
+
+CreateToggle(AimContent, 48, "Aim Assist & FOV Targeting", function(state) aimAssistEnabled = state end)
+CreateToggle(AimContent, 96, "   ↳ Hiển thị vòng tròn FOV", function(state) fovCircleEnabled = state if FOVring then FOVring.Visible = state end end)
+CreateNumberControl(AimContent, 144, "   ↳ Cỡ FOV Radius", 120, 10, 50, 400, function(val) fovRadius = val end)
+
+local FOVring = Drawing.new("Circle")
+FOVring.Visible = false
+FOVring.Filled = false
+FOVring.Thickness = 1.5
+FOVring.Color = Color3.fromRGB(220, 20, 30)
+FOVring.NumSides = 64
+
+RunService.RenderStepped:Connect(function()
+    local screenCenter = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
+    if aimAssistEnabled and fovCircleEnabled then
+        FOVring.Visible = true
+        FOVring.Radius = fovRadius
+        FOVring.Position = screenCenter
+    else
+        FOVring.Visible = false
+    end
+
+    if aimAssistEnabled then
+        pcall(function()
+            local closestTarget = nil
+            local shortestDist = fovRadius
+            for _, p in pairs(Players:GetPlayers()) do
+                if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("Head") then
+                    local humanoid = p.Character:FindFirstChildOfClass("Humanoid")
+                    local head = p.Character.Head
+                    if humanoid and humanoid.Health > 0 then
+                        local pos, onScreen = Camera:WorldToViewportPoint(head.Position)
+                        if onScreen then
+                            local origin = Camera.CFrame.Position
+                            local direction = (head.Position - origin)
+                            local raycastParams = RaycastParams.new()
+                            raycastParams.FilterDescendantsInstances = {LocalPlayer.Character}
+                            raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
+                            local raycastResult = Workspace:Raycast(origin, direction, raycastParams)
+                            local isVisible = true
+                            if raycastResult and not raycastResult.Instance:IsDescendantOf(p.Character) then
+                                isVisible = false
+                            end
+                            if isVisible then
+                                local screenDist = (Vector2.new(pos.X, pos.Y) - screenCenter).Magnitude
+                                if screenDist < shortestDist then
+                                    shortestDist = screenDist
+                                    closestTarget = head
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+            if closestTarget then
+                Camera.CFrame = Camera.CFrame:Lerp(CFrame.new(Camera.CFrame.Position, closestTarget.Position), 0.50)
+            end
+        end)
+    end
 end)
 
--- Hàm tìm kẻ địch gần nhất trong tầm
+local camLockEnabled = false
+CreateToggle(AimContent, 192, "CamLock / Aimbot (Khóa tâm địch)", function(state) camLockEnabled = state end)
+
+RunService.RenderStepped:Connect(function()
+    if camLockEnabled then
+        pcall(function()
+            local closestPlayer = nil
+            local shortestDist = math.huge
+            for _, p in pairs(Players:GetPlayers()) do
+                if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("Head") then
+                    local humanoid = p.Character:FindFirstChildOfClass("Humanoid")
+                    if humanoid and humanoid.Health > 0 then
+                        local pos, onScreen = Camera:WorldToViewportPoint(p.Character.Head.Position)
+                        if onScreen then
+                            local dist = (Vector2.new(pos.X, pos.Y) - Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)).Magnitude
+                            if dist < shortestDist then
+                                shortestDist = dist
+                                closestPlayer = p
+                            end
+                        end
+                    end
+                end
+            end
+            if closestPlayer and closestPlayer.Character:FindFirstChild("Head") then
+                Camera.CFrame = CFrame.new(Camera.CFrame.Position, closestPlayer.Character.Head.Position)
+            end
+        end)
+    end
+end)
+
+local silentAimEnabled = false
+CreateToggle(AimContent, 240, "Silent Aim (Aim không cần nhìn)", function(state) silentAimEnabled = state end)
+
 local function GetClosestTargetForSilentAim()
     local closestTarget = nil
     local shortestDist = math.huge
     local screenCenter = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
-
     for _, p in pairs(Players:GetPlayers()) do
         if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("Head") then
             local humanoid = p.Character:FindFirstChildOfClass("Humanoid")
             local head = p.Character.Head
-            
             if humanoid and humanoid.Health > 0 then
                 local pos, onScreen = Camera:WorldToViewportPoint(head.Position)
                 if onScreen then
-                    -- Vẫn check qua tường hoặc không tùy ý, ở đây cho phép bắt xuyên tường luôn để đúng chất "không cần nhìn"
                     local dist = (Vector2.new(pos.X, pos.Y) - screenCenter).Magnitude
                     if dist < shortestDist then
                         shortestDist = dist
@@ -856,7 +759,6 @@ local function GetClosestTargetForSilentAim()
     return closestTarget
 end
 
--- Hook các hàm bắn/chuột của Roblox để bẻ hướng đạn/skill về phía địch
 local mt = getrawmetatable(game)
 local oldNamecall = mt.__namecall
 setreadonly(mt, false)
@@ -864,14 +766,11 @@ setreadonly(mt, false)
 mt.__namecall = newcclosure(function(self, ...)
     local method = getnamecallmethod()
     local args = {...}
-    
     if silentAimEnabled and (method == "FireServer" or method == "InvokeServer") then
         local target = GetClosestTargetForSilentAim()
         if target then
-            -- Can thiệp vào các tham số truyền lên server chứa vị trí hoặc hướng nhìn (Mouse/Position/Direction)
             for i, v in pairs(args) do
                 if typeof(v) == "Vector3" then
-                    -- Thay đổi hướng Vector3 truyền lên thành vị trí đầu của địch
                     args[i] = target.Position
                 elseif typeof(v) == "CFrame" then
                     args[i] = CFrame.new(v.Position, target.Position)
@@ -880,8 +779,6 @@ mt.__namecall = newcclosure(function(self, ...)
             return oldNamecall(self, unpack(args))
         end
     end
-    
     return oldNamecall(self, ...)
 end)
-
 setreadonly(mt, true)
