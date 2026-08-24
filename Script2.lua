@@ -395,8 +395,28 @@ RunService.Stepped:Connect(function()
         end)
     end
 end)
+-- 6 SPEED BOOST FIX (DÙNG CFRAME BẤT CHẤP ANTI-CHEAT)
+local speedEnabled = false
+local speedVal = 1
+CreateToggle(CombatContent, 240, "Speed Boost (Tốc độ CFrame)", function(state) speedEnabled = state end)
+CreateNumberControl(CombatContent, 288, "   ↳ Độ phóng (Multi)", 1, 1, 1, 5, function(val) speedVal = val end)
 
--- 6. Fly (Bay lượn né giao tranh)
+RunService.RenderStepped:Connect(function()
+    if speedEnabled then
+        pcall(function()
+            local char = LocalPlayer.Character
+            if char and char:FindFirstChild("HumanoidRootPart") and char:FindFirstChildOfClass("Humanoid") then
+                local hrp = char.HumanoidRootPart
+                local humanoid = char:FindFirstChildOfClass("Humanoid")
+                if humanoid.MoveDirection.Magnitude > 0 then
+                    hrp.CFrame = hrp.CFrame + (humanoid.MoveDirection * (speedVal * 0.8))
+                end
+            end
+        end)
+    end
+end)
+
+-- 7. Fly (Bay lượn né giao tranh)
 local flyEnabled = false
 CreateToggle(CombatContent, 336, "Fly Mode (Bay lượn PvP)", function(state)
     flyEnabled = state
@@ -431,8 +451,60 @@ RunService.RenderStepped:Connect(function()
         end
     end)
 end)
+-- 8. INFINITE JUMP (Nhảy liên tục vô hạn trên không)
+local infJumpEnabled = false
+CreateToggle(CombatContent, 432, "Infinite Jump (Nhảy vô hạn)", function(state) 
+    infJumpEnabled = state 
+end)
 
--- 7. Godmode 
+UserInputService.JumpRequest:Connect(function()
+    if infJumpEnabled then
+        pcall(function()
+            local char = LocalPlayer.Character
+            if char and char:FindFirstChildOfClass("Humanoid") then
+                char:FindFirstChildOfClass("Humanoid"):ChangeState(Enum.HumanoidStateType.Jumping)
+            end
+        end)
+    end
+end)
+
+-- 9. AIR WALK (Đứng/đi lơ lửng trên không như trên mặt đất)
+local airWalkEnabled = false
+local airWalkPart = nil
+CreateToggle(CombatContent, 480, "Air Walk (Đi bộ trên không)", function(state) 
+    airWalkEnabled = state 
+    if not airWalkEnabled and airWalkPart then
+        airWalkPart:Destroy()
+        airWalkPart = nil
+    end
+end)
+
+RunService.RenderStepped:Connect(function()
+    if airWalkEnabled then
+        pcall(function()
+            local char = LocalPlayer.Character
+            if char and char:FindFirstChild("HumanoidRootPart") then
+                local hrp = char.HumanoidRootPart
+                if not airWalkPart or not airWalkPart.Parent then
+                    airWalkPart = Instance.new("Part")
+                    airWalkPart.Name = "AirWalkPlatform"
+                    airWalkPart.Size = Vector3.new(4, 1, 4)
+                    airWalkPart.Transparency = 1 -- Ẩn tàng hình nền đi (muốn test thấy thì đổi thành 0.5)
+                    airWalkPart.Anchored = true
+                    airWalkPart.Parent = Workspace
+                end
+                airWalkPart.CFrame = hrp.CFrame - Vector3.new(0, 3.5, 0)
+            end
+        end)
+    else
+        if airWalkPart then
+            airWalkPart:Destroy()
+            airWalkPart = nil
+        end
+    end
+end)
+
+-- 10 . Godmode 
 local godmodeEnabled = false
 CreateToggle(CombatContent, 384, "Godmode (Hỗ trợ máu vô hạn giả lập)", function(state)
     godmodeEnabled = state
