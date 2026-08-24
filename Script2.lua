@@ -593,11 +593,6 @@ RunService.RenderStepped:Connect(function()
         if airWalkPart then airWalkPart:Destroy(); airWalkPart = nil end
     end
 end)
--- ==================== ANTI-AFK (CHỐNG KICK ĐỨNG IM) ====================
-pcall(function()
-    loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Anti-Afk-script-203676"))()
-end)
-
 -- ==================== TAB 2: AIM CONTENT (PHẦN 3) ====================
 
 local aimbotEnabled = false
