@@ -228,7 +228,7 @@ CreateToggle(CombatContent, 0, "Mở rộng Hitbox (Tăng tầm đánh)", functi
     hitboxEnabled = state
 end)
 
-CreateNumberControl(CombatContent, 48, "   ↳ Kích thước Hitbox", 5, 2, 2, 25, function(val)
+CreateNumberControl(CombatContent, 48, "   ↳ Kích thước Hitbox", 5, 2, 2, 1000 , function(val)
     hitboxSize = val
 end)
 
@@ -279,35 +279,67 @@ RunService.Stepped:Connect(function()
     end
 end)
 
--- 3. ESP Player (Nhìn xuyên tường định vị địch)
+-- 3 ESP BOX + TÊN NGƯỜI CHƠI
 local espEnabled = false
-CreateToggle(CombatContent, 144, "ESP Player (Nhìn xuyên tường)", function(state)
-    espEnabled = state
-end)
+CreateToggle(CombatContent, 144, "ESP Player (Nhìn xuyên tường + Tên)", function(state) espEnabled = state end)
 
 RunService.RenderStepped:Connect(function()
     pcall(function()
         for _, p in pairs(Players:GetPlayers()) do
             if p ~= LocalPlayer and p.Character then
+                local rootPart = p.Character:FindFirstChild("HumanoidRootPart")
                 local head = p.Character:FindFirstChild("Head")
-                if head then
-                    local highlight = head:FindFirstChild("PvPHighlight")
+                local humanoid = p.Character:FindFirstChildOfClass("Humanoid")
+                
+                if rootPart and head and humanoid and humanoid.Health > 0 then
+                    local box = p.Character:FindFirstChild("ESPBox")
+                    local nameTag = head:FindFirstChild("ESPNameTag")
+                    
                     if espEnabled then
-                        if not highlight then
-                            highlight = Instance.new("Highlight")
-                            highlight.Name = "PvPHighlight"
-                            highlight.FillColor = Color3.fromRGB(220, 20, 30)
-                            highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
-                            highlight.Parent = head
+                        -- Tạo Box nhìn xuyên tường
+                        if not box then
+                            box = Instance.new("BoxHandleAdornment")
+                            box.Name = "ESPBox"
+                            box.Adornee = rootPart
+                            box.Size = Vector3.new(3, 5, 2)
+                            box.Color3 = Color3.fromRGB(220, 20, 30)
+                            box.Transparency = 0.4
+                            box.AlwaysOnTop = true
+                            box.ZIndex = 5
+                            box.Parent = p.Character
+                        end
+                        
+                        -- Tạo hiện tên trên đầu
+                        if not nameTag then
+                            nameTag = Instance.new("BillboardGui")
+                            nameTag.Name = "ESPNameTag"
+                            nameTag.Size = UDim2.new(0, 100, 0, 40)
+                            nameTag.StudsOffset = Vector3.new(0, 2.5, 0)
+                            nameTag.AlwaysOnTop = true
+                            nameTag.Parent = head
+                            
+                            local textLabel = Instance.new("TextLabel")
+                            textLabel.Name = "NameText"
+                            textLabel.Size = UDim2.new(1, 0, 1, 0)
+                            textLabel.BackgroundTransparency = 1
+                            textLabel.Font = Enum.Font.SourceSansBold
+                            textLabel.Text = p.Name
+                            textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+                            textLabel.TextSize = 14
+                            textLabel.TextStrokeTransparency = 0
+                            textLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+                            textLabel.Parent = nameTag
                         end
                     else
-                        if highlight then highlight:Destroy() end
+                        if box then box:Destroy() end
+                        if nameTag then nameTag:Destroy() end
                     end
                 end
             end
         end
     end)
 end)
+
 
 -- 4. CamLock / Aimbot (Khóa camera theo kẻ địch gần nhất)
 local camLockEnabled = false
@@ -349,7 +381,7 @@ CreateToggle(CombatContent, 240, "Speed Boost (Tăng tốc chạy)", function(st
     speedEnabled = state
 end)
 
-CreateNumberControl(CombatContent, 288, "   ↳ Tốc độ (WalkSpeed)", 24, 4, 16, 100, function(val)
+CreateNumberControl(CombatContent, 288, "   ↳ Tốc độ (WalkSpeed)", 24, 4, 16, 1000, function(val)
     speedVal = val
 end)
 
