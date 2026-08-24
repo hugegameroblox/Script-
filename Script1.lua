@@ -1,4 +1,4 @@
--- PRO HUGE HUB - FULL FEATURES + GOD MODE & ANTI ATTACK
+-- PRO HUGE HUB - FULL FEATURES (FLY, SPEED, NOCLIP, ESP, INF JUMP, AIR WALK, HITBOX, F3X, HOP)
 local Players = game:GetService("Players")
 local TeleportService = game:GetService("TeleportService")
 local HttpService = game:GetService("HttpService")
@@ -51,7 +51,7 @@ Title.Size = UDim2.new(1, -60, 1, 0)
 Title.Position = UDim2.new(0, 15, 0, 0)
 Title.BackgroundTransparency = 1
 Title.Font = Enum.Font.SourceSansBold
-Title.Text = "⚡ Pro huge hub | god mode"
+Title.Text = "⚡ Pro huge hub | hop server"
 Title.TextColor3 = Color3.fromRGB(255, 60, 60)
 Title.TextSize = 14
 Title.TextXAlignment = Enum.TextXAlignment.Left
@@ -138,7 +138,7 @@ MainContent.Parent = ContentArea
 local CombatContent = Instance.new("ScrollingFrame")
 CombatContent.Size = UDim2.new(1, 0, 1, 0)
 CombatContent.BackgroundTransparency = 1
-CombatContent.CanvasSize = UDim2.new(0, 0, 1.5, 0)
+CombatContent.CanvasSize = UDim2.new(0, 0, 1.4, 0)
 CombatContent.ScrollBarThickness = 3
 CombatContent.ScrollBarImageColor3 = Color3.fromRGB(200, 20, 30)
 CombatContent.Visible = false
@@ -153,24 +153,41 @@ ServerContent.ScrollBarImageColor3 = Color3.fromRGB(200, 20, 30)
 ServerContent.Visible = false
 ServerContent.Parent = ContentArea
 
-local function SwitchTab(activeTab)
-    MainContent.Visible = (activeTab == MainContent)
-    CombatContent.Visible = (activeTab == CombatContent)
-    ServerContent.Visible = (activeTab == ServerContent)
+MainTabBtn.MouseButton1Click:Connect(function()
+    MainContent.Visible = true
+    CombatContent.Visible = false
+    ServerContent.Visible = false
+    MainTabBtn.BackgroundColor3 = Color3.fromRGB(220, 20, 30)
+    MainTabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    CombatTabBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 32)
+    CombatTabBtn.TextColor3 = Color3.fromRGB(160, 160, 170)
+    ServerTabBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 32)
+    ServerTabBtn.TextColor3 = Color3.fromRGB(160, 160, 170)
+end)
 
-    MainTabBtn.BackgroundColor3 = (activeTab == MainContent) and Color3.fromRGB(220, 20, 30) or Color3.fromRGB(25, 25, 32)
-    MainTabBtn.TextColor3 = (activeTab == MainContent) and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(160, 160, 170)
+CombatTabBtn.MouseButton1Click:Connect(function()
+    MainContent.Visible = false
+    CombatContent.Visible = true
+    ServerContent.Visible = false
+    CombatTabBtn.BackgroundColor3 = Color3.fromRGB(220, 20, 30)
+    CombatTabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    MainTabBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 32)
+    MainTabBtn.TextColor3 = Color3.fromRGB(160, 160, 170)
+    ServerTabBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 32)
+    ServerTabBtn.TextColor3 = Color3.fromRGB(160, 160, 170)
+end)
 
-    CombatTabBtn.BackgroundColor3 = (activeTab == CombatContent) and Color3.fromRGB(220, 20, 30) or Color3.fromRGB(25, 25, 32)
-    CombatTabBtn.TextColor3 = (activeTab == CombatContent) and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(160, 160, 170)
-
-    ServerTabBtn.BackgroundColor3 = (activeTab == ServerContent) and Color3.fromRGB(220, 20, 30) or Color3.fromRGB(25, 25, 32)
-    ServerTabBtn.TextColor3 = (activeTab == ServerContent) and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(160, 160, 170)
-end
-
-MainTabBtn.MouseButton1Click:Connect(function() SwitchTab(MainContent) end)
-CombatTabBtn.MouseButton1Click:Connect(function() SwitchTab(CombatContent) end)
-ServerTabBtn.MouseButton1Click:Connect(function() SwitchTab(ServerContent) end)
+ServerTabBtn.MouseButton1Click:Connect(function()
+    MainContent.Visible = false
+    CombatContent.Visible = false
+    ServerContent.Visible = true
+    ServerTabBtn.BackgroundColor3 = Color3.fromRGB(220, 20, 30)
+    ServerTabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    MainTabBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 32)
+    MainTabBtn.TextColor3 = Color3.fromRGB(160, 160, 170)
+    CombatTabBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 32)
+    CombatTabBtn.TextColor3 = Color3.fromRGB(160, 160, 170)
+end)
 
 -- UI HELPERS
 local function CreateElement(parent, posY, title)
@@ -316,7 +333,7 @@ local function stopFly()
     if bodyVelocity then bodyVelocity:Destroy() end
 end
 
-CreateToggle(MainContent, 0, " Fly", function(state)
+CreateToggle(MainContent, 0, "Fly", function(state)
     flying = state
     if flying then startFly() else stopFly() end
 end)
@@ -327,7 +344,7 @@ end)
 
 local currentSpeed = 10
 local speedEnabled = false
-CreateToggle(MainContent, 96, " Speed (CFrame)", function(state)
+CreateToggle(MainContent, 96, "Speed (CFrame)", function(state)
     speedEnabled = state
 end)
 CreateNumberControl(MainContent, 144, "   ↳ Value Speed", 10, 10, 10, 500, false, function(val)
@@ -335,12 +352,12 @@ CreateNumberControl(MainContent, 144, "   ↳ Value Speed", 10, 10, 10, 500, fal
 end)
 
 local noclipEnabled = false
-CreateToggle(MainContent, 192, " Noclip (Đi xuyên tường)", function(state)
+CreateToggle(MainContent, 192, "Noclip (Đi xuyên tường)", function(state)
     noclipEnabled = state
 end)
 
 local infJumpEnabled = false
-CreateToggle(MainContent, 240, " Infinite Jump", function(state)
+CreateToggle(MainContent, 240, "Infinite Jump", function(state)
     infJumpEnabled = state
 end)
 
@@ -357,7 +374,7 @@ end)
 
 local airWalkEnabled = false
 local airPlatform = nil
-CreateToggle(MainContent, 288, " Air Walk (Đi trên không)", function(state)
+CreateToggle(MainContent, 288, "Air Walk (Đi trên không)", function(state)
     airWalkEnabled = state
     if not airWalkEnabled and airPlatform then
         airPlatform:Destroy()
@@ -391,17 +408,17 @@ RunService.RenderStepped:Connect(function()
 end)
 
 local espEnabled = false
-CreateToggle(MainContent, 336, " ESP Player", function(state)
+CreateToggle(MainContent, 336, "ESP Player", function(state)
     espEnabled = state
 end)
 
 local afkEnabled = false
-CreateToggle(MainContent, 384, " Anti AFK", function(state)
+CreateToggle(MainContent, 384, "Anti AFK", function(state)
     afkEnabled = state
 end)
 
 local savedCFrame = nil
-local setTpCard = CreateElement(MainContent, 432, "📍 Set Pos & Teleport")
+local setTpCard = CreateElement(MainContent, 432, "Set Pos & Teleport")
 
 local setPosBtn = Instance.new("TextButton", setTpCard)
 setPosBtn.Size = UDim2.new(0, 60, 0, 24)
@@ -442,11 +459,11 @@ tpBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- ==================== TAB COMBAT (HITBOX, GOD MODE, ANTI ĐÁNH) ====================
+-- ==================== TAB COMBAT ====================
 local hitboxEnabled = false
 local hitboxSize = 5
 
-CreateToggle(CombatContent, 0, " Hiện Hitbox & Tăng Hit", function(state)
+CreateToggle(CombatContent, 0, "Hiện Hitbox & Tăng Hit", function(state)
     hitboxEnabled = state
 end)
 
@@ -481,57 +498,30 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- GOD MODE FEATURE
-local godModeEnabled = false
-CreateToggle(CombatContent, 96, " God Mode (Bất tử)", function(state)
-    godModeEnabled = state
-    if godModeEnabled then
-        task.spawn(function()
-            while godModeEnabled do
-                RunService.Stepped:Wait()
-                pcall(function()
-                    local char = LocalPlayer.Character
-                    if char and char:FindFirstChildOfClass("Humanoid") then
-                        local hum = char:FindFirstChildOfClass("Humanoid")
-                        hum.Health = hum.MaxHealth
-                    end
-                end)
-            end
-        end)
-    end
+local godmodeEnabled = false
+CreateToggle(CombatContent, 96, "Godmode (Anti Đánh)", function(state)
+    godmodeEnabled = state
 end)
 
--- ANTI ĐÁNH (CHỐNG DÍNH ĐÒN / TỰ ĐỘNG NÉ KHOẢNG GẦN)
-local antiAttackEnabled = false
-CreateToggle(CombatContent, 144, " Anti Đánh (Chống dính đòn)", function(state)
-    antiAttackEnabled = state
-end)
-
-RunService.RenderStepped:Connect(function()
-    if antiAttackEnabled then
+RunService.Stepped:Connect(function()
+    if godmodeEnabled then
         pcall(function()
             local char = LocalPlayer.Character
-            if char and char:FindFirstChild("HumanoidRootPart") then
-                local myPos = char.HumanoidRootPart.Position
+            if char then
                 for _, p in pairs(Players:GetPlayers()) do
-                    if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
-                        local enemyHrp = p.Character.HumanoidRootPart
-                        local dist = (myPos - enemyHrp.Position).Magnitude
-                        -- Nếu người chơi khác áp sát khoảng cách đánh gần, tự động đẩy nhẹ hoặc vô hiệu hóa va chạm sát thương trực tiếp
-                        if dist < 6 then
-                            for _, part in pairs(char:GetDescendants()) do
-                                if part:IsA("BasePart") then
-                                    part.CanTouch = false
-                                end
-                            end
-                        else
-                            for _, part in pairs(char:GetDescendants()) do
-                                if part:IsA("BasePart") then
-                                    part.CanTouch = true
-                                end
+                    if p ~= LocalPlayer and p.Character then
+                        for _, part in pairs(p.Character:GetDescendants()) do
+                            if part:IsA("BasePart") then
+                                part.CanCollide = false
                             end
                         end
                     end
+                end
+                
+                local humanoid = char:FindFirstChildOfClass("Humanoid")
+                if humanoid then
+                    humanoid.MaxHealth = math.huge
+                    humanoid.Health = math.huge
                 end
             end
         end)
@@ -539,7 +529,7 @@ RunService.RenderStepped:Connect(function()
 end)
 
 -- ==================== TAB SERVER ====================
-local f3xCard = CreateElement(ServerContent, 0, " Lấy F3X (Build Tools)")
+local f3xCard = CreateElement(ServerContent, 0, "Lấy F3X (Build Tools)")
 local f3xBtn = Instance.new("TextButton", f3xCard)
 f3xBtn.Size = UDim2.new(0, 70, 0, 24)
 f3xBtn.Position = UDim2.new(1, -80, 0.5, -12)
@@ -547,4 +537,32 @@ f3xBtn.BackgroundColor3 = Color3.fromRGB(220, 20, 30)
 f3xBtn.Font = Enum.Font.SourceSansBold
 f3xBtn.Text = "GET F3X"
 f3xBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-f3xBtn.TextSize =
+f3xBtn.TextSize = 11
+Instance.new("UICorner", f3xBtn).CornerRadius = UDim.new(0, 4)
+
+f3xBtn.MouseButton1Click:Connect(function()
+    f3xBtn.Text = "..."
+    pcall(function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/F3XTeam/F3X/main/client.lua"))()
+    end)
+    task.wait(1)
+    f3xBtn.Text = "LOADED!"
+    task.wait(1)
+    f3xBtn.Text = "GET F3X"
+end)
+
+local hopCard = CreateElement(ServerContent, 48, "Hop Server (Ít người)")
+local hopBtn = Instance.new("TextButton", hopCard)
+hopBtn.Size = UDim2.new(0, 70, 0, 24)
+hopBtn.Position = UDim2.new(1, -80, 0.5, -12)
+hopBtn.BackgroundColor3 = Color3.fromRGB(220, 20, 30)
+hopBtn.Font = Enum.Font.SourceSansBold
+hopBtn.Text = "HOP"
+hopBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+hopBtn.TextSize = 12
+Instance.new("UICorner", hopBtn).CornerRadius = UDim.new(0, 4)
+
+hopBtn.MouseButton1Click:Connect(function()
+    hopBtn.Text = "..."
+    pcall(function()
+        local req = game:HttpGet("https://games.roblox.com/v1
