@@ -1,8 +1,9 @@
--- PRO HUGE HUB - FIXED ESP, SET TP & AUTO CLICK WITH SPEED ADJUST
+-- PRO HUGE HUB - CATCH & TAME SPECIAL EDITION
 local Players = game:GetService("Players")
 local TeleportService = game:GetService("TeleportService")
 local HttpService = game:GetService("HttpService")
 local RunService = game:GetService("RunService")
+local VirtualInputManager = game:GetService("VirtualInputManager")
 local VirtualUser = game:GetService("VirtualUser")
 local CoreGui = game:GetService("CoreGui")
 local LocalPlayer = Players.LocalPlayer
@@ -50,7 +51,7 @@ Title.Size = UDim2.new(1, -60, 1, 0)
 Title.Position = UDim2.new(0, 15, 0, 0)
 Title.BackgroundTransparency = 1
 Title.Font = Enum.Font.SourceSansBold
-Title.Text = "⚡ Pro huge hub | hop server"
+Title.Text = "⚡ Pro Huge Hub | Bắt & Thuần Hóa"
 Title.TextColor3 = Color3.fromRGB(255, 60, 60)
 Title.TextSize = 14
 Title.TextXAlignment = Enum.TextXAlignment.Left
@@ -114,8 +115,9 @@ local function CreateTabButton(name, posY, active)
     return btn
 end
 
-local MainTabBtn = CreateTabButton("🏠  Main", 0, true)
-local ServerTabBtn = CreateTabButton("🌐  Server", 38, false)
+local TameTabBtn = CreateTabButton("🦖  Bắt & Thuần", 0, true)
+local MainTabBtn = CreateTabButton("🏠  Main", 38, false)
+local ServerTabBtn = CreateTabButton("🌐  Server", 76, false)
 
 -- CONTENT AREA
 local ContentArea = Instance.new("Frame")
@@ -124,41 +126,40 @@ ContentArea.Position = UDim2.new(0, 140, 0, 40)
 ContentArea.BackgroundTransparency = 1
 ContentArea.Parent = MainFrame
 
-local MainContent = Instance.new("ScrollingFrame")
-MainContent.Size = UDim2.new(1, 0, 1, 0)
-MainContent.BackgroundTransparency = 1
-MainContent.CanvasSize = UDim2.new(0, 0, 2.6, 0)
-MainContent.ScrollBarThickness = 3
-MainContent.ScrollBarImageColor3 = Color3.fromRGB(200, 20, 30)
-MainContent.Visible = true
-MainContent.Parent = ContentArea
+local function CreateContentContainer()
+    local sc = Instance.new("ScrollingFrame")
+    sc.Size = UDim2.new(1, 0, 1, 0)
+    sc.BackgroundTransparency = 1
+    sc.CanvasSize = UDim2.new(0, 0, 2.5, 0)
+    sc.ScrollBarThickness = 3
+    sc.ScrollBarImageColor3 = Color3.fromRGB(200, 20, 30)
+    sc.Visible = false
+    sc.Parent = ContentArea
+    return sc
+end
 
-local ServerContent = Instance.new("ScrollingFrame")
-ServerContent.Size = UDim2.new(1, 0, 1, 0)
-ServerContent.BackgroundTransparency = 1
-ServerContent.CanvasSize = UDim2.new(0, 0, 1, 0)
-ServerContent.ScrollBarThickness = 3
-ServerContent.ScrollBarImageColor3 = Color3.fromRGB(200, 20, 30)
-ServerContent.Visible = false
-ServerContent.Parent = ContentArea
+local TameContent = CreateContentContainer()
+local MainContent = CreateContentContainer()
+local ServerContent = CreateContentContainer()
 
-MainTabBtn.MouseButton1Click:Connect(function()
-    MainContent.Visible = true
-    ServerContent.Visible = false
-    MainTabBtn.BackgroundColor3 = Color3.fromRGB(220, 20, 30)
-    MainTabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    ServerTabBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 32)
-    ServerTabBtn.TextColor3 = Color3.fromRGB(160, 160, 170)
-end)
+TameContent.Visible = true
 
-ServerTabBtn.MouseButton1Click:Connect(function()
-    MainContent.Visible = false
-    ServerContent.Visible = true
-    ServerTabBtn.BackgroundColor3 = Color3.fromRGB(220, 20, 30)
-    ServerTabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    MainTabBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 32)
-    MainTabBtn.TextColor3 = Color3.fromRGB(160, 160, 170)
-end)
+local function SwitchTab(activeBtn, activeContent)
+    for _, btn in pairs({MainTabBtn, TameTabBtn, ServerTabBtn}) do
+        btn.BackgroundColor3 = Color3.fromRGB(25, 25, 32)
+        btn.TextColor3 = Color3.fromRGB(160, 160, 170)
+    end
+    for _, cnt in pairs({MainContent, TameContent, ServerContent}) do
+        cnt.Visible = false
+    end
+    activeBtn.BackgroundColor3 = Color3.fromRGB(220, 20, 30)
+    activeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    activeContent.Visible = true
+end
+
+MainTabBtn.MouseButton1Click:Connect(function() SwitchTab(MainTabBtn, MainContent) end)
+TameTabBtn.MouseButton1Click:Connect(function() SwitchTab(TameTabBtn, TameContent) end)
+ServerTabBtn.MouseButton1Click:Connect(function() SwitchTab(ServerTabBtn, ServerContent) end)
 
 -- UI HELPERS
 local function CreateElement(parent, posY, title)
@@ -268,6 +269,75 @@ local function CreateNumberControl(parent, posY, title, initialValue, step, minV
     end)
 end
 
+-- ==================== TAB BẮT & THUẦN HÓA (CATCH & TAME) ====================
+local autoHitGame = false
+local hitSpeedDelay = 0.05
+
+CreateToggle(TameContent, 0, "💥 Auto Tấn Công / Thuần Hóa", function(state)
+    autoHitGame = state
+    if autoHitGame then
+        task.spawn(function()
+            while autoHitGame do
+                -- 1. Kích hoạt vũ khí/gậy trên tay
+                pcall(function()
+                    local char = LocalPlayer.Character
+                    if char then
+                        local tool = char:FindFirstChildOfClass("Tool")
+                        if tool then
+                            tool:Activate()
+                        end
+                    end
+                end)
+
+                -- 2. Tìm và kích hoạt Remote Event tấn công của game
+                pcall(function()
+                    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+                    for _, v in pairs(ReplicatedStorage:GetDescendants()) do
+                        if v:IsA("RemoteEvent") and (string.find(string.lower(v.Name), "hit") or string.find(string.lower(v.Name), "attack") or string.find(string.lower(v.Name), "tame") or string.find(string.lower(v.Name), "catch")) then
+                            v:FireServer()
+                        end
+                    end
+                end)
+
+                -- 3. Click ảo màn hình
+                local vp = workspace.CurrentCamera.ViewportSize
+                VirtualInputManager:SendMouseButtonEvent(vp.X / 2, vp.Y / 2, 0, true, game, 1)
+                task.wait(0.01)
+                VirtualInputManager:SendMouseButtonEvent(vp.X / 2, vp.Y / 2, 0, false, game, 1)
+
+                task.wait(hitSpeedDelay)
+            end
+        end)
+    end
+end)
+
+CreateNumberControl(TameContent, 48, "   ↳ Tốc Độ Tấn Công (s)", 0.05, 0.01, 0.01, 0.5, true, function(val)
+    hitSpeedDelay = val
+end)
+
+local autoLoot = false
+CreateToggle(TameContent, 96, "🧲 Auto Hút Vật Phẩm / Xu", function(state)
+    autoLoot = state
+    if autoLoot then
+        task.spawn(function()
+            while autoLoot do
+                pcall(function()
+                    local char = LocalPlayer.Character
+                    if char and char:FindFirstChild("HumanoidRootPart") then
+                        local hrp = char.HumanoidRootPart
+                        for _, item in pairs(workspace:GetDescendants()) do
+                            if item:IsA("BasePart") and (item.Name == "Coin" or item.Name == "Drop" or string.find(string.lower(item.Name), "item")) then
+                                item.CFrame = hrp.CFrame
+                            end
+                        end
+                    end
+                end)
+                task.wait(0.3)
+            end
+        end)
+    end
+end)
+
 -- ==================== TAB MAIN ====================
 local flying = false
 local flySpeed = 50
@@ -328,32 +398,8 @@ CreateToggle(MainContent, 192, "🛡️ Anti AFK", function(state)
     afkEnabled = state
 end)
 
--- AUTO CLICK (NON-BLOCKING MOVEMENT & ADJUSTABLE SPEED)
-local autoClickEnabled = false
-local clickDelay = 0.05
-
-CreateToggle(MainContent, 240, "🖱️ Auto Click", function(state)
-    autoClickEnabled = state
-    if autoClickEnabled then
-        task.spawn(function()
-            while autoClickEnabled do
-                VirtualUser:Button1Down(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
-                task.wait(0.01)
-                VirtualUser:Button1Up(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
-                task.wait(clickDelay)
-            end
-        end)
-    end
-end)
-
-CreateNumberControl(MainContent, 288, "   ↳ Click Delay (s)", 0.05, 0.01, 0.01, 1.0, true, function(val)
-    clickDelay = val
-end)
-
--- SET POSITION & TELEPORT
 local savedCFrame = nil
-
-local setTpCard = CreateElement(MainContent, 336, "📍 Set Pos & Teleport")
+local setTpCard = CreateElement(MainContent, 240, "📍 Set Pos & Teleport")
 
 local setPosBtn = Instance.new("TextButton", setTpCard)
 setPosBtn.Size = UDim2.new(0, 60, 0, 24)
@@ -462,7 +508,6 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- Fixed Stable ESP Loop
 RunService.RenderStepped:Connect(function()
     for _, p in pairs(Players:GetPlayers()) do
         if p ~= LocalPlayer and p.Character then
@@ -498,31 +543,4 @@ RunService.RenderStepped:Connect(function()
                         txt.Font = Enum.Font.SourceSansBold
                         txt.TextColor3 = Color3.fromRGB(255, 60, 60)
                         txt.TextSize = 11
-                        txt.TextStrokeTransparency = 0
-                        txt.Parent = bill
-                        bill.Parent = head
-                    end
-                    local txt = bill:FindFirstChild("Text")
-                    if txt then
-                        txt.Text = p.Name .. "\n[" .. p.DisplayName .. "]"
-                    end
-                end
-            else
-                local hl = char:FindFirstChild("EspHighlight")
-                if hl then hl:Destroy() end
-                if head then
-                    local bill = head:FindFirstChild("EspNameTag")
-                    if bill then bill:Destroy() end
-                end
-            end
-        end
-    end
-end)
-
-LocalPlayer.Idled:Connect(function()
-    if afkEnabled then
-        VirtualUser:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
-        task.wait(1)
-        VirtualUser:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
-    end
-end)
+      
