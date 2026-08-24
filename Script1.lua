@@ -670,3 +670,20 @@ hopBtn.MouseButton1Click:Connect(function()
     task.wait(2)
     hopBtn.Text = "HOP"
 end)
+local rejoinCard = CreateElement(ServerContent, 96, "Rejoin Server")
+local rejoinBtn = Instance.new("TextButton", rejoinCard)
+rejoinBtn.Size = UDim2.new(0, 70, 0, 24)
+rejoinBtn.Position = UDim2.new(1, -80, 0.5, -12)
+rejoinBtn.BackgroundColor3 = Color3.fromRGB(220, 20, 30)
+rejoinBtn.Font = Enum.Font.SourceSansBold
+rejoinBtn.Text = "REJOIN"
+rejoinBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+rejoinBtn.TextSize = 11
+Instance.new("UICorner", rejoinBtn).CornerRadius = UDim.new(0, 4)
+
+rejoinBtn.MouseButton1Click:Connect(function()
+    rejoinBtn.Text = "..."
+    pcall(function()
+        TeleportService:Teleport(game.PlaceId, LocalPlayer)
+    end)
+end)
