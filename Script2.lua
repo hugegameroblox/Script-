@@ -823,3 +823,65 @@ RunService.RenderStepped:Connect(function()
         end)
     end
 end)
+-- SILENT AIM (AIM KHÔNG CẦN NHÌN / TỰ BẺ LƯỚI ĐẠN ĐẾN ĐẦU ĐỊCH)
+local silentAimEnabled = false
+CreateToggle(CombatContent, 432, "Silent Aim (Aim không cần nhìn)", function(state) 
+    silentAimEnabled = state 
+end)
+
+-- Hàm tìm kẻ địch gần nhất trong tầm
+local function GetClosestTargetForSilentAim()
+    local closestTarget = nil
+    local shortestDist = math.huge
+    local screenCenter = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
+
+    for _, p in pairs(Players:GetPlayers()) do
+        if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("Head") then
+            local humanoid = p.Character:FindFirstChildOfClass("Humanoid")
+            local head = p.Character.Head
+            
+            if humanoid and humanoid.Health > 0 then
+                local pos, onScreen = Camera:WorldToViewportPoint(head.Position)
+                if onScreen then
+                    -- Vẫn check qua tường hoặc không tùy ý, ở đây cho phép bắt xuyên tường luôn để đúng chất "không cần nhìn"
+                    local dist = (Vector2.new(pos.X, pos.Y) - screenCenter).Magnitude
+                    if dist < shortestDist then
+                        shortestDist = dist
+                        closestTarget = head
+                    end
+                end
+            end
+        end
+    end
+    return closestTarget
+end
+
+-- Hook các hàm bắn/chuột của Roblox để bẻ hướng đạn/skill về phía địch
+local mt = getrawmetatable(game)
+local oldNamecall = mt.__namecall
+setreadonly(mt, false)
+
+mt.__namecall = newcclosure(function(self, ...)
+    local method = getnamecallmethod()
+    local args = {...}
+    
+    if silentAimEnabled and (method == "FireServer" or method == "InvokeServer") then
+        local target = GetClosestTargetForSilentAim()
+        if target then
+            -- Can thiệp vào các tham số truyền lên server chứa vị trí hoặc hướng nhìn (Mouse/Position/Direction)
+            for i, v in pairs(args) do
+                if typeof(v) == "Vector3" then
+                    -- Thay đổi hướng Vector3 truyền lên thành vị trí đầu của địch
+                    args[i] = target.Position
+                elseif typeof(v) == "CFrame" then
+                    args[i] = CFrame.new(v.Position, target.Position)
+                end
+            end
+            return oldNamecall(self, unpack(args))
+        end
+    end
+    
+    return oldNamecall(self, ...)
+end)
+
+setreadonly(mt, true)
