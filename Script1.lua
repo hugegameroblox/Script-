@@ -1,4 +1,4 @@
--- PRO HUGE HUB - FULL FEATURES (FLY, SPEED, NOCLIP, ESP, INF JUMP, AIR WALK, HITBOX, F3X, HOP)
+-- PRO HUGE HUB - FULL FEATURES (FLY, SPEED, NOCLIP, ESP, INF JUMP, AIR WALK, HITBOX, F3X, HOP, REJOIN)
 local Players = game:GetService("Players")
 local TeleportService = game:GetService("TeleportService")
 local HttpService = game:GetService("HttpService")
@@ -529,6 +529,95 @@ RunService.Stepped:Connect(function()
         end)
     end
 end)
+-- ==================== TAB COMBAT ====================
+local hitboxEnabled = false
+local hitboxSize = 5
+
+CreateToggle(CombatContent, 0, "Hiện Hitbox & Tăng Hit", function(state)
+    hitboxEnabled = state
+end)
+
+CreateNumberControl(CombatContent, 48, "   ↳ Kích thước Hitbox", 5, 2, 2, 25, false, function(val)
+    hitboxSize = val
+end)
+
+RunService.RenderStepped:Connect(function()
+    if hitboxEnabled then
+        pcall(function()
+            for _, p in pairs(Players:GetPlayers()) do
+                if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+                    local hrp = p.Character.HumanoidRootPart
+                    hrp.Size = Vector3.new(hitboxSize, hitboxSize, hitboxSize)
+                    hrp.Transparency = 0.6
+                    hrp.BrickColor = BrickColor.new("Bright red")
+                    hrp.Material = Enum.Material.Neon
+                    hrp.CanCollide = false
+                end
+            end
+        end)
+    else
+        pcall(function()
+            for _, p in pairs(Players:GetPlayers()) do
+                if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+                    local hrp = p.Character.HumanoidRootPart
+                    hrp.Size = Vector3.new(2, 2, 1)
+                    hrp.Transparency = 1
+                end
+            end
+        end)
+    end
+end)
+
+local godmodeEnabled = false
+CreateToggle(CombatContent, 96, "Godmode (Anti Đánh)", function(state)
+    godmodeEnabled = state
+end)
+
+-- THÊM TÍNH NĂNG ANTI KNOCKBACK (CHỐNG BẬT LÙI) Ở ĐÂY 👇
+local antiKbEnabled = false
+CreateToggle(CombatContent, 144, "Anti Knockback (Chống bật lùi)", function(state)
+    antiKbEnabled = state
+end)
+
+RunService.Stepped:Connect(function()
+    if antiKbEnabled then
+        pcall(function()
+            local char = LocalPlayer.Character
+            if char and char:FindFirstChild("HumanoidRootPart") then
+                local hrp = char.HumanoidRootPart
+                -- Khử bớt lực đẩy ngang bất thường tác động lên nhân vật
+                if hrp.AssemblyLinearVelocity.Magnitude > 100 then
+                    hrp.AssemblyLinearVelocity = Vector3.new(0, hrp.AssemblyLinearVelocity.Y, 0)
+                end
+            end
+        end)
+    end
+end)
+
+RunService.Stepped:Connect(function()
+    if godmodeEnabled then
+        pcall(function()
+            local char = LocalPlayer.Character
+            if char then
+                for _, p in pairs(Players:GetPlayers()) do
+                    if p ~= LocalPlayer and p.Character then
+                        for _, part in pairs(p.Character:GetDescendants()) do
+                            if part:IsA("BasePart") then
+                                part.CanCollide = false
+                            end
+                        end
+                    end
+                end
+                
+                local humanoid = char:FindFirstChildOfClass("Humanoid")
+                if humanoid then
+                    humanoid.MaxHealth = math.huge
+                    humanoid.Health = math.huge
+                end
+            end
+        end)
+    end
+end)
 
 -- ==================== TAB SERVER ====================
 local f3xCard = CreateElement(ServerContent, 0, "Lấy F3X (Build Tools)")
@@ -564,7 +653,7 @@ hopBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 hopBtn.TextSize = 12
 Instance.new("UICorner", hopBtn).CornerRadius = UDim.new(0, 4)
 
-hopBtn.hopBtn.MouseButton1Click:Connect(function()
+hopBtn.MouseButton1Click:Connect(function()
     hopBtn.Text = "..."
     pcall(function()
         local req = game:HttpGet("https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100")
@@ -580,4 +669,4 @@ hopBtn.hopBtn.MouseButton1Click:Connect(function()
     end) -- Thiếu cái đóng ngoặc này của pcall nè!
     task.wait(2)
     hopBtn.Text = "HOP"
-end)              
+end)
