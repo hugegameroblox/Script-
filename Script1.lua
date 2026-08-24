@@ -1,4 +1,4 @@
--- PRO HUGE HUB - FIXED ESP, SET TP, FLY & SERVER HOP
+-- PRO HUGE HUB - FIXED ESP, SET TP, FLY, F3X & NOCLIP
 local Players = game:GetService("Players")
 local TeleportService = game:GetService("TeleportService")
 local HttpService = game:GetService("HttpService")
@@ -127,7 +127,7 @@ ContentArea.Parent = MainFrame
 local MainContent = Instance.new("ScrollingFrame")
 MainContent.Size = UDim2.new(1, 0, 1, 0)
 MainContent.BackgroundTransparency = 1
-MainContent.CanvasSize = UDim2.new(0, 0, 2.0, 0)
+MainContent.CanvasSize = UDim2.new(0, 0, 2.6, 0)
 MainContent.ScrollBarThickness = 3
 MainContent.ScrollBarImageColor3 = Color3.fromRGB(200, 20, 30)
 MainContent.Visible = true
@@ -322,20 +322,26 @@ CreateNumberControl(MainContent, 144, "   ↳ Value Speed", 10, 10, 10, 500, fal
     currentSpeed = val
 end)
 
+-- NOCLIP FEATURE
+local noclipEnabled = false
+CreateToggle(MainContent, 192, "👻 Noclip (Đi xuyên tường)", function(state)
+    noclipEnabled = state
+end)
+
 local espEnabled = false
-CreateToggle(MainContent, 192, "👁️ ESP Player", function(state)
+CreateToggle(MainContent, 240, "👁️ ESP Player", function(state)
     espEnabled = state
 end)
 
 local afkEnabled = false
-CreateToggle(MainContent, 240, "🛡️ Anti AFK", function(state)
+CreateToggle(MainContent, 288, "🛡️ Anti AFK", function(state)
     afkEnabled = state
 end)
 
 -- SET POSITION & TELEPORT
 local savedCFrame = nil
 
-local setTpCard = CreateElement(MainContent, 288, "📍 Set Pos & Teleport")
+local setTpCard = CreateElement(MainContent, 336, "📍 Set Pos & Teleport")
 
 local setPosBtn = Instance.new("TextButton", setTpCard)
 setPosBtn.Size = UDim2.new(0, 60, 0, 24)
@@ -377,7 +383,30 @@ tpBtn.MouseButton1Click:Connect(function()
 end)
 
 -- ==================== TAB SERVER ====================
-local hopCard = CreateElement(ServerContent, 0, "🌐 Hop Server (Ít người)")
+-- F3X TOOL BUTTON
+local f3xCard = CreateElement(ServerContent, 0, "🛠️ Lấy F3X (Build Tools)")
+local f3xBtn = Instance.new("TextButton", f3xCard)
+f3xBtn.Size = UDim2.new(0, 70, 0, 24)
+f3xBtn.Position = UDim2.new(1, -80, 0.5, -12)
+f3xBtn.BackgroundColor3 = Color3.fromRGB(220, 20, 30)
+f3xBtn.Font = Enum.Font.SourceSansBold
+f3xBtn.Text = "GET F3X"
+f3xBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+f3xBtn.TextSize = 11
+Instance.new("UICorner", f3xBtn).CornerRadius = UDim.new(0, 4)
+
+f3xBtn.MouseButton1Click:Connect(function()
+    f3xBtn.Text = "..."
+    pcall(function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/F3XTeam/F3X/main/client.lua"))()
+    end)
+    task.wait(1)
+    f3xBtn.Text = "LOADED!"
+    task.wait(1)
+    f3xBtn.Text = "GET F3X"
+end)
+
+local hopCard = CreateElement(ServerContent, 48, "🌐 Hop Server (Ít người)")
 local hopBtn = Instance.new("TextButton", hopCard)
 hopBtn.Size = UDim2.new(0, 70, 0, 24)
 hopBtn.Position = UDim2.new(1, -80, 0.5, -12)
@@ -406,7 +435,7 @@ hopBtn.MouseButton1Click:Connect(function()
     hopBtn.Text = "HOP"
 end)
 
-local rejoinCard = CreateElement(ServerContent, 48, "🔄 Rejoin Server")
+local rejoinCard = CreateElement(ServerContent, 96, "🔄 Rejoin Server")
 local rejoinBtn = Instance.new("TextButton", rejoinCard)
 rejoinBtn.Size = UDim2.new(0, 70, 0, 24)
 rejoinBtn.Position = UDim2.new(1, -80, 0.5, -12)
@@ -429,6 +458,7 @@ rejoinBtn.MouseButton1Click:Connect(function()
 end)
 
 -- ==================== SYSTEM LOGICS ====================
+-- Speed Logic
 RunService.RenderStepped:Connect(function()
     if speedEnabled then
         pcall(function()
@@ -438,6 +468,22 @@ RunService.RenderStepped:Connect(function()
                 local hrp = char.HumanoidRootPart
                 if hum.MoveDirection.Magnitude > 0 then
                     hrp.CFrame = hrp.CFrame + (hum.MoveDirection * (currentSpeed * 0.1))
+                end
+            end
+        end)
+    end
+end)
+
+-- Noclip Logic
+RunService.Stepped:Connect(function()
+    if noclipEnabled then
+        pcall(function()
+            local char = LocalPlayer.Character
+            if char then
+                for _, part in pairs(char:GetDescendants()) do
+                    if part:IsA("BasePart") then
+                        part.CanCollide = false
+                    end
                 end
             end
         end)
