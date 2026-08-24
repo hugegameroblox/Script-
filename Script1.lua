@@ -18,7 +18,9 @@ local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "RocketMenuUI"
 ScreenGui.ResetOnSpawn = false
 pcall(function() ScreenGui.Parent = CoreGui end)
-if not ScreenGui.Parent then ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui") end
+if not ScreenGui.Parent then 
+    ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui") 
+end
 
 -- MAIN FRAME
 local MainFrame = Instance.new("Frame")
@@ -562,7 +564,20 @@ hopBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 hopBtn.TextSize = 12
 Instance.new("UICorner", hopBtn).CornerRadius = UDim.new(0, 4)
 
-hopBtn.MouseButton1Click:Connect(function()
+hopBtn.hopBtn.MouseButton1Click:Connect(function()
     hopBtn.Text = "..."
     pcall(function()
-        local req = game:HttpGet("https://games.roblox.com/v1
+        local req = game:HttpGet("https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100")
+        local body = HttpService:JSONDecode(req)
+        if body and body.data then
+            for _, server in pairs(body.data) do
+                if server.playing < server.maxPlayers and server.id ~= game.JobId then
+                    TeleportService:TeleportToPlaceInstance(game.PlaceId, server.id, LocalPlayer)
+                    break
+                end
+            end
+        end
+    end) -- Thiếu cái đóng ngoặc này của pcall nè!
+    task.wait(2)
+    hopBtn.Text = "HOP"
+end)              
