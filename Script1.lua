@@ -1,4 +1,4 @@
--- PRO HUGE HUB - FIXED ESP & FULL FEATURES
+-- PRO HUGE HUB - FIXED ESP & SET TP FEATURE
 local Players = game:GetService("Players")
 local TeleportService = game:GetService("TeleportService")
 local HttpService = game:GetService("HttpService")
@@ -126,7 +126,7 @@ ContentArea.Parent = MainFrame
 local MainContent = Instance.new("ScrollingFrame")
 MainContent.Size = UDim2.new(1, 0, 1, 0)
 MainContent.BackgroundTransparency = 1
-MainContent.CanvasSize = UDim2.new(0, 0, 1.4, 0)
+MainContent.CanvasSize = UDim2.new(0, 0, 1.8, 0)
 MainContent.ScrollBarThickness = 3
 MainContent.ScrollBarImageColor3 = Color3.fromRGB(200, 20, 30)
 MainContent.Visible = true
@@ -327,6 +327,50 @@ CreateToggle(MainContent, 192, "🛡️ Anti AFK", function(state)
     afkEnabled = state
 end)
 
+-- SET POSITION & TELEPORT
+local savedCFrame = nil
+
+local setTpCard = CreateElement(MainContent, 240, "📍 Set Pos & Teleport")
+
+local setPosBtn = Instance.new("TextButton", setTpCard)
+setPosBtn.Size = UDim2.new(0, 60, 0, 24)
+setPosBtn.Position = UDim2.new(1, -135, 0.5, -12)
+setPosBtn.BackgroundColor3 = Color3.fromRGB(220, 20, 30)
+setPosBtn.Font = Enum.Font.SourceSansBold
+setPosBtn.Text = "SET POS"
+setPosBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+setPosBtn.TextSize = 11
+Instance.new("UICorner", setPosBtn).CornerRadius = UDim.new(0, 4)
+
+local tpBtn = Instance.new("TextButton", setTpCard)
+tpBtn.Size = UDim2.new(0, 60, 0, 24)
+tpBtn.Position = UDim2.new(1, -70, 0.5, -12)
+tpBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
+tpBtn.Font = Enum.Font.SourceSansBold
+tpBtn.Text = "TP"
+tpBtn.TextColor3 = Color3.fromRGB(180, 180, 180)
+tpBtn.TextSize = 11
+Instance.new("UICorner", tpBtn).CornerRadius = UDim.new(0, 4)
+
+setPosBtn.MouseButton1Click:Connect(function()
+    local char = LocalPlayer.Character
+    if char and char:FindFirstChild("HumanoidRootPart") then
+        savedCFrame = char.HumanoidRootPart.CFrame
+        setPosBtn.Text = "SAVED!"
+        tpBtn.BackgroundColor3 = Color3.fromRGB(220, 20, 30)
+        tpBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        task.wait(1)
+        setPosBtn.Text = "SET POS"
+    end
+end)
+
+tpBtn.MouseButton1Click:Connect(function()
+    local char = LocalPlayer.Character
+    if savedCFrame and char and char:FindFirstChild("HumanoidRootPart") then
+        char.HumanoidRootPart.CFrame = savedCFrame
+    end
+end)
+
 -- ==================== TAB SERVER ====================
 local hopCard = CreateElement(ServerContent, 0, "🌐 Hop Server (Ít người)")
 local hopBtn = Instance.new("TextButton", hopCard)
@@ -403,7 +447,6 @@ RunService.RenderStepped:Connect(function()
             local head = char:FindFirstChild("Head")
             
             if espEnabled then
-                -- Highlight Khung
                 local hl = char:FindFirstChild("EspHighlight")
                 if not hl then
                     hl = Instance.new("Highlight")
@@ -415,7 +458,6 @@ RunService.RenderStepped:Connect(function()
                     hl.Parent = char
                 end
                 
-                -- Billboard Tên
                 if head then
                     local bill = head:FindFirstChild("EspNameTag")
                     if not bill then
@@ -443,7 +485,6 @@ RunService.RenderStepped:Connect(function()
                     end
                 end
             else
-                -- Xóa ESP khi tắt
                 local hl = char:FindFirstChild("EspHighlight")
                 if hl then hl:Destroy() end
                 if head then
