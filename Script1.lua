@@ -1,4 +1,4 @@
--- PRO HUGE HUB - FIXED ESP, SET TP & AUTO CLICK WITH SPEED ADJUST
+-- PRO HUGE HUB - FIXED ESP, SET TP, AUTO CLICK & FLY GUI
 local Players = game:GetService("Players")
 local TeleportService = game:GetService("TeleportService")
 local HttpService = game:GetService("HttpService")
@@ -11,6 +11,9 @@ pcall(function()
     if CoreGui:FindFirstChild("RocketMenuUI") then
         CoreGui.RocketMenuUI:Destroy()
     end
+    if CoreGui:FindFirstChild("FlyControlGui") then
+        CoreGui.FlyControlGui:Destroy()
+    end
 end)
 
 local ScreenGui = Instance.new("ScreenGui")
@@ -18,6 +21,65 @@ ScreenGui.Name = "RocketMenuUI"
 ScreenGui.ResetOnSpawn = false
 pcall(function() ScreenGui.Parent = CoreGui end)
 if not ScreenGui.Parent then ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui") end
+
+-- FLY CONTROL GUI (Mobile/Mini Controller)
+local FlyGui = Instance.new("ScreenGui")
+FlyGui.Name = "FlyControlGui"
+FlyGui.ResetOnSpawn = false
+FlyGui.Enabled = false
+pcall(function() FlyGui.Parent = CoreGui end)
+if not FlyGui.Parent then FlyGui.Parent = LocalPlayer:WaitForChild("PlayerGui") end
+
+local FlyFrame = Instance.new("Frame")
+FlyFrame.Size = UDim2.new(0, 160, 0, 85)
+FlyFrame.Position = UDim2.new(0.5, -80, 0.1, 0)
+FlyFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 22)
+FlyFrame.BorderSizePixel = 0
+FlyFrame.Active = true
+FlyFrame.Draggable = true
+FlyFrame.Parent = FlyGui
+Instance.new("UICorner", FlyFrame).CornerRadius = UDim.new(0, 8)
+
+local FlyTitle = Instance.new("TextLabel")
+FlyTitle.Size = UDim2.new(1, 0, 0, 25)
+FlyTitle.BackgroundTransparency = 1
+FlyTitle.Font = Enum.Font.SourceSansBold
+FlyTitle.Text = "🚀 FLY CONTROLLER"
+FlyTitle.TextColor3 = Color3.fromRGB(255, 60, 60)
+FlyTitle.TextSize = 11
+FlyTitle.Parent = FlyFrame
+
+local FlySpeedLabel = Instance.new("TextLabel")
+FlySpeedLabel.Size = UDim2.new(1, 0, 0, 20)
+FlySpeedLabel.Position = UDim2.new(0, 0, 0, 25)
+FlySpeedLabel.BackgroundTransparency = 1
+FlySpeedLabel.Font = Enum.Font.SourceSansBold
+FlySpeedLabel.Text = "Speed: 50"
+FlySpeedLabel.TextColor3 = Color3.fromRGB(240, 240, 240)
+FlySpeedLabel.TextSize = 11
+FlySpeedLabel.Parent = FlyFrame
+
+local SubFlyBtn = Instance.new("TextButton")
+SubFlyBtn.Size = UDim2.new(0, 65, 0, 25)
+SubFlyBtn.Position = UDim2.new(0, 10, 0, 50)
+SubFlyBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
+SubFlyBtn.Font = Enum.Font.SourceSansBold
+SubFlyBtn.Text = "- Speed"
+SubFlyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+SubFlyBtn.TextSize = 11
+SubFlyBtn.Parent = FlyFrame
+Instance.new("UICorner", SubFlyBtn).CornerRadius = UDim.new(0, 4)
+
+local AddFlyBtn = Instance.new("TextButton")
+AddFlyBtn.Size = UDim2.new(0, 65, 0, 25)
+AddFlyBtn.Position = UDim2.new(1, -75, 0, 50)
+AddFlyBtn.BackgroundColor3 = Color3.fromRGB(220, 20, 30)
+AddFlyBtn.Font = Enum.Font.SourceSansBold
+AddFlyBtn.Text = "+ Speed"
+AddFlyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+AddFlyBtn.TextSize = 11
+AddFlyBtn.Parent = FlyFrame
+Instance.new("UICorner", AddFlyBtn).CornerRadius = UDim.new(0, 4)
 
 -- MAIN FRAME
 local MainFrame = Instance.new("Frame")
@@ -289,6 +351,8 @@ local function startFly()
     bodyVelocity.maxForce = Vector3.new(9e9, 9e9, 9e9)
     bodyVelocity.Parent = hrp
 
+    FlyGui.Enabled = true
+
     task.spawn(function()
         while flying and char and char:FindFirstChild("Humanoid") do
             RunService.RenderStepped:Wait()
@@ -302,7 +366,20 @@ end
 local function stopFly()
     if bodyGyro then bodyGyro:Destroy() end
     if bodyVelocity then bodyVelocity:Destroy() end
+    FlyGui.Enabled = false
 end
+
+AddFlyBtn.MouseButton1Click:Connect(function()
+    flySpeed = flySpeed + 10
+    if flySpeed > 300 then flySpeed = 300 end
+    FlySpeedLabel.Text = "Speed: " .. tostring(flySpeed)
+end)
+
+SubFlyBtn.MouseButton1Click:Connect(function()
+    flySpeed = flySpeed - 10
+    if flySpeed < 10 then flySpeed = 10 end
+    FlySpeedLabel.Text = "Speed: " .. tostring(flySpeed)
+end)
 
 CreateToggle(MainContent, 0, "🚀 Fly", function(state)
     flying = state
@@ -484,45 +561,4 @@ RunService.RenderStepped:Connect(function()
                 if head then
                     local bill = head:FindFirstChild("EspNameTag")
                     if not bill then
-                        bill = Instance.new("BillboardGui")
-                        bill.Name = "EspNameTag"
-                        bill.Adornee = head
-                        bill.Size = UDim2.new(0, 100, 0, 40)
-                        bill.StudsOffset = Vector3.new(0, 2, 0)
-                        bill.AlwaysOnTop = true
-                        
-                        local txt = Instance.new("TextLabel")
-                        txt.Name = "Text"
-                        txt.Size = UDim2.new(1, 0, 1, 0)
-                        txt.BackgroundTransparency = 1
-                        txt.Font = Enum.Font.SourceSansBold
-                        txt.TextColor3 = Color3.fromRGB(255, 60, 60)
-                        txt.TextSize = 11
-                        txt.TextStrokeTransparency = 0
-                        txt.Parent = bill
-                        bill.Parent = head
-                    end
-                    local txt = bill:FindFirstChild("Text")
-                    if txt then
-                        txt.Text = p.Name .. "\n[" .. p.DisplayName .. "]"
-                    end
-                end
-            else
-                local hl = char:FindFirstChild("EspHighlight")
-                if hl then hl:Destroy() end
-                if head then
-                    local bill = head:FindFirstChild("EspNameTag")
-                    if bill then bill:Destroy() end
-                end
-            end
-        end
-    end
-end)
-
-LocalPlayer.Idled:Connect(function()
-    if afkEnabled then
-        VirtualUser:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
-        task.wait(1)
-        VirtualUser:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
-    end
-end)
+                        bill = Instance.n
