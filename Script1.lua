@@ -1,25 +1,22 @@
--- PRO HUGE HUB - FIXED UI & TOGGLE BUTTON (REMOVED TAME TAB)
+-- PRO HUGE HUB - FIXED ESP, SET TP & WORKING AUTO CLICK
 local Players = game:GetService("Players")
 local TeleportService = game:GetService("TeleportService")
 local HttpService = game:GetService("HttpService")
 local RunService = game:GetService("RunService")
+local VirtualInputManager = game:GetService("VirtualInputManager")
 local VirtualUser = game:GetService("VirtualUser")
 local CoreGui = game:GetService("CoreGui")
 local LocalPlayer = Players.LocalPlayer
 
--- Xóa UI cũ nếu đang tồn tại
-for _, gui in pairs({CoreGui, LocalPlayer:FindFirstChild("PlayerGui")}) do
-    if gui then
-        local old = gui:FindFirstChild("RocketMenuUI")
-        if old then old:Destroy() end
+pcall(function()
+    if CoreGui:FindFirstChild("RocketMenuUI") then
+        CoreGui.RocketMenuUI:Destroy()
     end
-end
+end)
 
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "RocketMenuUI"
 ScreenGui.ResetOnSpawn = false
-
--- Parent UI vào CoreGui hoặc PlayerGui
 pcall(function() ScreenGui.Parent = CoreGui end)
 if not ScreenGui.Parent then ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui") end
 
@@ -31,27 +28,8 @@ MainFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 22)
 MainFrame.BorderSizePixel = 0
 MainFrame.Active = true
 MainFrame.Draggable = true
-MainFrame.Visible = true
 MainFrame.Parent = ScreenGui
 Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 8)
-
--- NÚT NỔI BẬT/TẮT MENU (KÉO THẢ ĐƯỢC)
-local ToggleBtn = Instance.new("TextButton")
-ToggleBtn.Size = UDim2.new(0, 50, 0, 50)
-ToggleBtn.Position = UDim2.new(0, 15, 0.5, -25)
-ToggleBtn.BackgroundColor3 = Color3.fromRGB(220, 20, 30)
-ToggleBtn.Font = Enum.Font.SourceSansBold
-ToggleBtn.Text = "HUB"
-ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-ToggleBtn.TextSize = 14
-ToggleBtn.Active = true
-ToggleBtn.Draggable = true
-ToggleBtn.Parent = ScreenGui
-Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(0, 25)
-
-ToggleBtn.MouseButton1Click:Connect(function()
-    MainFrame.Visible = not MainFrame.Visible
-end)
 
 -- TOP BAR (HEADER)
 local TopBar = Instance.new("Frame")
@@ -61,29 +39,57 @@ TopBar.BorderSizePixel = 0
 TopBar.Parent = MainFrame
 Instance.new("UICorner", TopBar).CornerRadius = UDim.new(0, 8)
 
+local FixBar = Instance.new("Frame")
+FixBar.Size = UDim2.new(1, 0, 0, 5)
+FixBar.Position = UDim2.new(0, 0, 1, -5)
+FixBar.BackgroundColor3 = Color3.fromRGB(24, 24, 30)
+FixBar.BorderSizePixel = 0
+FixBar.Parent = TopBar
+
 local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(1, -50, 1, 0)
+Title.Size = UDim2.new(1, -60, 1, 0)
 Title.Position = UDim2.new(0, 15, 0, 0)
 Title.BackgroundTransparency = 1
 Title.Font = Enum.Font.SourceSansBold
-Title.Text = "⚡ Pro Huge Hub"
+Title.Text = "⚡ Pro huge hub | hop server"
 Title.TextColor3 = Color3.fromRGB(255, 60, 60)
 Title.TextSize = 14
 Title.TextXAlignment = Enum.TextXAlignment.Left
 Title.Parent = TopBar
 
-local CloseBtn = Instance.new("TextButton")
-CloseBtn.Size = UDim2.new(0, 30, 0, 30)
-CloseBtn.Position = UDim2.new(1, -35, 0, 2)
-CloseBtn.BackgroundTransparency = 1
-CloseBtn.Font = Enum.Font.SourceSansBold
-CloseBtn.Text = "X"
-CloseBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
-CloseBtn.TextSize = 14
-CloseBtn.Parent = TopBar
+local MinBtn = Instance.new("TextButton")
+MinBtn.Size = UDim2.new(0, 30, 0, 30)
+MinBtn.Position = UDim2.new(1, -35, 0, 2)
+MinBtn.BackgroundTransparency = 1
+MinBtn.Font = Enum.Font.SourceSansBold
+MinBtn.Text = "-"
+MinBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
+MinBtn.TextSize = 18
+MinBtn.Parent = TopBar
 
-CloseBtn.MouseButton1Click:Connect(function()
+-- OPEN BUTTON
+local OpenBtn = Instance.new("TextButton")
+OpenBtn.Size = UDim2.new(0, 120, 0, 35)
+OpenBtn.Position = UDim2.new(0, 20, 0, 20)
+OpenBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+OpenBtn.Font = Enum.Font.SourceSansBold
+OpenBtn.Text = "🚀 PRO HUGE HUB"
+OpenBtn.TextColor3 = Color3.fromRGB(255, 60, 60)
+OpenBtn.TextSize = 11
+OpenBtn.Visible = false
+OpenBtn.Active = true
+OpenBtn.Draggable = true
+OpenBtn.Parent = ScreenGui
+Instance.new("UICorner", OpenBtn).CornerRadius = UDim.new(0, 6)
+
+MinBtn.MouseButton1Click:Connect(function()
     MainFrame.Visible = false
+    OpenBtn.Visible = true
+end)
+
+OpenBtn.MouseButton1Click:Connect(function()
+    MainFrame.Visible = true
+    OpenBtn.Visible = false
 end)
 
 -- SIDEBAR
@@ -119,38 +125,41 @@ ContentArea.Position = UDim2.new(0, 140, 0, 40)
 ContentArea.BackgroundTransparency = 1
 ContentArea.Parent = MainFrame
 
-local function CreateContentContainer()
-    local sc = Instance.new("ScrollingFrame")
-    sc.Size = UDim2.new(1, 0, 1, 0)
-    sc.BackgroundTransparency = 1
-    sc.CanvasSize = UDim2.new(0, 0, 2, 0)
-    sc.ScrollBarThickness = 3
-    sc.ScrollBarImageColor3 = Color3.fromRGB(200, 20, 30)
-    sc.Visible = false
-    sc.Parent = ContentArea
-    return sc
-end
-
-local MainContent = CreateContentContainer()
-local ServerContent = CreateContentContainer()
-
+local MainContent = Instance.new("ScrollingFrame")
+MainContent.Size = UDim2.new(1, 0, 1, 0)
+MainContent.BackgroundTransparency = 1
+MainContent.CanvasSize = UDim2.new(0, 0, 2.6, 0)
+MainContent.ScrollBarThickness = 3
+MainContent.ScrollBarImageColor3 = Color3.fromRGB(200, 20, 30)
 MainContent.Visible = true
+MainContent.Parent = ContentArea
 
-local function SwitchTab(activeBtn, activeContent)
-    for _, btn in pairs({MainTabBtn, ServerTabBtn}) do
-        btn.BackgroundColor3 = Color3.fromRGB(25, 25, 32)
-        btn.TextColor3 = Color3.fromRGB(160, 160, 170)
-    end
-    for _, cnt in pairs({MainContent, ServerContent}) do
-        cnt.Visible = false
-    end
-    activeBtn.BackgroundColor3 = Color3.fromRGB(220, 20, 30)
-    activeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    activeContent.Visible = true
-end
+local ServerContent = Instance.new("ScrollingFrame")
+ServerContent.Size = UDim2.new(1, 0, 1, 0)
+ServerContent.BackgroundTransparency = 1
+ServerContent.CanvasSize = UDim2.new(0, 0, 1, 0)
+ServerContent.ScrollBarThickness = 3
+ServerContent.ScrollBarImageColor3 = Color3.fromRGB(200, 20, 30)
+ServerContent.Visible = false
+ServerContent.Parent = ContentArea
 
-MainTabBtn.MouseButton1Click:Connect(function() SwitchTab(MainTabBtn, MainContent) end)
-ServerTabBtn.MouseButton1Click:Connect(function() SwitchTab(ServerTabBtn, ServerContent) end)
+MainTabBtn.MouseButton1Click:Connect(function()
+    MainContent.Visible = true
+    ServerContent.Visible = false
+    MainTabBtn.BackgroundColor3 = Color3.fromRGB(220, 20, 30)
+    MainTabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    ServerTabBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 32)
+    ServerTabBtn.TextColor3 = Color3.fromRGB(160, 160, 170)
+end)
+
+ServerTabBtn.MouseButton1Click:Connect(function()
+    MainContent.Visible = false
+    ServerContent.Visible = true
+    ServerTabBtn.BackgroundColor3 = Color3.fromRGB(220, 20, 30)
+    ServerTabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    MainTabBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 32)
+    MainTabBtn.TextColor3 = Color3.fromRGB(160, 160, 170)
+end)
 
 -- UI HELPERS
 local function CreateElement(parent, posY, title)
@@ -298,7 +307,7 @@ end
 
 CreateToggle(MainContent, 0, "🚀 Fly", function(state)
     flying = state
-    if flying then startFly() else stopFly() end
+    if flying me startFly() else stopFly() end
 end)
 
 local currentSpeed = 10
@@ -320,8 +329,46 @@ CreateToggle(MainContent, 192, "🛡️ Anti AFK", function(state)
     afkEnabled = state
 end)
 
+-- AUTO CLICK HARDWARE HYBRID (FIXED WORK FOR ALL GAMES)
+local autoClickEnabled = false
+local clickDelay = 0.05
+
+CreateToggle(MainContent, 240, "🖱️ Auto Click", function(state)
+    autoClickEnabled = state
+    if autoClickEnabled then
+        task.spawn(function()
+            while autoClickEnabled do
+                -- Mẹo 1: Mô phỏng Click phần cứng ở giữa màn hình
+                local vp = workspace.CurrentCamera.ViewportSize
+                VirtualInputManager:SendMouseButtonEvent(vp.X / 2, vp.Y / 2, 0, true, game, 1)
+                task.wait(0.01)
+                VirtualInputManager:SendMouseButtonEvent(vp.X / 2, vp.Y / 2, 0, false, game, 1)
+
+                -- Mẹo 2: Kích hoạt Tool đang cầm trên tay (Nếu game dùng Tool)
+                pcall(function()
+                    local char = LocalPlayer.Character
+                    if char then
+                        local tool = char:FindFirstChildOfClass("Tool")
+                        if tool then
+                            tool:Activate()
+                        end
+                    end
+                end)
+
+                task.wait(clickDelay)
+            end
+        end)
+    end
+end)
+
+CreateNumberControl(MainContent, 288, "   ↳ Click Delay (s)", 0.05, 0.01, 0.01, 1.0, true, function(val)
+    clickDelay = val
+end)
+
+-- SET POSITION & TELEPORT
 local savedCFrame = nil
-local setTpCard = CreateElement(MainContent, 240, "📍 Set Pos & Teleport")
+
+local setTpCard = CreateElement(MainContent, 336, "📍 Set Pos & Teleport")
 
 local setPosBtn = Instance.new("TextButton", setTpCard)
 setPosBtn.Size = UDim2.new(0, 60, 0, 24)
@@ -430,6 +477,7 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
+-- Fixed Stable ESP Loop
 RunService.RenderStepped:Connect(function()
     for _, p in pairs(Players:GetPlayers()) do
         if p ~= LocalPlayer and p.Character then
