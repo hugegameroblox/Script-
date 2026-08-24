@@ -304,7 +304,7 @@ local function stopFly()
     if bodyVelocity then bodyVelocity:Destroy() end
 end
 
-CreateToggle(MainContent, 0, "🚀 Fly", function(state)
+CreateToggle(MainContent, 0, "Fly", function(state)
     flying = state
     if flying then startFly() else stopFly() end
 end)
@@ -315,33 +315,33 @@ end)
 
 local currentSpeed = 10
 local speedEnabled = false
-CreateToggle(MainContent, 96, "⚡ Speed (CFrame)", function(state)
+CreateToggle(MainContent, 96, " Speed (CFrame)", function(state)
     speedEnabled = state
 end)
-CreateNumberControl(MainContent, 144, "   ↳ Value Speed", 10, 10, 10, 500, false, function(val)
+CreateNumberControl(MainContent, 144, "   Value Speed", 10, 10, 10, 500, false, function(val)
     currentSpeed = val
 end)
 
 -- NOCLIP FEATURE
 local noclipEnabled = false
-CreateToggle(MainContent, 192, "👻 Noclip (Đi xuyên tường)", function(state)
+CreateToggle(MainContent, 192, " Noclip (Đi xuyên tường)", function(state)
     noclipEnabled = state
 end)
 
 local espEnabled = false
-CreateToggle(MainContent, 240, "👁️ ESP Player", function(state)
+CreateToggle(MainContent, 240, " ESP Player", function(state)
     espEnabled = state
 end)
 
 local afkEnabled = false
-CreateToggle(MainContent, 288, "🛡️ Anti AFK", function(state)
+CreateToggle(MainContent, 288, " Anti AFK", function(state)
     afkEnabled = state
 end)
 
 -- SET POSITION & TELEPORT
 local savedCFrame = nil
 
-local setTpCard = CreateElement(MainContent, 336, "📍 Set Pos & Teleport")
+local setTpCard = CreateElement(MainContent, 336, " Set Pos & Teleport")
 
 local setPosBtn = Instance.new("TextButton", setTpCard)
 setPosBtn.Size = UDim2.new(0, 60, 0, 24)
