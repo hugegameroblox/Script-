@@ -322,6 +322,46 @@ RunService.Stepped:Connect(function()
         end)
     end
 end)
+-- ==================== TÍNH NĂNG: NHẶT ĐỒ NHANH (AUTO COLLECT) ====================
+local autoCollectEnabled = false
+local collectRadius = 30 -- Tầm với để hút đồ (tính bằng studs)
+
+CreateToggle(MainContent, 480, "Auto Collect (Nhặt đồ nhanh xung quanh)", function(state) 
+    autoCollectEnabled = state 
+end)
+
+CreateNumberControl(MainContent, 528, "   ↳ Tầm hút đồ (Studs)", 30, 10, 10, 200, function(val) 
+    collectRadius = val 
+end)
+
+RunService.RenderStepped:Connect(function()
+    if autoCollectEnabled then
+        pcall(function()
+            local char = LocalPlayer.Character
+            if char and char:FindFirstChild("HumanoidRootPart") then
+                local hrp = char.HumanoidRootPart
+                
+                -- Duyệt qua các vật thể trong Workspace (tìm các phần có thể nhặt như TouchInterest hoặc tên thường gặp)
+                for _, obj in pairs(Workspace:GetDescendants()) do
+                    if obj:IsA("BasePart") and not obj:IsDescendantOf(char) then
+                        -- Kiểm tra xem vật thể có chứa cơ chế chạm để nhận (TouchInterest) hoặc thuộc dạng item rơi
+                        if obj:FindFirstChild("TouchInterest") or obj.Name:lower():match("item") or obj.Name:lower():match("drop") or obj.Name:lower():match("coin") or obj.Name:lower():match("gem") then
+                            local dist = (obj.Position - hrp.Position).Magnitude
+                            if dist <= collectRadius then
+                                -- Kéo item hoặc di chuyển nhân vật tới sát item để kích hoạt nhặt tự động
+                                obj.CFrame = hrp.CFrame
+                                
+                                -- Hoặc kích hoạt chạm trực tiếp nếu game hỗ trợ fire touch interest
+                                firetouchinterest(hrp, obj, 0)
+                                firetouchinterest(hrp, obj, 1)
+                            end
+                        end
+                    end
+                end
+            end
+        end)
+    end
+end)
 
 local espEnabled = false
 CreateToggle(MainContent, 144, "ESP Player (Xuyên tường + Tên)", function(state) espEnabled = state end)
