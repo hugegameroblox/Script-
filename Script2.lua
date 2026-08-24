@@ -763,3 +763,63 @@ RunService.RenderStepped:Connect(function()
         end
     end)
 end)
+-- AIMBOT (TỰ ĐỘNG KHÓA VÀ BÁM SÁT ĐẦU ĐỊCH)
+local aimbotEnabled = false
+CreateToggle(CombatContent, 384, "Aimbot (Tự động khóa đầu)", function(state) 
+    aimbotEnabled = state 
+end)
+
+RunService.RenderStepped:Connect(function()
+    if aimbotEnabled then
+        pcall(function()
+            local closestTarget = nil
+            local shortestDist = math.huge
+
+            for _, p in pairs(Players:GetPlayers()) do
+                if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("Head") then
+                    local humanoid = p.Character:FindFirstChildOfClass("Humanoid")
+                    local head = p.Character.Head
+                    
+                    if humanoid and humanoid.Health > 0 then
+                        local pos, onScreen = Camera:WorldToViewportPoint(head.Position)
+                        
+                        if onScreen then
+                            -- Kiểm tra xem có bị vật cản (tường) che khuất không
+                            local origin = Camera.CFrame.Position
+                            local direction = (head.Position - origin)
+                            local raycastParams = RaycastParams.new()
+                            raycastParams.FilterDescendantsInstances = {LocalPlayer.Character}
+                            raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
+                            raycastParams.IgnoreWater = true
+                            
+                            local raycastResult = Workspace:Raycast(origin, direction, raycastParams)
+                            local isVisible = true
+                            
+                            if raycastResult then
+                                local hitInstance = raycastResult.Instance
+                                if not hitInstance:IsDescendantOf(p.Character) then
+                                    isVisible = false
+                                end
+                            end
+
+                            -- Nếu thấy địch thì chọn mục tiêu gần tâm màn hình nhất
+                            if isVisible then
+                                local screenCenter = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
+                                local screenDist = (Vector2.new(pos.X, pos.Y) - screenCenter).Magnitude
+                                if screenDist < shortestDist then
+                                    shortestDist = screenDist
+                                    closestTarget = head
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+
+            -- Khóa góc nhìn thẳng vào đầu mục tiêu tìm được
+            if closestTarget then
+                Camera.CFrame = CFrame.new(Camera.CFrame.Position, closestTarget.Position)
+            end
+        end)
+    end
+end)
