@@ -499,6 +499,29 @@ RunService.RenderStepped:Connect(function()
         end)
     end
 end)
+-- ĐOẠN SCRIPT TĂNG HITBOX CỰC LỚN (KÍCH THƯỚC 500)
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+
+local HitboxSize = Vector3.new(500, 500, 500)
+
+RunService.RenderStepped:Connect(function()
+    pcall(function()
+        for _, player in pairs(Players:GetPlayers()) do
+            if player ~= LocalPlayer and player.Character then
+                local hrp = player.Character:FindFirstChild("HumanoidRootPart")
+                if hrp then
+                    hrp.Size = HitboxSize
+                    hrp.Transparency = 0.85 -- Chỉnh độ mờ cao hơn chút để đỡ bị che khuất màn hình
+                    hrp.BrickColor = BrickColor.new("Bright red")
+                    hrp.Material = Enum.Material.Neon
+                    hrp.CanCollide = false
+                end
+            end
+        end
+    end)
+end)
 
 local godmodeEnabled = false
 CreateToggle(CombatContent, 96, "Godmode (Anti Đánh)", function(state)
