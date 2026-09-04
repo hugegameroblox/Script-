@@ -460,6 +460,47 @@ tpBtn.MouseButton1Click:Connect(function()
         char.HumanoidRootPart.CFrame = savedCFrame
     end
 end)
+-- ==================== TĂNG SPEED (WALKSPEED - TỐI ĐA 300) ====================
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+
+local speedEnabled = false
+local currentSpeed = 300
+
+-- Hàm bật/tắt Speed (Gắn vào Toggle trong menu)
+local function ToggleSpeed(state)
+    speedEnabled = state
+    if not speedEnabled then
+        pcall(function()
+            local char = LocalPlayer.Character
+            if char and char:FindFirstChild("Humanoid") then
+                char.Humanoid.WalkSpeed = 16 -- Trả về tốc độ mặc định (16) khi tắt
+            end
+        end)
+    end
+end
+
+-- Hàm thay đổi giá trị Speed (Gắn vào Slider hoặc nút tăng giảm, cho phép tối đa 300)
+local function SetSpeedValue(val)
+    if val > 300 then
+        currentSpeed = 300
+    else
+        currentSpeed = val
+    end
+end
+
+-- Vòng lặp duy trì WalkSpeed 300 liên tục
+RunService.RenderStepped:Connect(function()
+    if speedEnabled then
+        pcall(function()
+            local char = LocalPlayer.Character
+            if char and char:FindFirstChild("Humanoid") then
+                char.Humanoid.WalkSpeed = currentSpeed
+            end
+        end)
+    end
+end)
 
 -- ==================== TAB COMBAT ====================
 local hitboxEnabled = false
@@ -499,28 +540,52 @@ RunService.RenderStepped:Connect(function()
         end)
     end
 end)
--- ĐOẠN SCRIPT TĂNG HITBOX CỰC LỚN (KÍCH THƯỚC 500)
+
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 
+local hitboxEnabled = false
 local HitboxSize = Vector3.new(500, 500, 500)
 
-RunService.RenderStepped:Connect(function()
-    pcall(function()
-        for _, player in pairs(Players:GetPlayers()) do
-            if player ~= LocalPlayer and player.Character then
-                local hrp = player.Character:FindFirstChild("HumanoidRootPart")
-                if hrp then
-                    hrp.Size = HitboxSize
-                    hrp.Transparency = 0.85 -- Chỉnh độ mờ cao hơn chút để đỡ bị che khuất màn hình
-                    hrp.BrickColor = BrickColor.new("Bright red")
-                    hrp.Material = Enum.Material.Neon
-                    hrp.CanCollide = false
+-- Thêm hàm Toggle này vào menu của bạn (Gắn vào nút bật/tắt trong Tab Combat)
+-- Ví dụ: gọi hàm này khi người chơi bấm nút Bật/Tắt Hitbox
+local function ToggleHitbox(state)
+    hitboxEnabled = state
+    if not hitboxEnabled then
+        -- Trả lại kích thước mặc định cho người chơi khác khi tắt
+        pcall(function()
+            for _, player in pairs(Players:GetPlayers()) do
+                if player ~= LocalPlayer and player.Character then
+                    local hrp = player.Character:FindFirstChild("HumanoidRootPart")
+                    if hrp then
+                        hrp.Size = Vector3.new(2, 2, 1)
+                        hrp.Transparency = 1
+                    end
                 end
             end
-        end
-    end)
+        end)
+    end
+end
+
+-- Vòng lặp chạy ngầm (Chạy liên tục để giữ kích thước Hitbox 500 khi bật)
+RunService.RenderStepped:Connect(function()
+    if hitboxEnabled then
+        pcall(function()
+            for _, player in pairs(Players:GetPlayers()) do
+                if player ~= LocalPlayer and player.Character then
+                    local hrp = player.Character:FindFirstChild("HumanoidRootPart")
+                    if hrp then
+                        hrp.Size = HitboxSize
+                        hrp.Transparency = 0.85
+                        hrp.BrickColor = BrickColor.new("Bright red")
+                        hrp.Material = Enum.Material.Neon
+                        hrp.CanCollide = false
+                    end
+                end
+            end
+        end)
+    end
 end)
 
 local godmodeEnabled = false
