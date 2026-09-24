@@ -1,4 +1,4 @@
--- ==================== AUTO CHEST FIX (AN TOÀN CHO MOBILE) ====================
+-- ==================== AUTO CHEST MENU RIÊNG BIỆT ====================
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
@@ -8,21 +8,21 @@ local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 local autoChestEnabled = false
 local stopOnSpecialItem = true
 
--- Xóa GUI cũ nếu có để tránh trùng lặp
+-- Xóa Menu cũ nếu tồn tại để tránh bị lỗi trùng lặp
 pcall(function()
-    if PlayerGui:FindFirstChild("AutoChestHubUI") then
-        PlayerGui.AutoChestHubUI:Destroy()
+    if PlayerGui:FindFirstChild("AutoChestOnlyUI") then
+        PlayerGui.AutoChestOnlyUI:Destroy()
     end
 end)
 
--- Tạo giao diện Menu chính trực tiếp vào PlayerGui (Tránh lỗi CoreGui trên mobile)
+-- Tạo GUI giao diện chính
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "AutoChestHubUI"
+ScreenGui.Name = "AutoChestOnlyUI"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = PlayerGui
 
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 190, 0, 140)
+MainFrame.Size = UDim2.new(0, 200, 0, 140)
 MainFrame.Position = UDim2.new(0, 50, 0, 150)
 MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
 MainFrame.BorderSizePixel = 0
@@ -36,14 +36,14 @@ local Title = Instance.new("TextLabel")
 Title.Size = UDim2.new(1, 0, 0, 30)
 Title.BackgroundTransparency = 1
 Title.Font = Enum.Font.SourceSansBold
-Title.Text = "Auto Chest"
+Title.Text = "🎁 Auto Chest Menu"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.TextSize = 15
 Title.Parent = MainFrame
 
 -- Nút Bật/Tắt Auto Chest
 local ToggleBtn = Instance.new("TextButton")
-ToggleBtn.Size = UDim2.new(0, 170, 0, 35)
+ToggleBtn.Size = UDim2.new(0, 180, 0, 35)
 ToggleBtn.Position = UDim2.new(0, 10, 0, 35)
 ToggleBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 48)
 ToggleBtn.Font = Enum.Font.SourceSansBold
@@ -55,8 +55,8 @@ Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(0, 6)
 
 -- Nút Bật/Tắt Stop khi có Key/Chén Thánh
 local StopToggleBtn = Instance.new("TextButton")
-StopToggleBtn.Size = UDim2.new(0, 170, 0, 35)
-StopToggleBtn.Position = UDim2.new(0, 10, 0, 75)
+StopToggleBtn.Size = UDim2.new(0, 180, 0, 35)
+StopToggleBtn.Position = UDim2.new(0, 10, 0, 78)
 StopToggleBtn.BackgroundColor3 = Color3.fromRGB(20, 50, 30)
 StopToggleBtn.Font = Enum.Font.SourceSansBold
 StopToggleBtn.Text = "Stop Key/Chén: BẬT"
@@ -65,7 +65,7 @@ StopToggleBtn.TextSize = 12
 StopToggleBtn.Parent = MainFrame
 Instance.new("UICorner", StopToggleBtn).CornerRadius = UDim.new(0, 6)
 
--- Hàm kiểm tra vật phẩm đặc biệt
+-- Hàm kiểm tra vật phẩm đặc biệt (Key, Chalice, Fist)
 local function HasSpecialItem()
     local found = false
     pcall(function()
@@ -93,7 +93,7 @@ local function HasSpecialItem()
     return found
 end
 
--- Sự kiện bấm nút Auto Chest
+-- Xử lý sự kiện bấm nút Auto Chest
 ToggleBtn.MouseButton1Click:Connect(function()
     autoChestEnabled = not autoChestEnabled
     if autoChestEnabled then
@@ -107,7 +107,7 @@ ToggleBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- Sự kiện bấm nút Stop
+-- Xử lý sự kiện bấm nút Stop khi có Key/Chén Thánh
 StopToggleBtn.MouseButton1Click:Connect(function()
     stopOnSpecialItem = not stopOnSpecialItem
     if stopOnSpecialItem then
@@ -121,7 +121,7 @@ StopToggleBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- Hàm tìm rương tối ưu
+-- Hàm tìm rương gần nhất
 local function GetNearestChest()
     local nearestChest = nil
     local shortestDistance = math.huge
@@ -144,10 +144,11 @@ local function GetNearestChest()
     return nearestChest
 end
 
--- Vòng lặp chạy ngầm
+-- Vòng lặp chạy ngầm thực hiện auto nhặt rương
 RunService.RenderStepped:Connect(function()
     if autoChestEnabled then
         pcall(function()
+            -- Nếu bật tính năng dừng và phát hiện có Key/Chén -> Tự tắt Auto Chest
             if stopOnSpecialItem and HasSpecialItem() then
                 autoChestEnabled = false
                 ToggleBtn.Text = "Auto Chest: TẮT"
