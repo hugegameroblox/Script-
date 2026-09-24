@@ -1,4 +1,4 @@
--- ==================== AUTO CHEST CHỈ NHẶT RƯƠNG THƯỜNG (LOẠI BỎ RƯƠNG ẨN) ====================
+-- ==================== AUTO CHEST ULTRA SPEED (KHÔNG LAG, XA, CHỈ RƯƠNG THƯỜNG) ====================
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
@@ -36,7 +36,7 @@ local Title = Instance.new("TextLabel")
 Title.Size = UDim2.new(1, 0, 0, 30)
 Title.BackgroundTransparency = 1
 Title.Font = Enum.Font.SourceSansBold
-Title.Text = "🎁 Auto Chest (Normal)"
+Title.Text = "🎁 Auto Chest Pro"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.TextSize = 15
 Title.Parent = MainFrame
@@ -121,42 +121,55 @@ StopToggleBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- HÀM TÌM RƯƠNG THƯỜNG (BỎ QUA CÁC RƯƠNG ẨN / RƯƠNG NHIỆM VỤ)
+-- HÀM TÌM RƯƠNG CỰC KỲ TỐI ƯU (DÙNG CACHE TRÁNH LAG NẶNG)
+local cachedChest = nil
+local lastCheck = 0
+
 local function GetNearestChest()
+    local char = LocalPlayer.Character
+    if not char or not char:FindFirstChild("HumanoidRootPart") then return nil end
+    local rootPos = char.HumanoidRootPart.Position
+
+    -- Nếu rương cũ vẫn tồn tại và chưa bị nhặt, ưu tiên dùng luôn để bay cực nhanh
+    if cachedChest and cachedChest.Parent then
+        local dist = (rootPos - cachedChest.Position).Magnitude
+        if dist > 5 then -- Nếu chưa đứng sát rương thì tiếp tục bay tới
+            return cachedChest
+        end
+    end
+
     local nearestChest = nil
     local shortestDistance = math.huge
-    
+
     pcall(function()
-        for _, child in pairs(Workspace:GetChildren()) do
-            if child:IsA("Folder") or child:IsA("Model") then
-                for _, obj in pairs(child:GetDescendants()) do
-                    if obj:IsA("Model") then
-                        local nameLower = obj.Name:lower()
-                        -- Chỉ nhận rương có tên chứa chest/treasure, ĐỒNG THỜI loại bỏ các rương ẩn/nhiệm vụ cụ thể
-                        if (nameLower:find("chest") or nameLower:find("treasure")) 
-                            and not nameLower:find("secret") 
-                            and not nameLower:find("quest") 
-                            and not nameLower:find("rengoku") then
-                            
-                            local part = obj:FindFirstChild("HumanoidRootPart") or obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
-                            if part and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                                local distance = (LocalPlayer.Character.HumanoidRootPart.Position - part.Position).Magnitude
-                                if distance < shortestDistance then
-                                    shortestDistance = distance
-                                    nearestChest = part
-                                end
-                            end
+        -- Quét nhanh các phần tử chứa chest nhưng lọc sạch rương ẩn/nhiệm vụ
+        for _, obj in pairs(Workspace:GetDescendants()) do
+            if obj:IsA("Model") then
+                local nameLower = obj.Name:lower()
+                if (nameLower:find("chest") or nameLower:find("treasure"))
+                    and not nameLower:find("secret")
+                    and not nameLower:find("quest")
+                    and not nameLower:find("rengoku")
+                    and not nameLower:find("door") then
+                    
+                    local part = obj:FindFirstChild("HumanoidRootPart") or obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
+                    if part then
+                        local distance = (rootPos - part.Position).Magnitude
+                        if distance < shortestDistance then
+                            shortestDistance = distance
+                            nearestChest = part
                         end
                     end
                 end
             end
         end
     end)
-    
+
+    cachedChest = nearestChest
     return nearestChest
 end
 
--- Vòng lặp chạy ngầm chống cà giật và chỉ nhặt rương thường
+-- Vòng lặp tốc độ cao, mượt mà tuyệt đối, không giật lag
 RunService.Stepped:Connect(function()
     if autoChestEnabled then
         pcall(function()
@@ -172,7 +185,7 @@ RunService.Stepped:Connect(function()
             if char and char:FindFirstChild("HumanoidRootPart") then
                 local rootPart = char.HumanoidRootPart
                 
-                -- Khóa vật lý, chống cà giật
+                -- Khóa vật lý chống cà giật
                 rootPart.Velocity = Vector3.new(0, 0, 0)
                 rootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
                 rootPart.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
