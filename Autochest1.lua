@@ -1,4 +1,4 @@
--- ==================== AUTO CHEST ULTRA SPEED (KHÔNG LAG, XA, CHỈ RƯƠNG THƯỜNG) ====================
+-- ==================== AUTO CHEST SIÊU XA, CỰC MƯỢT (KHÔNG LAG) ====================
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
@@ -36,7 +36,7 @@ local Title = Instance.new("TextLabel")
 Title.Size = UDim2.new(1, 0, 0, 30)
 Title.BackgroundTransparency = 1
 Title.Font = Enum.Font.SourceSansBold
-Title.Text = "🎁 Auto Chest Pro"
+Title.Text = "🎁 Auto Chest Full Map"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.TextSize = 15
 Title.Parent = MainFrame
@@ -121,60 +121,61 @@ StopToggleBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- HÀM TÌM RƯƠNG CỰC KỲ TỐI ƯU (DÙNG CACHE TRÁNH LAG NẶNG)
-local cachedChest = nil
-local lastCheck = 0
+-- HỆ THỐNG QUÉT RƯƠNG TOÀN MAP (CHẠY NGẦM ĐỘC LẬP KHÔNG GÂY LAG)
+local targetChest = nil
 
-local function GetNearestChest()
-    local char = LocalPlayer.Character
-    if not char or not char:FindFirstChild("HumanoidRootPart") then return nil end
-    local rootPos = char.HumanoidRootPart.Position
-
-    -- Nếu rương cũ vẫn tồn tại và chưa bị nhặt, ưu tiên dùng luôn để bay cực nhanh
-    if cachedChest and cachedChest.Parent then
-        local dist = (rootPos - cachedChest.Position).Magnitude
-        if dist > 5 then -- Nếu chưa đứng sát rương thì tiếp tục bay tới
-            return cachedChest
-        end
-    end
-
-    local nearestChest = nil
-    local shortestDistance = math.huge
-
-    pcall(function()
-        -- Quét nhanh các phần tử chứa chest nhưng lọc sạch rương ẩn/nhiệm vụ
-        for _, obj in pairs(Workspace:GetDescendants()) do
-            if obj:IsA("Model") then
-                local nameLower = obj.Name:lower()
-                if (nameLower:find("chest") or nameLower:find("treasure"))
-                    and not nameLower:find("secret")
-                    and not nameLower:find("quest")
-                    and not nameLower:find("rengoku")
-                    and not nameLower:find("door") then
+task.spawn(function()
+    while true do
+        if autoChestEnabled then
+            local nearest = nil
+            local shortest = math.huge
+            pcall(function()
+                local char = LocalPlayer.Character
+                if char and char:FindFirstChild("HumanoidRootPart") then
+                    local rootPos = char.HumanoidRootPart.Position
                     
-                    local part = obj:FindFirstChild("HumanoidRootPart") or obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
-                    if part then
-                        local distance = (rootPos - part.Position).Magnitude
-                        if distance < shortestDistance then
-                            shortestDistance = distance
-                            nearestChest = part
+                    -- Quét chuyên sâu qua các thư mục chứa thế giới/đảo trong Blox Fruits
+                    for _, folder in pairs(Workspace:GetChildren()) do
+                        if folder:IsA("Folder") or folder:IsA("Model") then
+                            for _, obj in pairs(folder:GetDescendants()) do
+                                if obj:IsA("Model") then
+                                    local nameLower = obj.Name:lower()
+                                    if (nameLower:find("chest") or nameLower:find("treasure"))
+                                        and not nameLower:find("secret")
+                                        and not nameLower:find("quest")
+                                        and not nameLower:find("rengoku")
+                                        and not nameLower:find("door") then
+                                        
+                                        local part = obj:FindFirstChild("HumanoidRootPart") or obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
+                                        if part then
+                                            local dist = (rootPos - part.Position).Magnitude
+                                            if dist < shortest then
+                                                shortest = dist
+                                                nearest = part
+                                            end
+                                        end
+                                    end
+                                end
+                            end
                         end
                     end
                 end
-            end
+            end)
+            targetChest = nearest
+        else
+            targetChest = nil
         end
-    end)
+        task.wait(1) -- Quét lại toàn map mỗi 1 giây để không bị nặng máy
+    end
+end)
 
-    cachedChest = nearestChest
-    return nearestChest
-end
-
--- Vòng lặp tốc độ cao, mượt mà tuyệt đối, không giật lag
+-- VÒNG LẶP DI CHUYỂN SIÊU MƯỢT (CHẠY THEO KHUNG HÌNH)
 RunService.Stepped:Connect(function()
     if autoChestEnabled then
         pcall(function()
             if stopOnSpecialItem and HasSpecialItem() then
                 autoChestEnabled = false
+                targetChest = nil
                 ToggleBtn.Text = "Auto Chest: TẮT"
                 ToggleBtn.TextColor3 = Color3.fromRGB(255, 60, 60)
                 ToggleBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 48)
@@ -185,14 +186,13 @@ RunService.Stepped:Connect(function()
             if char and char:FindFirstChild("HumanoidRootPart") then
                 local rootPart = char.HumanoidRootPart
                 
-                -- Khóa vật lý chống cà giật
+                -- Khóa vật lý triệt để chống rung lắc, cà giật
                 rootPart.Velocity = Vector3.new(0, 0, 0)
                 rootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
                 rootPart.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
 
-                local chest = GetNearestChest()
-                if chest then
-                    rootPart.CFrame = chest.CFrame + Vector3.new(0, 3, 0)
+                if targetChest and targetChest.Parent then
+                    rootPart.CFrame = targetChest.CFrame + Vector3.new(0, 3, 0)
                 end
             end
         end)
