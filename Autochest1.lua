@@ -1,4 +1,4 @@
--- ==================== AUTO CHEST SIÊU TỐC, CỐ ĐỊNH NHÂN VẬT (KHÔNG CÀ GIẬT) ====================
+-- ==================== AUTO CHEST CHỈ NHẶT RƯƠNG THƯỜNG (LOẠI BỎ RƯƠNG ẨN) ====================
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
@@ -36,7 +36,7 @@ local Title = Instance.new("TextLabel")
 Title.Size = UDim2.new(1, 0, 0, 30)
 Title.BackgroundTransparency = 1
 Title.Font = Enum.Font.SourceSansBold
-Title.Text = "🎁 Auto Chest"
+Title.Text = "🎁 Auto Chest (Normal)"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.TextSize = 15
 Title.Parent = MainFrame
@@ -121,7 +121,7 @@ StopToggleBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- HÀM TÌM RƯƠNG TOÀN MAP (TẦM XA)
+-- HÀM TÌM RƯƠNG THƯỜNG (BỎ QUA CÁC RƯƠNG ẨN / RƯƠNG NHIỆM VỤ)
 local function GetNearestChest()
     local nearestChest = nil
     local shortestDistance = math.huge
@@ -130,13 +130,21 @@ local function GetNearestChest()
         for _, child in pairs(Workspace:GetChildren()) do
             if child:IsA("Folder") or child:IsA("Model") then
                 for _, obj in pairs(child:GetDescendants()) do
-                    if obj:IsA("Model") and (obj.Name:lower():find("chest") or obj.Name:lower():find("treasure")) then
-                        local part = obj:FindFirstChild("HumanoidRootPart") or obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
-                        if part and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                            local distance = (LocalPlayer.Character.HumanoidRootPart.Position - part.Position).Magnitude
-                            if distance < shortestDistance then
-                                shortestDistance = distance
-                                nearestChest = part
+                    if obj:IsA("Model") then
+                        local nameLower = obj.Name:lower()
+                        -- Chỉ nhận rương có tên chứa chest/treasure, ĐỒNG THỜI loại bỏ các rương ẩn/nhiệm vụ cụ thể
+                        if (nameLower:find("chest") or nameLower:find("treasure")) 
+                            and not nameLower:find("secret") 
+                            and not nameLower:find("quest") 
+                            and not nameLower:find("rengoku") then
+                            
+                            local part = obj:FindFirstChild("HumanoidRootPart") or obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
+                            if part and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                                local distance = (LocalPlayer.Character.HumanoidRootPart.Position - part.Position).Magnitude
+                                if distance < shortestDistance then
+                                    shortestDistance = distance
+                                    nearestChest = part
+                                end
                             end
                         end
                     end
@@ -148,7 +156,7 @@ local function GetNearestChest()
     return nearestChest
 end
 
--- Vòng lặp chống cà giật, cố định người và nhặt rương siêu mượt
+-- Vòng lặp chạy ngầm chống cà giật và chỉ nhặt rương thường
 RunService.Stepped:Connect(function()
     if autoChestEnabled then
         pcall(function()
@@ -164,7 +172,7 @@ RunService.Stepped:Connect(function()
             if char and char:FindFirstChild("HumanoidRootPart") then
                 local rootPart = char.HumanoidRootPart
                 
-                -- Khóa vật lý, triệt tiêu quán tính để nhân vật đứng yên không bị rung lắc
+                -- Khóa vật lý, chống cà giật
                 rootPart.Velocity = Vector3.new(0, 0, 0)
                 rootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
                 rootPart.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
