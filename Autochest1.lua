@@ -1,4 +1,4 @@
--- ==================== AUTO CHEST FIX CHUẨN XÁC ====================
+-- ==================== AUTO CHEST TỐI ƯU HÓA (KHÔNG LAG, TẦM XA) ====================
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
@@ -121,21 +121,25 @@ StopToggleBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- HÀM TÌM RƯƠNG ĐÃ ĐƯỢC NÂNG CẤP (QUÉT TOÀN BỘ WORKSPACE)
+-- HÀM TÌM RƯƠNG TOÀN MAP (TỐI ƯU HÓA KHÔNG GÂY LAG)
 local function GetNearestChest()
     local nearestChest = nil
     local shortestDistance = math.huge
     
     pcall(function()
-        for _, obj in pairs(Workspace:GetDescendants()) do
-            -- Kiểm tra tên object chứa chữ chest hoặc treasure
-            if obj:IsA("Model") and (obj.Name:lower():find("chest") or obj.Name:lower():find("treasure")) then
-                local part = obj:FindFirstChild("HumanoidRootPart") or obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
-                if part and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                    local distance = (LocalPlayer.Character.HumanoidRootPart.Position - part.Position).Magnitude
-                    if distance < shortestDistance then
-                        shortestDistance = distance
-                        nearestChest = part
+        -- Duyệt qua các thư mục chứa map/đảo trong Workspace để tìm rương xa gần đều được
+        for _, folder in pairs(Workspace:GetChildren()) do
+            if folder:IsA("Folder") or folder:IsA("Model") then
+                for _, obj in pairs(folder:GetChildren()) do
+                    if obj.Name:lower():find("chest") or obj.Name:lower():find("treasure") then
+                        local part = obj:FindFirstChild("HumanoidRootPart") or obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
+                        if part and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                            local distance = (LocalPlayer.Character.HumanoidRootPart.Position - part.Position).Magnitude
+                            if distance < shortestDistance then
+                                shortestDistance = distance
+                                nearestChest = part
+                            end
+                        end
                     end
                 end
             end
@@ -145,25 +149,31 @@ local function GetNearestChest()
     return nearestChest
 end
 
--- Vòng lặp chạy ngầm thực hiện auto nhặt rương
-RunService.RenderStepped:Connect(function()
+-- Vòng lặp chạy ngầm tối ưu hóa độ trễ (giảm tải cho máy)
+local clock = 0
+RunService.RenderStepped:Connect(function(dt)
     if autoChestEnabled then
-        pcall(function()
-            if stopOnSpecialItem and HasSpecialItem() then
-                autoChestEnabled = false
-                ToggleBtn.Text = "Auto Chest: TẮT"
-                ToggleBtn.TextColor3 = Color3.fromRGB(255, 60, 60)
-                ToggleBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 48)
-                return
-            end
-
-            local char = LocalPlayer.Character
-            if char and char:FindFirstChild("HumanoidRootPart") then
-                local chest = GetNearestChest()
-                if chest then
-                    char.HumanoidRootPart.CFrame = chest.CFrame + Vector3.new(0, 3, 0)
+        clock = clock + dt
+        -- Cho phép quét và dịch chuyển mượt mà mà không làm giật game
+        if clock >= 0.1 then 
+            clock = 0
+            pcall(function()
+                if stopOnSpecialItem and HasSpecialItem() then
+                    autoChestEnabled = false
+                    ToggleBtn.Text = "Auto Chest: TẮT"
+                    ToggleBtn.TextColor3 = Color3.fromRGB(255, 60, 60)
+                    ToggleBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 48)
+                    return
                 end
-            end
-        end)
+
+                local char = LocalPlayer.Character
+                if char and char:FindFirstChild("HumanoidRootPart") then
+                    local chest = GetNearestChest()
+                    if chest then
+                        char.HumanoidRootPart.CFrame = chest.CFrame + Vector3.new(0, 3, 0)
+                    end
+                end
+            end)
+        end
     end
 end)
