@@ -1,4 +1,4 @@
--- ==================== AUTO CHEST MENU RIÊNG BIỆT ====================
+-- ==================== AUTO CHEST FIX CHUẨN XÁC ====================
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
@@ -8,7 +8,7 @@ local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 local autoChestEnabled = false
 local stopOnSpecialItem = true
 
--- Xóa Menu cũ nếu tồn tại để tránh bị lỗi trùng lặp
+-- Xóa Menu cũ nếu tồn tại
 pcall(function()
     if PlayerGui:FindFirstChild("AutoChestOnlyUI") then
         PlayerGui.AutoChestOnlyUI:Destroy()
@@ -36,7 +36,7 @@ local Title = Instance.new("TextLabel")
 Title.Size = UDim2.new(1, 0, 0, 30)
 Title.BackgroundTransparency = 1
 Title.Font = Enum.Font.SourceSansBold
-Title.Text = "🎁 Auto Chest Menu"
+Title.Text = "🎁 Auto Chest"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.TextSize = 15
 Title.Parent = MainFrame
@@ -65,7 +65,7 @@ StopToggleBtn.TextSize = 12
 StopToggleBtn.Parent = MainFrame
 Instance.new("UICorner", StopToggleBtn).CornerRadius = UDim.new(0, 6)
 
--- Hàm kiểm tra vật phẩm đặc biệt (Key, Chalice, Fist)
+-- Hàm kiểm tra vật phẩm đặc biệt
 local function HasSpecialItem()
     local found = false
     pcall(function()
@@ -107,7 +107,7 @@ ToggleBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- Xử lý sự kiện bấm nút Stop khi có Key/Chén Thánh
+-- Xử lý sự kiện bấm nút Stop
 StopToggleBtn.MouseButton1Click:Connect(function()
     stopOnSpecialItem = not stopOnSpecialItem
     if stopOnSpecialItem then
@@ -121,14 +121,15 @@ StopToggleBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- Hàm tìm rương gần nhất
+-- HÀM TÌM RƯƠNG ĐÃ ĐƯỢC NÂNG CẤP (QUÉT TOÀN BỘ WORKSPACE)
 local function GetNearestChest()
     local nearestChest = nil
     local shortestDistance = math.huge
     
     pcall(function()
-        for _, obj in pairs(Workspace:GetChildren()) do
-            if obj.Name:lower():find("chest") or obj.Name:lower():find("treasure") then
+        for _, obj in pairs(Workspace:GetDescendants()) do
+            -- Kiểm tra tên object chứa chữ chest hoặc treasure
+            if obj:IsA("Model") and (obj.Name:lower():find("chest") or obj.Name:lower():find("treasure")) then
                 local part = obj:FindFirstChild("HumanoidRootPart") or obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
                 if part and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
                     local distance = (LocalPlayer.Character.HumanoidRootPart.Position - part.Position).Magnitude
@@ -148,7 +149,6 @@ end
 RunService.RenderStepped:Connect(function()
     if autoChestEnabled then
         pcall(function()
-            -- Nếu bật tính năng dừng và phát hiện có Key/Chén -> Tự tắt Auto Chest
             if stopOnSpecialItem and HasSpecialItem() then
                 autoChestEnabled = false
                 ToggleBtn.Text = "Auto Chest: TẮT"
