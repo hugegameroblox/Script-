@@ -1,4 +1,4 @@
--- ==================== AUTO CHEST SIÊU TỐC & KHÔNG LAG ====================
+-- ==================== AUTO CHEST SIÊU TỐC, CỐ ĐỊNH NHÂN VẬT (KHÔNG CÀ GIẬT) ====================
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
@@ -121,21 +121,24 @@ StopToggleBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- HÀM TÌM RƯƠNG TỐC ĐỘ CAO (QUÉT TOÀN MAP KHÔNG GIẬT LAG)
+-- HÀM TÌM RƯƠNG TOÀN MAP (TẦM XA)
 local function GetNearestChest()
     local nearestChest = nil
     local shortestDistance = math.huge
     
     pcall(function()
-        -- Sử dụng GetDescendants trực tiếp trên các thư mục map chính nhưng ngắt nhịp để siêu mượt
-        for _, obj in pairs(Workspace:GetDescendants()) do
-            if obj:IsA("Model") and (obj.Name:lower():find("chest") or obj.Name:lower():find("treasure")) then
-                local part = obj:FindFirstChild("HumanoidRootPart") or obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
-                if part and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                    local distance = (LocalPlayer.Character.HumanoidRootPart.Position - part.Position).Magnitude
-                    if distance < shortestDistance then
-                        shortestDistance = distance
-                        nearestChest = part
+        for _, child in pairs(Workspace:GetChildren()) do
+            if child:IsA("Folder") or child:IsA("Model") then
+                for _, obj in pairs(child:GetDescendants()) do
+                    if obj:IsA("Model") and (obj.Name:lower():find("chest") or obj.Name:lower():find("treasure")) then
+                        local part = obj:FindFirstChild("HumanoidRootPart") or obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
+                        if part and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                            local distance = (LocalPlayer.Character.HumanoidRootPart.Position - part.Position).Magnitude
+                            if distance < shortestDistance then
+                                shortestDistance = distance
+                                nearestChest = part
+                            end
+                        end
                     end
                 end
             end
@@ -145,8 +148,8 @@ local function GetNearestChest()
     return nearestChest
 end
 
--- Vòng lặp chạy ngầm tốc độ cao, tối ưu hóa tối đa cho việc nhặt rương liên tục
-RunService.Heartbeat:Connect(function()
+-- Vòng lặp chống cà giật, cố định người và nhặt rương siêu mượt
+RunService.Stepped:Connect(function()
     if autoChestEnabled then
         pcall(function()
             if stopOnSpecialItem and HasSpecialItem() then
@@ -159,10 +162,16 @@ RunService.Heartbeat:Connect(function()
 
             local char = LocalPlayer.Character
             if char and char:FindFirstChild("HumanoidRootPart") then
+                local rootPart = char.HumanoidRootPart
+                
+                -- Khóa vật lý, triệt tiêu quán tính để nhân vật đứng yên không bị rung lắc
+                rootPart.Velocity = Vector3.new(0, 0, 0)
+                rootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+                rootPart.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+
                 local chest = GetNearestChest()
                 if chest then
-                    -- Dịch chuyển thẳng tới rương với độ trễ cực thấp giúp nhặt cực nhanh
-                    char.HumanoidRootPart.CFrame = chest.CFrame + Vector3.new(0, 2, 0)
+                    rootPart.CFrame = chest.CFrame + Vector3.new(0, 3, 0)
                 end
             end
         end)
