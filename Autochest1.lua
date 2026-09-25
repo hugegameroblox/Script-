@@ -1,4 +1,4 @@
--- ==================== BLOX FRUITS - PORTAL C TELEPORT HUB ====================
+-- ==================== BLOX FRUITS - PORTAL C GATE TARGET HUB ====================
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
@@ -8,7 +8,7 @@ local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
 local autoChestEnabled = false
 local stopOnSpecialItem = true
-local portalCEnabled = true -- Bật/Tắt dùng chiêu C mở cổng Portal
+local portalCEnabled = true
 local chestSpeed = 350
 
 -- Xóa Menu cũ nếu tồn tại
@@ -45,7 +45,7 @@ local Title = Instance.new("TextLabel")
 Title.Size = UDim2.new(1, 0, 0, 35)
 Title.BackgroundTransparency = 1
 Title.Font = Enum.Font.SourceSansBold
-Title.Text = "auto catch chest v1.1"
+Title.Text = "auto catch chest v1.2 beta"
 Title.TextColor3 = Color3.fromRGB(100, 180, 255)
 Title.TextSize = 14
 Title.Parent = MainFrame
@@ -86,7 +86,7 @@ StopToggleBtn.TextSize = 12
 StopToggleBtn.Parent = MainFrame
 Instance.new("UICorner", StopToggleBtn).CornerRadius = UDim.new(0, 6)
 
--- Nút Bật/Tắt C Portal (Mở cổng tele)
+-- Nút Bật/Tắt C Portal
 local PortalCToggleBtn = Instance.new("TextButton")
 PortalCToggleBtn.Size = UDim2.new(0, 200, 0, 32)
 PortalCToggleBtn.Position = UDim2.new(0, 10, 0, 112)
@@ -286,7 +286,7 @@ task.spawn(function()
     end
 end)
 
--- Hệ thống di chuyển kết hợp chiêu C Portal (World Warp - Mở cổng tele đoạn ngắn)
+-- Hệ thống di chuyển kết hợp chiêu C Portal (Mở cổng và tự động chọn điểm đến là vị trí rương)
 task.spawn(function()
     while true do
         task.wait(0.1)
@@ -307,7 +307,7 @@ task.spawn(function()
                         local destCFrame = targetChest.CFrame + Vector3.new(0, 3, 0)
                         local distance = (rootPart.Position - targetChest.Position).Magnitude
                         
-                        -- Nếu khoảng cách hợp lý (trên 100 studs), tự động giả lập nhấn phím C để mở cổng tele lướt đoạn ngắn
+                        -- Nếu khoảng cách xa (trên 100 studs), tự động kích hoạt C Portal và định hướng cổng đến rương
                         if portalCEnabled and distance > 100 then
                             pcall(function()
                                 local backpack = LocalPlayer:FindFirstChild("Backpack")
@@ -325,13 +325,26 @@ task.spawn(function()
                                     portalTool.Parent = char
                                 end
                                 
-                                -- Gửi lệnh bấm phím C ảo để kích hoạt chiêu C (World Warp - Mở cổng)
+                                -- 1. Hướng camera về phía rương để cổng hiểu hướng bắn
+                                local camera = Workspace.CurrentCamera
+                                if camera then
+                                    camera.CFrame = CFrame.new(camera.CFrame.Position, targetChest.Position)
+                                end
+                                
+                                -- 2. Nhấn phím C để mở/bắn cổng
                                 VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.C, false, game)
                                 task.wait(0.05)
                                 VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.C, false, game)
+                                
+                                -- 3. Giả lập click chuột trái để xác nhận điểm đến của cổng ngay tại vị trí rương
+                                task.wait(0.1)
+                                VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 0)
+                                task.wait(0.05)
+                                VirtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, 0)
                             end)
                         end
                         
+                        -- Di chuyển tween mượt mà tiếp tục quãng đường
                         local stepTime = distance / chestSpeed
                         if stepTime < 0.05 then stepTime = 0.05 end
                         
