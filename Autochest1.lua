@@ -1,4 +1,4 @@
--- ==================== BLOX FRUITS - Auto Chest + Auto Summon Darkbeard v1.6 ====================
+-- ==================== BLOX FRUITS - Auto Chest + Full Options v1.7 ====================
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
@@ -19,20 +19,20 @@ if PlayerGui:FindFirstChild("ChestHub") then
     PlayerGui.ChestHub:Destroy()
 end
 
--- Tạo GUI Giao diện
+-- Tạo GUI Giao diện đầy đủ
 local gui = Instance.new("ScreenGui", PlayerGui)
 gui.Name = "ChestHub"
 
 local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0, 200, 0, 110)
+frame.Size = UDim2.new(0, 220, 0, 210)
 frame.Position = UDim2.new(0, 50, 0, 100)
-frame.BackgroundColor3 = Color3.fromRGB(20, 20, 28)
+frame.BackgroundColor3 = Color3.fromRGB(18, 18, 24)
 frame.Active = true
 frame.Draggable = true
-Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 8)
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 10)
 
 local btn = Instance.new("TextButton", frame)
-btn.Size = UDim2.new(0, 180, 0, 32)
+btn.Size = UDim2.new(0, 200, 0, 30)
 btn.Position = UDim2.new(0, 10, 0, 10)
 btn.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
 btn.TextColor3 = Color3.fromRGB(255, 70, 70)
@@ -42,8 +42,8 @@ btn.Text = "Auto Chest: TẮT"
 Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
 
 local summonBtn = Instance.new("TextButton", frame)
-summonBtn.Size = UDim2.new(0, 180, 0, 32)
-summonBtn.Position = UDim2.new(0, 10, 0, 52)
+summonBtn.Size = UDim2.new(0, 200, 0, 30)
+summonBtn.Position = UDim2.new(0, 10, 0, 50)
 summonBtn.BackgroundColor3 = Color3.fromRGB(20, 50, 30)
 summonBtn.TextColor3 = Color3.fromRGB(70, 255, 70)
 summonBtn.TextSize = 12
@@ -51,16 +51,50 @@ summonBtn.Font = Enum.Font.SourceSansBold
 summonBtn.Text = "Auto Summon RâuĐen: BẬT"
 Instance.new("UICorner", summonBtn).CornerRadius = UDim.new(0, 6)
 
+local speedBox = Instance.new("TextBox", frame)
+speedBox.Size = UDim2.new(0, 200, 0, 30)
+speedBox.Position = UDim2.new(0, 10, 0, 90)
+speedBox.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+speedBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+speedBox.TextSize = 12
+speedBox.Font = Enum.Font.SourceSansBold
+speedBox.Text = "Tốc độ: 350"
+speedBox.ClearTextOnFocus = false
+Instance.new("UICorner", speedBox).CornerRadius = UDim.new(0, 6)
+
+local rangeBox = Instance.new("TextBox", frame)
+rangeBox.Size = UDim2.new(0, 200, 0, 30)
+rangeBox.Position = UDim2.new(0, 10, 0, 130)
+rangeBox.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+rangeBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+rangeBox.TextSize = 12
+rangeBox.Font = Enum.Font.SourceSansBold
+rangeBox.Text = "Tầm quét: 100000"
+rangeBox.ClearTextOnFocus = false
+Instance.new("UICorner", rangeBox).CornerRadius = UDim.new(0, 6)
+
+local statusLabel = Instance.new("TextLabel", frame)
+statusLabel.Size = UDim2.new(1, 0, 0, 25)
+statusLabel.Position = UDim2.new(0, 0, 0, 170)
+statusLabel.BackgroundTransparency = 1
+statusLabel.TextColor3 = Color3.fromRGB(170, 170, 170)
+statusLabel.TextSize = 11
+statusLabel.Font = Enum.Font.SourceSansItalic
+statusLabel.Text = "Trạng thái: Đang chờ..."
+
+-- Xử lý nút bật tắt Auto Chest
 btn.MouseButton1Click:Connect(function()
     running = not running
     if running then
         btn.Text = "Auto Chest: BẬT"
         btn.TextColor3 = Color3.fromRGB(70, 255, 70)
         btn.BackgroundColor3 = Color3.fromRGB(20, 50, 30)
+        statusLabel.Text = "Trạng thái: Đang săn rương..."
     else
         btn.Text = "Auto Chest: TẮT"
         btn.TextColor3 = Color3.fromRGB(255, 70, 70)
         btn.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+        statusLabel.Text = "Trạng thái: Đã dừng."
         pcall(function()
             local char = LocalPlayer.Character
             if char then
@@ -71,6 +105,7 @@ btn.MouseButton1Click:Connect(function()
     end
 end)
 
+-- Xử lý nút bật tắt Auto Summon Râu Đen
 summonBtn.MouseButton1Click:Connect(function()
     summonEnabled = not summonEnabled
     if summonEnabled then
@@ -81,6 +116,28 @@ summonBtn.MouseButton1Click:Connect(function()
         summonBtn.Text = "Auto Summon RâuĐen: TẮT"
         summonBtn.TextColor3 = Color3.fromRGB(255, 70, 70)
         summonBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+    end
+end)
+
+-- Cập nhật Tốc độ từ TextBox
+speedBox.FocusLost:Connect(function()
+    local num = tonumber(speedBox.Text:match("%d+"))
+    if num and num > 0 then
+        speed = num
+        speedBox.Text = "Tốc độ: " .. speed
+    else
+        speedBox.Text = "Tốc độ: " .. speed
+    end
+end)
+
+-- Cập nhật Tầm quét từ TextBox
+rangeBox.FocusLost:Connect(function()
+    local num = tonumber(rangeBox.Text:match("%d+"))
+    if num and num > 0 then
+        range = num
+        rangeBox.Text = "Tầm quét: " .. range
+    else
+        rangeBox.Text = "Tầm quét: " .. range
     end
 end)
 
@@ -101,7 +158,7 @@ local function CheckFist()
     return found
 end
 
--- Vòng lặp tìm rương tối ưu tầm quét 100k
+-- Vòng lặp tìm rương theo tầm quét tùy chỉnh
 local target = nil
 task.spawn(function()
     while true do
@@ -138,17 +195,16 @@ end)
 RunService.Stepped:Connect(function()
     if running then
         pcall(function()
-            -- Nếu bật tính năng summon và nhặt được Fist of Darkness
             if summonEnabled and CheckFist() then
                 running = false
                 target = nil
                 btn.Text = "Auto Chest: TẮT"
                 btn.TextColor3 = Color3.fromRGB(255, 70, 70)
                 btn.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+                statusLabel.Text = "Đã có Fist! Đang gọi Râu Đen..."
                 
                 local char = LocalPlayer.Character
                 if char and char:FindFirstChild("HumanoidRootPart") then
-                    -- Dịch chuyển thẳng đến bệ thờ Râu Đen Sea 2
                     char.HumanoidRootPart.CFrame = CFrame.new(DarkbeardAltarPos + Vector3.new(0, 5, 0))
                 end
                 return
