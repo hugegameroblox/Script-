@@ -1,4 +1,4 @@
--- ==================== BLOX FRUITS - Auto catch chest v1.2 (REAL RANGE FIX) ====================
+-- ==================== BLOX FRUITS - Auto Chest + Auto Summon Darkbeard v1.3 ====================
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
@@ -7,9 +7,13 @@ local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
 local autoChestEnabled = false
 local stopOnSpecialItem = true
+local autoSummonDarkbeard = true -- Bật/tắt tính năng tự động cắm Fist of Darkness gọi Râu Đen
 local moveSpeed = 350 
-local scanRange = 100000 -- Giá trị thực tế sẽ thay đổi theo ô nhập
+local scanRange = 100000 
 local collectedChests = {}
+
+-- Tọa độ bệ thờ Dark Arena (Râu Đen - Sea 2) chuẩn xác
+local DarkbeardAltarPos = Vector3.new(3715, 13, -3508)
 
 -- Xóa Menu cũ nếu tồn tại
 pcall(function()
@@ -25,7 +29,7 @@ ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = PlayerGui
 
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 220, 0, 265)
+MainFrame.Size = UDim2.new(0, 220, 0, 300)
 MainFrame.Position = UDim2.new(0, 60, 0, 140)
 MainFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 24)
 MainFrame.BorderSizePixel = 0
@@ -43,9 +47,9 @@ local Title = Instance.new("TextLabel")
 Title.Size = UDim2.new(1, 0, 0, 35)
 Title.BackgroundTransparency = 1
 Title.Font = Enum.Font.SourceSansBold
-Title.Text = "Auto catch chest v1.2"
+Title.Text = "Auto Chest + Darkbeard v1.3"
 Title.TextColor3 = Color3.fromRGB(100, 180, 255)
-Title.TextSize = 13
+Title.TextSize: 12
 Title.Parent = MainFrame
 
 local MinimizeBtn = Instance.new("TextButton")
@@ -81,9 +85,21 @@ StopToggleBtn.TextSize = 12
 StopToggleBtn.Parent = MainFrame
 Instance.new("UICorner", StopToggleBtn).CornerRadius = UDim.new(0, 6)
 
+-- Nút bật/tắt Auto Summon Râu Đen
+local SummonToggleBtn = Instance.new("TextButton")
+SummonToggleBtn.Size = UDim2.new(0, 200, 0, 30)
+SummonToggleBtn.Position = UDim2.new(0, 10, 0, 108)
+SummonToggleBtn.BackgroundColor3 = Color3.fromRGB(20, 50, 30)
+SummonToggleBtn.Font = Enum.Font.SourceSansBold
+SummonToggleBtn.Text = "Auto Summon RâuĐen: BẬT"
+SummonToggleBtn.TextColor3 = Color3.fromRGB(70, 255, 70)
+SummonToggleBtn.TextSize = 11
+SummonToggleBtn.Parent = MainFrame
+Instance.new("UICorner", SummonToggleBtn).CornerRadius = UDim.new(0, 6)
+
 local SpeedBox = Instance.new("TextBox")
 SpeedBox.Size = UDim2.new(0, 200, 0, 30)
-SpeedBox.Position = UDim2.new(0, 10, 0, 108)
+SpeedBox.Position = UDim2.new(0, 10, 0, 143)
 SpeedBox.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
 SpeedBox.Font = Enum.Font.SourceSansBold
 SpeedBox.Text = "Tốc độ: 350"
@@ -95,7 +111,7 @@ Instance.new("UICorner", SpeedBox).CornerRadius = UDim.new(0, 6)
 
 local RangeBox = Instance.new("TextBox")
 RangeBox.Size = UDim2.new(0, 200, 0, 30)
-RangeBox.Position = UDim2.new(0, 10, 0, 143)
+RangeBox.Position = UDim2.new(0, 10, 0, 178)
 RangeBox.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
 RangeBox.Font = Enum.Font.SourceSansBold
 RangeBox.Text = "Tầm quét: 100000"
@@ -107,7 +123,7 @@ Instance.new("UICorner", RangeBox).CornerRadius = UDim.new(0, 6)
 
 local StatusLabel = Instance.new("TextLabel")
 StatusLabel.Size = UDim2.new(1, 0, 0, 25)
-StatusLabel.Position = UDim2.new(0, 0, 0, 183)
+StatusLabel.Position = UDim2.new(0, 0, 0, 215)
 StatusLabel.BackgroundTransparency = 1
 StatusLabel.Font = Enum.Font.SourceSansItalic
 StatusLabel.Text = "Trạng thái: Đang chờ..."
@@ -124,14 +140,16 @@ MinimizeBtn.MouseButton1Click:Connect(function()
         MainFrame.Size = UDim2.new(0, 220, 0, 45)
         ToggleBtn.Visible = false
         StopToggleBtn.Visible = false
+        SummonToggleBtn.Visible = false
         SpeedBox.Visible = false
         RangeBox.Visible = false
         StatusLabel.Visible = false
     else
         MinimizeBtn.Text = "-"
-        MainFrame.Size = UDim2.new(0, 220, 0, 265)
+        MainFrame.Size = UDim2.new(0, 220, 0, 300)
         ToggleBtn.Visible = true
         StopToggleBtn.Visible = true
+        SummonToggleBtn.Visible = true
         SpeedBox.Visible = true
         RangeBox.Visible = true
         StatusLabel.Visible = true
@@ -148,7 +166,6 @@ SpeedBox.FocusLost:Connect(function()
     end
 end)
 
--- Liên kết CHUẨN XÁC giá trị ô nhập tầm quét vào biến thực tế
 RangeBox.FocusLost:Connect(function()
     local num = tonumber(RangeBox.Text:match("%d+"))
     if num and num > 0 then
@@ -158,6 +175,30 @@ RangeBox.FocusLost:Connect(function()
         RangeBox.Text = "Tầm quét: " .. scanRange
     end
 end)
+
+-- Kiểm tra xem có Fist of Darkness (Nắm đấm bóng tối) không
+local function GetFistOfDarkness()
+    local toolFound = nil
+    pcall(function()
+        local backpack = LocalPlayer:FindFirstChild("Backpack")
+        if backpack then
+            for _, item in pairs(backpack:GetChildren()) do
+                if item.Name:lower():find("fist of darkness") or item.Name:lower():find("fist") then
+                    toolFound = item
+                end
+            end
+        end
+        local char = LocalPlayer.Character
+        if char then
+            for _, item in pairs(char:GetChildren()) do
+                if item:IsA("Tool") and (item.Name:lower():find("fist of darkness") or item.Name:lower():find("fist")) then
+                    toolFound = item
+                end
+            end
+        end
+    end)
+    return toolFound
+end
 
 local function HasSpecialItem()
     local found = false
@@ -233,7 +274,20 @@ StopToggleBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- Thuật toán quét rương sử dụng TRỰC TIẾP biến scanRange từ ô nhập
+SummonToggleBtn.MouseButton1Click:Connect(function()
+    autoSummonDarkbeard = not autoSummonDarkbeard
+    if autoSummonDarkbeard then
+        SummonToggleBtn.Text = "Auto Summon RâuĐen: BẬT"
+        SummonToggleBtn.TextColor3 = Color3.fromRGB(70, 255, 70)
+        SummonToggleBtn.BackgroundColor3 = Color3.fromRGB(20, 50, 30)
+    else
+        SummonToggleBtn.Text = "Auto Summon RâuĐen: TẮT"
+        SummonToggleBtn.TextColor3 = Color3.fromRGB(255, 70, 70)
+        SummonToggleBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+    end
+end)
+
+-- Thuật toán quét rương với scanRange thực tế
 local targetChest = nil
 task.spawn(function()
     while true do
@@ -257,7 +311,6 @@ task.spawn(function()
                                 local part = obj:FindFirstChild("HumanoidRootPart") or obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
                                 if part and not collectedChests[obj] then
                                     local dist = (rootPos - part.Position).Magnitude
-                                    -- Áp dụng trực tiếp giá trị scanRange thực tế từ người dùng chỉnh
                                     if dist <= scanRange and dist < shortest then
                                         shortest = dist
                                         nearest = part
@@ -276,10 +329,31 @@ task.spawn(function()
     end
 end)
 
--- Chống rớt vĩnh viễn và Noclip chuẩn xác
+-- Chống rớt vĩnh viễn, Noclip và Kiểm tra tự động gọi Râu Đen
 RunService.Stepped:Connect(function()
     if autoChestEnabled then
         pcall(function()
+            -- Kiểm tra nếu có Fist of Darkness và bật tính năng Auto Summon Râu Đen
+            if autoSummonDarkbeard then
+                local fist = GetFistOfDarkness()
+                if fist then
+                    autoChestEnabled = false
+                    targetChest = nil
+                    StatusLabel.Text = "Đã tìm thấy Fist! Đang gọi Râu Đen..."
+                    
+                    local char = LocalPlayer.Character
+                    if char and char:FindFirstChild("HumanoidRootPart") then
+                        -- Bay đến bệ thờ Dark Arena
+                        char.HumanoidRootPart.CFrame = CFrame.new(DarkbeardAltarPos + Vector3.new(0, 5, 0))
+                        task.wait(0.5)
+                        -- Cầm item lên để cắm vào bệ thờ
+                        fist.Parent = char
+                        task.wait(0.5)
+                    end
+                    return
+                end
+            end
+            
             if stopOnSpecialItem and HasSpecialItem() then
                 autoChestEnabled = false
                 targetChest = nil
