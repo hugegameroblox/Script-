@@ -1,26 +1,27 @@
--- ==================== BLOX FRUITS - INSTANT CHEST FARM HUB ====================
+-- ==================== BLOX FRUITS - SAFE ANTI-ROLLBACK CHEST FARM ====================
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 local Camera = Workspace.CurrentCamera
 
 local autoChestEnabled = false
 local stopOnSpecialItem = true
-local chestSpeed = 400
-local collectedChests = {} -- Bộ nhớ lưu rương đã nhặt
+local tweenSpeed = 300 -- Tốc độ bay (studs/s) để tránh bị server giật lùi
+local collectedChests = {}
 
 -- Xóa Menu cũ nếu tồn tại
 pcall(function()
-    if PlayerGui:FindFirstChild("ChestFarmHubUI") then
-        PlayerGui.ChestFarmHubUI:Destroy()
+    if PlayerGui:FindFirstChild("SafeChestHubUI") then
+        PlayerGui.SafeChestHubUI:Destroy()
     end
 end)
 
--- Tạo GUI Giao diện Menu Mới
+-- Tạo GUI Giao diện Menu
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "ChestFarmHubUI"
+ScreenGui.Name = "SafeChestHubUI"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = PlayerGui
 
@@ -34,23 +35,20 @@ MainFrame.Draggable = true
 MainFrame.Parent = ScreenGui
 Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 10)
 
--- Viền sáng nhẹ cho Menu
 local UIStroke = Instance.new("UIStroke")
 UIStroke.Color = Color3.fromRGB(80, 120, 255)
 UIStroke.Thickness = 1.5
 UIStroke.Parent = MainFrame
 
--- Tiêu đề Menu
 local Title = Instance.new("TextLabel")
 Title.Size = UDim2.new(1, 0, 0, 35)
 Title.BackgroundTransparency = 1
 Title.Font = Enum.Font.SourceSansBold
-Title.Text = "⚡ Instant Chest Farm Hub"
+Title.Text = "🛡️ Safe Chest Farm Hub"
 Title.TextColor3 = Color3.fromRGB(100, 180, 255)
 Title.TextSize = 13
 Title.Parent = MainFrame
 
--- Nút Thu Gọn / Mở Rộng Menu (-)
 local MinimizeBtn = Instance.new("TextButton")
 MinimizeBtn.Size = UDim2.new(0, 25, 0, 25)
 MinimizeBtn.Position = UDim2.new(1, -30, 0, 5)
@@ -62,7 +60,6 @@ MinimizeBtn.TextSize = 14
 MinimizeBtn.Parent = MainFrame
 Instance.new("UICorner", MinimizeBtn).CornerRadius = UDim.new(0, 4)
 
--- Nút Bật/Tắt Auto Chest
 local ToggleBtn = Instance.new("TextButton")
 ToggleBtn.Size = UDim2.new(0, 200, 0, 32)
 ToggleBtn.Position = UDim2.new(0, 10, 0, 38)
@@ -74,7 +71,6 @@ ToggleBtn.TextSize = 13
 ToggleBtn.Parent = MainFrame
 Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(0, 6)
 
--- Nút Bật/Tắt Stop khi có Key/Chén Thánh
 local StopToggleBtn = Instance.new("TextButton")
 StopToggleBtn.Size = UDim2.new(0, 200, 0, 32)
 StopToggleBtn.Position = UDim2.new(0, 10, 0, 75)
@@ -86,20 +82,18 @@ StopToggleBtn.TextSize = 12
 StopToggleBtn.Parent = MainFrame
 Instance.new("UICorner", StopToggleBtn).CornerRadius = UDim.new(0, 6)
 
--- Ô nhập tốc độ trực tiếp trong game
 local SpeedBox = Instance.new("TextBox")
 SpeedBox.Size = UDim2.new(0, 200, 0, 32)
 SpeedBox.Position = UDim2.new(0, 10, 0, 112)
 SpeedBox.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
 SpeedBox.Font = Enum.Font.SourceSansBold
-SpeedBox.Text = "Tốc độ: 400"
+SpeedBox.Text = "Tốc độ: 300"
 SpeedBox.TextColor3 = Color3.fromRGB(255, 255, 255)
 SpeedBox.TextSize = 12
 SpeedBox.ClearTextOnFocus = false
 SpeedBox.Parent = MainFrame
 Instance.new("UICorner", SpeedBox).CornerRadius = UDim.new(0, 6)
 
--- Dòng chữ trạng thái nhỏ ở đáy Menu
 local StatusLabel = Instance.new("TextLabel")
 StatusLabel.Size = UDim2.new(1, 0, 0, 25)
 StatusLabel.Position = UDim2.new(0, 0, 0, 152)
@@ -110,7 +104,7 @@ StatusLabel.TextColor3 = Color3.fromRGB(170, 170, 170)
 StatusLabel.TextSize = 11
 StatusLabel.Parent = MainFrame
 
--- Tính năng Ẩn/Hiện Menu (Minimize)
+-- Thu gọn Menu
 local isMinimized = false
 MinimizeBtn.MouseButton1Click:Connect(function()
     isMinimized = not isMinimized
@@ -131,18 +125,16 @@ MinimizeBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- Xử lý thay đổi tốc độ
 SpeedBox.FocusLost:Connect(function()
     local num = tonumber(SpeedBox.Text:match("%d+"))
     if num and num > 0 then
-        chestSpeed = num
-        SpeedBox.Text = "Tốc độ: " .. chestSpeed
+        tweenSpeed = num
+        SpeedBox.Text = "Tốc độ: " .. tweenSpeed
     else
-        SpeedBox.Text = "Tốc độ: " .. chestSpeed
+        SpeedBox.Text = "Tốc độ: " .. tweenSpeed
     end
 end)
 
--- Hàm kiểm tra vật phẩm đặc biệt
 local function HasSpecialItem()
     local found = false
     pcall(function()
@@ -170,7 +162,6 @@ local function HasSpecialItem()
     return found
 end
 
--- Bật/Tắt Auto Chest
 ToggleBtn.MouseButton1Click:Connect(function()
     autoChestEnabled = not autoChestEnabled
     if autoChestEnabled then
@@ -186,7 +177,6 @@ ToggleBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- Bật/Tắt Stop Key
 StopToggleBtn.MouseButton1Click:Connect(function()
     stopOnSpecialItem = not stopOnSpecialItem
     if stopOnSpecialItem then
@@ -200,30 +190,22 @@ StopToggleBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- Khóa vận tốc chống bay lắc và giữ Camera ổn định
+-- Vô hiệu hóa lực vật lý để không bị văng nhân vật
 RunService.Stepped:Connect(function()
     if autoChestEnabled then
         pcall(function()
             local char = LocalPlayer.Character
             if char and char:FindFirstChild("HumanoidRootPart") then
                 local rootPart = char.HumanoidRootPart
-                local humanoid = char:FindFirstChildOfClass("Humanoid")
-                
                 rootPart.Velocity = Vector3.new(0, 0, 0)
                 rootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-                rootPart.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
-                
-                if humanoid and Camera.CameraSubject ~= humanoid then
-                    Camera.CameraSubject = humanoid
-                end
             end
         end)
     end
 end)
 
--- Quét tìm rương mới liên tục (Lọc bỏ rương đã nhặt)
+-- Quét rương gần nhất và loại bỏ rương cũ
 local targetChest = nil
-
 task.spawn(function()
     while true do
         if autoChestEnabled then
@@ -260,18 +242,20 @@ task.spawn(function()
         else
             targetChest = nil
         end
-        task.wait(0.2)
+        task.wait(0.3)
     end
 end)
 
--- Hệ thống di chuyển mượt mà trực tiếp đến rương và tự động bỏ qua rương cũ/mất
+-- Di chuyển bằng Tween an toàn chống Anti-Cheat giật lùi
+local currentTween = nil
 task.spawn(function()
     while true do
-        task.wait(0.03)
+        task.wait(0.1)
         if autoChestEnabled then
             if stopOnSpecialItem and HasSpecialItem() then
                 autoChestEnabled = false
                 targetChest = nil
+                if currentTween then currentTween:Cancel() end
                 ToggleBtn.Text = "Auto Chest: TẮT"
                 ToggleBtn.TextColor3 = Color3.fromRGB(255, 70, 70)
                 ToggleBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
@@ -280,45 +264,38 @@ task.spawn(function()
                 local char = LocalPlayer.Character
                 if char and char:FindFirstChild("HumanoidRootPart") then
                     local rootPart = char.HumanoidRootPart
-                    local humanoid = char:FindFirstChildOfClass("Humanoid")
                     
                     if targetChest and targetChest.Parent then
                         local chestModel = targetChest.Parent
                         if not chestModel:IsA("Model") then chestModel = targetChest end
                         
-                        -- Bay nhanh trực tiếp đến rương
+                        local targetPos = targetChest.Position + Vector3.new(0, 3, 0)
+                        local distance = (rootPart.Position - targetPos).Magnitude
+                        local timeTaken = distance / math.clamp(tweenSpeed, 50, 500)
+                        
+                        -- Hủy tween cũ nếu có
+                        if currentTween then currentTween:Cancel() end
+                        
+                        local tweenInfo = TweenInfo.new(timeTaken, Enum.EasingStyle.Linear)
+                        currentTween = TweenService:Create(rootPart, tweenInfo, {CFrame = CFrame.new(targetPos)})
+                        currentTween:Play()
+                        
                         local startTime = tick()
-                        while autoChestEnabled and targetChest and targetChest.Parent do
-                            -- Nếu kẹt quá 4 giây ở 1 rương (rương biến mất), tự động đưa vào blacklist để tìm rương khác ngay
-                            if tick() - startTime > 4 then
-                                collectedChests[chestModel] = true
-                                targetChest = nil
+                        while autoChestEnabled and currentTween.PlaybackState == Enum.PlaybackState.Playing do
+                            if tick() - startTime > (timeTaken + 1.5) or not targetChest or not targetChest.Parent then
                                 break
                             end
-                            
-                            local currentPos = rootPart.Position
-                            local targetPos = targetChest.Position + Vector3.new(0, 3, 0)
-                            local remainDist = (currentPos - targetPos).Magnitude
-                            
-                            if remainDist < 4 then
-                                rootPart.CFrame = CFrame.new(targetPos)
-                                collectedChests[chestModel] = true
-                                targetChest = nil
-                                break
-                            end
-                            
-                            local step = (targetPos - currentPos).Unit * math.min(chestSpeed * 0.03, remainDist)
-                            rootPart.CFrame = CFrame.new(currentPos + step)
-                            
-                            if humanoid and Camera.CameraSubject ~= humanoid then
-                                Camera.CameraSubject = humanoid
-                            end
-                            
-                            task.wait(0.03)
+                            task.wait(0.05)
                         end
+                        
+                        -- Đánh dấu rương đã nhặt để chuyển sang rương mới ngay lập tức
+                        collectedChests[chestModel] = true
+                        targetChest = nil
                     end
                 end
             end
+        else
+            if currentTween then currentTween:Cancel() end
         end
     end
 end)
