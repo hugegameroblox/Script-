@@ -1,15 +1,14 @@
--- ==================== BLOX FRUITS - Auto catch chest v1.2 ====================
+-- ==================== BLOX FRUITS - Auto catch chest v1.2 (FIXED) ====================
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
-local Camera = Workspace.CurrentCamera
 
 local autoChestEnabled = false
 local stopOnSpecialItem = true
-local moveSpeed = 450 -- Tốc độ bay
-local scanRange = 80000 -- Tầm quét tối đa
+local moveSpeed = 350 
+local scanRange = 100000 -- Tầm quét 100k đã được tối ưu hiệu năng
 local collectedChests = {}
 
 -- Xóa Menu cũ nếu tồn tại
@@ -99,7 +98,7 @@ RangeBox.Size = UDim2.new(0, 200, 0, 30)
 RangeBox.Position = UDim2.new(0, 10, 0, 143)
 RangeBox.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
 RangeBox.Font = Enum.Font.SourceSansBold
-RangeBox.Text = "Tầm quét: 8000"
+RangeBox.Text = "Tầm quét: 100000"
 RangeBox.TextColor3 = Color3.fromRGB(255, 255, 255)
 RangeBox.TextSize = 12
 RangeBox.ClearTextOnFocus = false
@@ -199,12 +198,14 @@ ToggleBtn.MouseButton1Click:Connect(function()
         ToggleBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
         StatusLabel.Text = "Trạng thái: Đã dừng."
         
-        -- Reset hoàn toàn trạng thái nhân vật khi tắt
         pcall(function()
             local char = LocalPlayer.Character
             if char then
                 local humanoid = char:FindFirstChildOfClass("Humanoid")
-                if humanoid then humanoid.PlatformStand = false end
+                if humanoid then 
+                    humanoid.PlatformStand = false 
+                    humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+                end
                 for _, part in pairs(char:GetDescendants()) do
                     if part:IsA("BasePart") then
                         part.CanCollide = true
@@ -231,7 +232,7 @@ StopToggleBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- Quét tìm rương (Chỉ chạy khi autoChestEnabled = true)
+-- Tối ưu hóa bộ lọc quét rương mượt mà ngay cả với tầm quét 100k
 local targetChest = nil
 task.spawn(function()
     while true do
@@ -269,11 +270,11 @@ task.spawn(function()
         else
             targetChest = nil
         end
-        task.wait(0.2)
+        task.wait(0.5) -- Tăng thời gian quét lên 0.5s để giảm tải lag khi quét 100k studs
     end
 end)
 
--- Hệ thống bay, noclip, chống rớt (Tuyệt đối chỉ chạy khi BẬT Auto Chest)
+-- Hệ thống chống rớt vĩnh viễn (Khóa cứng trạng thái và triệt tiêu trọng lực hoàn toàn)
 RunService.Stepped:Connect(function()
     if autoChestEnabled then
         pcall(function()
@@ -283,7 +284,10 @@ RunService.Stepped:Connect(function()
                 local char = LocalPlayer.Character
                 if char then
                     local humanoid = char:FindFirstChildOfClass("Humanoid")
-                    if humanoid then humanoid.PlatformStand = false end
+                    if humanoid then 
+                        humanoid.PlatformStand = false 
+                        humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+                    end
                     for _, part in pairs(char:GetDescendants()) do
                         if part:IsA("BasePart") then
                             part.CanCollide = true
@@ -304,8 +308,10 @@ RunService.Stepped:Connect(function()
                 
                 if humanoid then
                     humanoid.PlatformStand = true
+                    humanoid:ChangeState(Enum.HumanoidStateType.Physics)
                 end
                 
+                -- Ép Noclip liên tục từng khung hình
                 for _, part in pairs(char:GetDescendants()) do
                     if part:IsA("BasePart") then
                         part.CanCollide = false
@@ -329,6 +335,7 @@ RunService.Stepped:Connect(function()
                         rootPart.AssemblyLinearVelocity = direction * moveSpeed
                     end
                 else
+                    -- Khóa cứng triệt tiêu hoàn toàn trọng lực trục Y, chống rớt vĩnh viễn
                     rootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
                 end
             end
