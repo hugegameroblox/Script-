@@ -1,223 +1,97 @@
--- ==================== BLOX FRUITS - Auto Chest + Auto Summon Darkbeard v1.3 ====================
+-- ==================== BLOX FRUITS - Auto Chest + Auto Summon Darkbeard v1.6 ====================
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
-local autoChestEnabled = false
-local stopOnSpecialItem = true
-local autoSummonDarkbeard = true -- Bật/tắt tính năng tự động cắm Fist of Darkness gọi Râu Đen
-local moveSpeed = 350 
-local scanRange = 100000 
-local collectedChests = {}
+local running = false
+local summonEnabled = true
+local speed = 350
+local range = 100000
+local checked = {}
 
--- Tọa độ bệ thờ Dark Arena (Râu Đen - Sea 2) chuẩn xác
+-- Tọa độ bệ thờ Dark Arena (Sea 2)
 local DarkbeardAltarPos = Vector3.new(3715, 13, -3508)
 
--- Xóa Menu cũ nếu tồn tại
-pcall(function()
-    if PlayerGui:FindFirstChild("AutoCatchChestHub") then
-        PlayerGui.AutoCatchChestHub:Destroy()
-    end
-end)
-
--- Tạo GUI Giao diện Menu
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "AutoCatchChestHub"
-ScreenGui.ResetOnSpawn = false
-ScreenGui.Parent = PlayerGui
-
-local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 220, 0, 300)
-MainFrame.Position = UDim2.new(0, 60, 0, 140)
-MainFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 24)
-MainFrame.BorderSizePixel = 0
-MainFrame.Active = true
-MainFrame.Draggable = true
-MainFrame.Parent = ScreenGui
-Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 10)
-
-local UIStroke = Instance.new("UIStroke")
-UIStroke.Color = Color3.fromRGB(80, 120, 255)
-UIStroke.Thickness = 1.5
-UIStroke.Parent = MainFrame
-
-local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(1, 0, 0, 35)
-Title.BackgroundTransparency = 1
-Title.Font = Enum.Font.SourceSansBold
-Title.Text = "Auto Chest + Darkbeard v1.3"
-Title.TextColor3 = Color3.fromRGB(100, 180, 255)
-Title.TextSize: 12
-Title.Parent = MainFrame
-
-local MinimizeBtn = Instance.new("TextButton")
-MinimizeBtn.Size = UDim2.new(0, 25, 0, 25)
-MinimizeBtn.Position = UDim2.new(1, -30, 0, 5)
-MinimizeBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 60)
-MinimizeBtn.Font = Enum.Font.SourceSansBold
-MinimizeBtn.Text = "-"
-MinimizeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-MinimizeBtn.TextSize = 14
-MinimizeBtn.Parent = MainFrame
-Instance.new("UICorner", MinimizeBtn).CornerRadius = UDim.new(0, 4)
-
-local ToggleBtn = Instance.new("TextButton")
-ToggleBtn.Size = UDim2.new(0, 200, 0, 30)
-ToggleBtn.Position = UDim2.new(0, 10, 0, 38)
-ToggleBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
-ToggleBtn.Font = Enum.Font.SourceSansBold
-ToggleBtn.Text = "Auto Chest: TẮT"
-ToggleBtn.TextColor3 = Color3.fromRGB(255, 70, 70)
-ToggleBtn.TextSize = 13
-ToggleBtn.Parent = MainFrame
-Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(0, 6)
-
-local StopToggleBtn = Instance.new("TextButton")
-StopToggleBtn.Size = UDim2.new(0, 200, 0, 30)
-StopToggleBtn.Position = UDim2.new(0, 10, 0, 73)
-StopToggleBtn.BackgroundColor3 = Color3.fromRGB(20, 50, 30)
-StopToggleBtn.Font = Enum.Font.SourceSansBold
-StopToggleBtn.Text = "Stop Key/Chén: BẬT"
-StopToggleBtn.TextColor3 = Color3.fromRGB(70, 255, 70)
-StopToggleBtn.TextSize = 12
-StopToggleBtn.Parent = MainFrame
-Instance.new("UICorner", StopToggleBtn).CornerRadius = UDim.new(0, 6)
-
--- Nút bật/tắt Auto Summon Râu Đen
-local SummonToggleBtn = Instance.new("TextButton")
-SummonToggleBtn.Size = UDim2.new(0, 200, 0, 30)
-SummonToggleBtn.Position = UDim2.new(0, 10, 0, 108)
-SummonToggleBtn.BackgroundColor3 = Color3.fromRGB(20, 50, 30)
-SummonToggleBtn.Font = Enum.Font.SourceSansBold
-SummonToggleBtn.Text = "Auto Summon RâuĐen: BẬT"
-SummonToggleBtn.TextColor3 = Color3.fromRGB(70, 255, 70)
-SummonToggleBtn.TextSize = 11
-SummonToggleBtn.Parent = MainFrame
-Instance.new("UICorner", SummonToggleBtn).CornerRadius = UDim.new(0, 6)
-
-local SpeedBox = Instance.new("TextBox")
-SpeedBox.Size = UDim2.new(0, 200, 0, 30)
-SpeedBox.Position = UDim2.new(0, 10, 0, 143)
-SpeedBox.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
-SpeedBox.Font = Enum.Font.SourceSansBold
-SpeedBox.Text = "Tốc độ: 350"
-SpeedBox.TextColor3 = Color3.fromRGB(255, 255, 255)
-SpeedBox.TextSize = 12
-SpeedBox.ClearTextOnFocus = false
-SpeedBox.Parent = MainFrame
-Instance.new("UICorner", SpeedBox).CornerRadius = UDim.new(0, 6)
-
-local RangeBox = Instance.new("TextBox")
-RangeBox.Size = UDim2.new(0, 200, 0, 30)
-RangeBox.Position = UDim2.new(0, 10, 0, 178)
-RangeBox.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
-RangeBox.Font = Enum.Font.SourceSansBold
-RangeBox.Text = "Tầm quét: 100000"
-RangeBox.TextColor3 = Color3.fromRGB(255, 255, 255)
-RangeBox.TextSize = 12
-RangeBox.ClearTextOnFocus = false
-RangeBox.Parent = MainFrame
-Instance.new("UICorner", RangeBox).CornerRadius = UDim.new(0, 6)
-
-local StatusLabel = Instance.new("TextLabel")
-StatusLabel.Size = UDim2.new(1, 0, 0, 25)
-StatusLabel.Position = UDim2.new(0, 0, 0, 215)
-StatusLabel.BackgroundTransparency = 1
-StatusLabel.Font = Enum.Font.SourceSansItalic
-StatusLabel.Text = "Trạng thái: Đang chờ..."
-StatusLabel.TextColor3 = Color3.fromRGB(170, 170, 170)
-StatusLabel.TextSize = 11
-StatusLabel.Parent = MainFrame
-
--- Thu gọn Menu
-local isMinimized = false
-MinimizeBtn.MouseButton1Click:Connect(function()
-    isMinimized = not isMinimized
-    if isMinimized then
-        MinimizeBtn.Text = "+"
-        MainFrame.Size = UDim2.new(0, 220, 0, 45)
-        ToggleBtn.Visible = false
-        StopToggleBtn.Visible = false
-        SummonToggleBtn.Visible = false
-        SpeedBox.Visible = false
-        RangeBox.Visible = false
-        StatusLabel.Visible = false
-    else
-        MinimizeBtn.Text = "-"
-        MainFrame.Size = UDim2.new(0, 220, 0, 300)
-        ToggleBtn.Visible = true
-        StopToggleBtn.Visible = true
-        SummonToggleBtn.Visible = true
-        SpeedBox.Visible = true
-        RangeBox.Visible = true
-        StatusLabel.Visible = true
-    end
-end)
-
-SpeedBox.FocusLost:Connect(function()
-    local num = tonumber(SpeedBox.Text:match("%d+"))
-    if num and num > 0 then
-        moveSpeed = num
-        SpeedBox.Text = "Tốc độ: " .. moveSpeed
-    else
-        SpeedBox.Text = "Tốc độ: " .. moveSpeed
-    end
-end)
-
-RangeBox.FocusLost:Connect(function()
-    local num = tonumber(RangeBox.Text:match("%d+"))
-    if num and num > 0 then
-        scanRange = num
-        RangeBox.Text = "Tầm quét: " .. scanRange
-    else
-        RangeBox.Text = "Tầm quét: " .. scanRange
-    end
-end)
-
--- Kiểm tra xem có Fist of Darkness (Nắm đấm bóng tối) không
-local function GetFistOfDarkness()
-    local toolFound = nil
-    pcall(function()
-        local backpack = LocalPlayer:FindFirstChild("Backpack")
-        if backpack then
-            for _, item in pairs(backpack:GetChildren()) do
-                if item.Name:lower():find("fist of darkness") or item.Name:lower():find("fist") then
-                    toolFound = item
-                end
-            end
-        end
-        local char = LocalPlayer.Character
-        if char then
-            for _, item in pairs(char:GetChildren()) do
-                if item:IsA("Tool") and (item.Name:lower():find("fist of darkness") or item.Name:lower():find("fist")) then
-                    toolFound = item
-                end
-            end
-        end
-    end)
-    return toolFound
+-- Xóa GUI cũ
+if PlayerGui:FindFirstChild("ChestHub") then
+    PlayerGui.ChestHub:Destroy()
 end
 
-local function HasSpecialItem()
+-- Tạo GUI Giao diện
+local gui = Instance.new("ScreenGui", PlayerGui)
+gui.Name = "ChestHub"
+
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.new(0, 200, 0, 110)
+frame.Position = UDim2.new(0, 50, 0, 100)
+frame.BackgroundColor3 = Color3.fromRGB(20, 20, 28)
+frame.Active = true
+frame.Draggable = true
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 8)
+
+local btn = Instance.new("TextButton", frame)
+btn.Size = UDim2.new(0, 180, 0, 32)
+btn.Position = UDim2.new(0, 10, 0, 10)
+btn.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+btn.TextColor3 = Color3.fromRGB(255, 70, 70)
+btn.TextSize = 13
+btn.Font = Enum.Font.SourceSansBold
+btn.Text = "Auto Chest: TẮT"
+Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
+
+local summonBtn = Instance.new("TextButton", frame)
+summonBtn.Size = UDim2.new(0, 180, 0, 32)
+summonBtn.Position = UDim2.new(0, 10, 0, 52)
+summonBtn.BackgroundColor3 = Color3.fromRGB(20, 50, 30)
+summonBtn.TextColor3 = Color3.fromRGB(70, 255, 70)
+summonBtn.TextSize = 12
+summonBtn.Font = Enum.Font.SourceSansBold
+summonBtn.Text = "Auto Summon RâuĐen: BẬT"
+Instance.new("UICorner", summonBtn).CornerRadius = UDim.new(0, 6)
+
+btn.MouseButton1Click:Connect(function()
+    running = not running
+    if running then
+        btn.Text = "Auto Chest: BẬT"
+        btn.TextColor3 = Color3.fromRGB(70, 255, 70)
+        btn.BackgroundColor3 = Color3.fromRGB(20, 50, 30)
+    else
+        btn.Text = "Auto Chest: TẮT"
+        btn.TextColor3 = Color3.fromRGB(255, 70, 70)
+        btn.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+        pcall(function()
+            local char = LocalPlayer.Character
+            if char then
+                char:FindFirstChildOfClass("Humanoid").PlatformStand = false
+                char.HumanoidRootPart.AssemblyLinearVelocity = Vector3.new(0,0,0)
+            end
+        end)
+    end
+end)
+
+summonBtn.MouseButton1Click:Connect(function()
+    summonEnabled = not summonEnabled
+    if summonEnabled then
+        summonBtn.Text = "Auto Summon RâuĐen: BẬT"
+        summonBtn.TextColor3 = Color3.fromRGB(70, 255, 70)
+        summonBtn.BackgroundColor3 = Color3.fromRGB(20, 50, 30)
+    else
+        summonBtn.Text = "Auto Summon RâuĐen: TẮT"
+        summonBtn.TextColor3 = Color3.fromRGB(255, 70, 70)
+        summonBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+    end
+end)
+
+-- Hàm kiểm tra Fist of Darkness
+local function CheckFist()
     local found = false
     pcall(function()
-        local backpack = LocalPlayer:FindFirstChild("Backpack")
-        if backpack then
-            for _, item in pairs(backpack:GetChildren()) do
-                local name = item.Name:lower()
-                if name:find("key") or name:find("chalice") or name:find("fist") then
-                    found = true
-                end
-            end
-        end
-        local char = LocalPlayer.Character
-        if char then
-            for _, item in pairs(char:GetChildren()) do
-                if item:IsA("Tool") then
-                    local name = item.Name:lower()
-                    if name:find("key") or name:find("chalice") or name:find("fist") then
+        for _, container in pairs({LocalPlayer:FindFirstChild("Backpack"), LocalPlayer.Character}) do
+            if container then
+                for _, item in pairs(container:GetChildren()) do
+                    if item.Name:lower():find("fist") then
                         found = true
                     end
                 end
@@ -227,190 +101,87 @@ local function HasSpecialItem()
     return found
 end
 
-ToggleBtn.MouseButton1Click:Connect(function()
-    autoChestEnabled = not autoChestEnabled
-    if autoChestEnabled then
-        ToggleBtn.Text = "Auto Chest: BẬT"
-        ToggleBtn.TextColor3 = Color3.fromRGB(70, 255, 70)
-        ToggleBtn.BackgroundColor3 = Color3.fromRGB(20, 50, 30)
-        StatusLabel.Text = "Trạng thái: Đang bay săn rương..."
-    else
-        ToggleBtn.Text = "Auto Chest: TẮT"
-        ToggleBtn.TextColor3 = Color3.fromRGB(255, 70, 70)
-        ToggleBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
-        StatusLabel.Text = "Trạng thái: Đã dừng."
-        
-        pcall(function()
-            local char = LocalPlayer.Character
-            if char then
-                local humanoid = char:FindFirstChildOfClass("Humanoid")
-                if humanoid then 
-                    humanoid.PlatformStand = false 
-                    humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
-                end
-                for _, part in pairs(char:GetDescendants()) do
-                    if part:IsA("BasePart") then
-                        part.CanCollide = true
-                    end
-                end
-                if char:FindFirstChild("HumanoidRootPart") then
-                    char.HumanoidRootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-                end
-            end
-        end)
-    end
-end)
-
-StopToggleBtn.MouseButton1Click:Connect(function()
-    stopOnSpecialItem = not stopOnSpecialItem
-    if stopOnSpecialItem then
-        StopToggleBtn.Text = "Stop Key/Chén: BẬT"
-        StopToggleBtn.TextColor3 = Color3.fromRGB(70, 255, 70)
-        StopToggleBtn.BackgroundColor3 = Color3.fromRGB(20, 50, 30)
-    else
-        StopToggleBtn.Text = "Stop Key/Chén: TẮT"
-        StopToggleBtn.TextColor3 = Color3.fromRGB(255, 70, 70)
-        StopToggleBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
-    end
-end)
-
-SummonToggleBtn.MouseButton1Click:Connect(function()
-    autoSummonDarkbeard = not autoSummonDarkbeard
-    if autoSummonDarkbeard then
-        SummonToggleBtn.Text = "Auto Summon RâuĐen: BẬT"
-        SummonToggleBtn.TextColor3 = Color3.fromRGB(70, 255, 70)
-        SummonToggleBtn.BackgroundColor3 = Color3.fromRGB(20, 50, 30)
-    else
-        SummonToggleBtn.Text = "Auto Summon RâuĐen: TẮT"
-        SummonToggleBtn.TextColor3 = Color3.fromRGB(255, 70, 70)
-        SummonToggleBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
-    end
-end)
-
--- Thuật toán quét rương với scanRange thực tế
-local targetChest = nil
+-- Vòng lặp tìm rương tối ưu tầm quét 100k
+local target = nil
 task.spawn(function()
     while true do
-        if autoChestEnabled then
+        if running then
             local nearest = nil
-            local shortest = math.huge
+            local minDst = math.huge
             pcall(function()
                 local char = LocalPlayer.Character
                 if char and char:FindFirstChild("HumanoidRootPart") then
-                    local rootPos = char.HumanoidRootPart.Position
-                    
-                    for _, obj in pairs(Workspace:GetDescendants()) do
-                        if obj:IsA("Model") then
-                            local nameLower = obj.Name:lower()
-                            if (nameLower:find("chest") or nameLower:find("treasure"))
-                                and not nameLower:find("secret")
-                                and not nameLower:find("quest")
-                                and not nameLower:find("rengoku")
-                                and not nameLower:find("door") then
-                                
-                                local part = obj:FindFirstChild("HumanoidRootPart") or obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
-                                if part and not collectedChests[obj] then
-                                    local dist = (rootPos - part.Position).Magnitude
-                                    if dist <= scanRange and dist < shortest then
-                                        shortest = dist
-                                        nearest = part
-                                    end
+                    local p = char.HumanoidRootPart.Position
+                    for _, v in pairs(Workspace:GetDescendants()) do
+                        if v:IsA("Model") and v.Name:lower():find("chest") then
+                            local part = v.PrimaryPart or v:FindFirstChildWhichIsA("BasePart")
+                            if part and not checked[v] then
+                                local d = (p - part.Position).Magnitude
+                                if d <= range and d < minDst then
+                                    minDst = d
+                                    nearest = part
                                 end
                             end
                         end
                     end
                 end
             end)
-            targetChest = nearest
+            target = nearest
         else
-            targetChest = nil
+            target = nil
         end
         task.wait(0.3)
     end
 end)
 
--- Chống rớt vĩnh viễn, Noclip và Kiểm tra tự động gọi Râu Đen
+-- Xử lý chống rớt, bay nhặt và tự động gọi Râu Đen
 RunService.Stepped:Connect(function()
-    if autoChestEnabled then
+    if running then
         pcall(function()
-            -- Kiểm tra nếu có Fist of Darkness và bật tính năng Auto Summon Râu Đen
-            if autoSummonDarkbeard then
-                local fist = GetFistOfDarkness()
-                if fist then
-                    autoChestEnabled = false
-                    targetChest = nil
-                    StatusLabel.Text = "Đã tìm thấy Fist! Đang gọi Râu Đen..."
-                    
-                    local char = LocalPlayer.Character
-                    if char and char:FindFirstChild("HumanoidRootPart") then
-                        -- Bay đến bệ thờ Dark Arena
-                        char.HumanoidRootPart.CFrame = CFrame.new(DarkbeardAltarPos + Vector3.new(0, 5, 0))
-                        task.wait(0.5)
-                        -- Cầm item lên để cắm vào bệ thờ
-                        fist.Parent = char
-                        task.wait(0.5)
-                    end
-                    return
-                end
-            end
-            
-            if stopOnSpecialItem and HasSpecialItem() then
-                autoChestEnabled = false
-                targetChest = nil
+            -- Nếu bật tính năng summon và nhặt được Fist of Darkness
+            if summonEnabled and CheckFist() then
+                running = false
+                target = nil
+                btn.Text = "Auto Chest: TẮT"
+                btn.TextColor3 = Color3.fromRGB(255, 70, 70)
+                btn.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+                
                 local char = LocalPlayer.Character
-                if char then
-                    local humanoid = char:FindFirstChildOfClass("Humanoid")
-                    if humanoid then 
-                        humanoid.PlatformStand = false 
-                        humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
-                    end
-                    for _, part in pairs(char:GetDescendants()) do
-                        if part:IsA("BasePart") then
-                            part.CanCollide = true
-                        end
-                    end
+                if char and char:FindFirstChild("HumanoidRootPart") then
+                    -- Dịch chuyển thẳng đến bệ thờ Râu Đen Sea 2
+                    char.HumanoidRootPart.CFrame = CFrame.new(DarkbeardAltarPos + Vector3.new(0, 5, 0))
                 end
-                ToggleBtn.Text = "Auto Chest: TẮT"
-                ToggleBtn.TextColor3 = Color3.fromRGB(255, 70, 70)
-                ToggleBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
-                StatusLabel.Text = "Đã dừng do có Key/Chén!"
                 return
             end
-            
+
             local char = LocalPlayer.Character
             if char and char:FindFirstChild("HumanoidRootPart") then
-                local rootPart = char.HumanoidRootPart
-                local humanoid = char:FindFirstChildOfClass("Humanoid")
+                local root = char.HumanoidRootPart
+                local hum = char:FindFirstChildOfClass("Humanoid")
                 
-                if humanoid then
-                    humanoid.PlatformStand = true
-                    humanoid:ChangeState(Enum.HumanoidStateType.Physics)
-                end
+                hum.PlatformStand = true
+                hum:ChangeState(Enum.HumanoidStateType.Physics)
                 
                 for _, part in pairs(char:GetDescendants()) do
-                    if part:IsA("BasePart") then
-                        part.CanCollide = false
-                    end
+                    if part:IsA("BasePart") then part.CanCollide = false end
                 end
                 
-                if targetChest and targetChest.Parent then
-                    local chestModel = targetChest.Parent
-                    if not chestModel:IsA("Model") then chestModel = targetChest end
+                if target and target.Parent then
+                    local m = target.Parent
+                    if not m:IsA("Model") then m = target end
                     
-                    local targetPos = targetChest.Position + Vector3.new(0, 3, 0)
-                    local currentPos = rootPart.Position
-                    local dist = (currentPos - targetPos).Magnitude
+                    local tp = target.Position + Vector3.new(0, 3, 0)
+                    local dist = (root.Position - tp).Magnitude
                     
                     if dist < 5 then
-                        collectedChests[chestModel] = true
-                        targetChest = nil
-                        rootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+                        checked[m] = true
+                        target = nil
+                        root.AssemblyLinearVelocity = Vector3.new(0,0,0)
                     else
-                        local direction = (targetPos - currentPos).Unit
-                        rootPart.AssemblyLinearVelocity = direction * moveSpeed
+                        root.AssemblyLinearVelocity = (tp - root.Position).Unit * speed
                     end
                 else
-                    rootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+                    root.AssemblyLinearVelocity = Vector3.new(0,0,0)
                 end
             end
         end)
