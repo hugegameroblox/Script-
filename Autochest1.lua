@@ -1,34 +1,31 @@
--- ==================== BLOX FRUITS - PORTAL C INSTANT TELEPORT HUB ====================
+-- ==================== BLOX FRUITS - INSTANT CHEST FARM HUB ====================
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
-local VirtualInputManager = game:GetService("VirtualInputManager")
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 local Camera = Workspace.CurrentCamera
 
 local autoChestEnabled = false
 local stopOnSpecialItem = true
-local portalCEnabled = true
 local chestSpeed = 400
-local lastCPortalTime = 0
-local collectedChests = {} -- Bộ nhớ lưu rương đã nhặt để tránh nhặt lại
+local collectedChests = {} -- Bộ nhớ lưu rương đã nhặt
 
 -- Xóa Menu cũ nếu tồn tại
 pcall(function()
-    if PlayerGui:FindFirstChild("PortalChestHubUI") then
-        PlayerGui.PortalChestHubUI:Destroy()
+    if PlayerGui:FindFirstChild("ChestFarmHubUI") then
+        PlayerGui.ChestFarmHubUI:Destroy()
     end
 end)
 
 -- Tạo GUI Giao diện Menu Mới
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "PortalChestHubUI"
+ScreenGui.Name = "ChestFarmHubUI"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = PlayerGui
 
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 220, 0, 265)
+MainFrame.Size = UDim2.new(0, 220, 0, 230)
 MainFrame.Position = UDim2.new(0, 60, 0, 140)
 MainFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 24)
 MainFrame.BorderSizePixel = 0
@@ -48,7 +45,7 @@ local Title = Instance.new("TextLabel")
 Title.Size = UDim2.new(1, 0, 0, 35)
 Title.BackgroundTransparency = 1
 Title.Font = Enum.Font.SourceSansBold
-Title.Text = "⚡ Portal C (Instant Fix) - Hub"
+Title.Text = "⚡ Instant Chest Farm Hub"
 Title.TextColor3 = Color3.fromRGB(100, 180, 255)
 Title.TextSize = 13
 Title.Parent = MainFrame
@@ -89,22 +86,10 @@ StopToggleBtn.TextSize = 12
 StopToggleBtn.Parent = MainFrame
 Instance.new("UICorner", StopToggleBtn).CornerRadius = UDim.new(0, 6)
 
--- Nút Bật/Tắt C Portal
-local PortalCToggleBtn = Instance.new("TextButton")
-PortalCToggleBtn.Size = UDim2.new(0, 200, 0, 32)
-PortalCToggleBtn.Position = UDim2.new(0, 10, 0, 112)
-PortalCToggleBtn.BackgroundColor3 = Color3.fromRGB(20, 40, 60)
-PortalCToggleBtn.Font = Enum.Font.SourceSansBold
-PortalCToggleBtn.Text = "Dùng C Portal: BẬT"
-PortalCToggleBtn.TextColor3 = Color3.fromRGB(70, 255, 70)
-PortalCToggleBtn.TextSize = 12
-PortalCToggleBtn.Parent = MainFrame
-Instance.new("UICorner", PortalCToggleBtn).CornerRadius = UDim.new(0, 6)
-
 -- Ô nhập tốc độ trực tiếp trong game
 local SpeedBox = Instance.new("TextBox")
 SpeedBox.Size = UDim2.new(0, 200, 0, 32)
-SpeedBox.Position = UDim2.new(0, 10, 0, 149)
+SpeedBox.Position = UDim2.new(0, 10, 0, 112)
 SpeedBox.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
 SpeedBox.Font = Enum.Font.SourceSansBold
 SpeedBox.Text = "Tốc độ: 400"
@@ -117,7 +102,7 @@ Instance.new("UICorner", SpeedBox).CornerRadius = UDim.new(0, 6)
 -- Dòng chữ trạng thái nhỏ ở đáy Menu
 local StatusLabel = Instance.new("TextLabel")
 StatusLabel.Size = UDim2.new(1, 0, 0, 25)
-StatusLabel.Position = UDim2.new(0, 0, 0, 188)
+StatusLabel.Position = UDim2.new(0, 0, 0, 152)
 StatusLabel.BackgroundTransparency = 1
 StatusLabel.Font = Enum.Font.SourceSansItalic
 StatusLabel.Text = "Trạng thái: Đang chờ..."
@@ -134,15 +119,13 @@ MinimizeBtn.MouseButton1Click:Connect(function()
         MainFrame.Size = UDim2.new(0, 220, 0, 45)
         ToggleBtn.Visible = false
         StopToggleBtn.Visible = false
-        PortalCToggleBtn.Visible = false
         SpeedBox.Visible = false
         StatusLabel.Visible = false
     else
         MinimizeBtn.Text = "-"
-        MainFrame.Size = UDim2.new(0, 220, 0, 265)
+        MainFrame.Size = UDim2.new(0, 220, 0, 230)
         ToggleBtn.Visible = true
         StopToggleBtn.Visible = true
-        PortalCToggleBtn.Visible = true
         SpeedBox.Visible = true
         StatusLabel.Visible = true
     end
@@ -217,21 +200,7 @@ StopToggleBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- Bật/Tắt C Portal
-PortalCToggleBtn.MouseButton1Click:Connect(function()
-    portalCEnabled = not portalCEnabled
-    if portalCEnabled then
-        PortalCToggleBtn.Text = "Dùng C Portal: BẬT"
-        PortalCToggleBtn.TextColor3 = Color3.fromRGB(70, 255, 70)
-        PortalCToggleBtn.BackgroundColor3 = Color3.fromRGB(20, 40, 60)
-    else
-        PortalCToggleBtn.Text = "Dùng C Portal: TẮT"
-        PortalCToggleBtn.TextColor3 = Color3.fromRGB(255, 70, 70)
-        PortalCToggleBtn.BackgroundColor3 = Color3.fromRGB(45, 35, 35)
-    end
-end)
-
--- Khóa vận tốc chống bay lắc và luôn giữ Camera đi chung với người chơi
+-- Khóa vận tốc chống bay lắc và giữ Camera ổn định
 RunService.Stepped:Connect(function()
     if autoChestEnabled then
         pcall(function()
@@ -291,11 +260,11 @@ task.spawn(function()
         else
             targetChest = nil
         end
-        task.wait(0.3)
+        task.wait(0.2)
     end
 end)
 
--- Hệ thống di chuyển mượt mà, đồng bộ Camera & Tránh nhặt lại rương cũ
+-- Hệ thống di chuyển mượt mà trực tiếp đến rương và tự động bỏ qua rương cũ/mất
 task.spawn(function()
     while true do
         task.wait(0.03)
@@ -317,64 +286,22 @@ task.spawn(function()
                         local chestModel = targetChest.Parent
                         if not chestModel:IsA("Model") then chestModel = targetChest end
                         
-                        local destCFrame = targetChest.CFrame + Vector3.new(0, 3, 0)
-                        local distance = (rootPart.Position - targetChest.Position).Magnitude
-                        
-                        -- Dùng C Portal nếu ở xa > 100 studs
-                        if portalCEnabled and distance > 100 and (tick() - lastCPortalTime > 4.5) then
-                            lastCPortalTime = tick()
-                            pcall(function()
-                                local backpack = LocalPlayer:FindFirstChild("Backpack")
-                                local portalTool = nil
-                                if backpack then
-                                    for _, tool in pairs(backpack:GetChildren()) do
-                                        if tool.Name:lower():find("portal") then
-                                            portalTool = tool
-                                            break
-                                        end
-                                    end
-                                end
-                                
-                                if portalTool and not char:FindFirstChildOfClass("Tool") then
-                                    portalTool.Parent = char
-                                end
-                                
-                                if Camera then
-                                    Camera.CFrame = CFrame.new(Camera.CFrame.Position, targetChest.Position)
-                                end
-                                task.wait(0.04)
-                                
-                                -- Nhấn C lần 1
-                                VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.C, false, game)
-                                task.wait(0.03)
-                                VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.C, false, game)
-                                
-                                task.wait(0.2)
-                                
-                                -- Nhấn C lần 2
-                                VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.C, false, game)
-                                task.wait(0.03)
-                                VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.C, false, game)
-                            end)
-                            
-                            -- Đợi cổng mở và di chuyển qua
-                            local waitDelay = 0
-                            while waitDelay < 0.8 and autoChestEnabled do
-                                task.wait(0.05)
-                                waitDelay = waitDelay + 0.05
-                                if humanoid then Camera.CameraSubject = humanoid end
-                            end
-                        end
-                        
-                        -- Bay nhanh trực tiếp đến rương với tốc độ mượt, cam đi chung sát người
+                        -- Bay nhanh trực tiếp đến rương
+                        local startTime = tick()
                         while autoChestEnabled and targetChest and targetChest.Parent do
+                            -- Nếu kẹt quá 4 giây ở 1 rương (rương biến mất), tự động đưa vào blacklist để tìm rương khác ngay
+                            if tick() - startTime > 4 then
+                                collectedChests[chestModel] = true
+                                targetChest = nil
+                                break
+                            end
+                            
                             local currentPos = rootPart.Position
                             local targetPos = targetChest.Position + Vector3.new(0, 3, 0)
                             local remainDist = (currentPos - targetPos).Magnitude
                             
                             if remainDist < 4 then
                                 rootPart.CFrame = CFrame.new(targetPos)
-                                -- Đánh dấu rương này đã nhặt để không bao giờ quay lại nhặt lần nữa
                                 collectedChests[chestModel] = true
                                 targetChest = nil
                                 break
