@@ -175,8 +175,14 @@ ToggleBtn.MouseButton1Click:Connect(function()
         StatusLabel.Text = "Trạng thái: Đã dừng."
         pcall(function()
             local char = LocalPlayer.Character
-            if char and char:FindFirstChildOfClass("Humanoid") then
-                char:FindFirstChildOfClass("Humanoid").PlatformStand = false
+            if char then
+                local humanoid = char:FindFirstChildOfClass("Humanoid")
+                if humanoid then humanoid.PlatformStand = false end
+                for _, part in pairs(char:GetDescendants()) do
+                    if part:IsA("BasePart") then
+                        part.CanCollide = true
+                    end
+                end
             end
         end)
     end
@@ -214,83 +220,5 @@ task.spawn(function()
                                 and not nameLower:find("secret")
                                 and not nameLower:find("quest")
                                 and not nameLower:find("rengoku")
-                                and not nameLower:find("door") then
-                                
-                                local part = obj:FindFirstChild("HumanoidRootPart") or obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
-                                if part and not collectedChests[obj] then
-                                    local dist = (rootPos - part.Position).Magnitude
-                                    if dist < shortest then
-                                        shortest = dist
-                                        nearest = part
-                                    end
-                                end
-                            end
-                        end
-                    end
-                end
-            end)
-            targetChest = nearest
-        else
-            targetChest = nil
-        end
-        task.wait(0.2)
-    end
-end)
-
--- Hệ thống bay hoàn toàn bằng VectorVelocity thuần túy (Không dùng CFrame)
-RunService.Stepped:Connect(function()
-    if autoChestEnabled then
-        pcall(function()
-            if stopOnSpecialItem and HasSpecialItem() then
-                autoChestEnabled = false
-                targetChest = nil
-                local char = LocalPlayer.Character
-                if char and char:FindFirstChildOfClass("Humanoid") then
-                    char:FindFirstChildOfClass("Humanoid").PlatformStand = false
-                end
-                ToggleBtn.Text = "Auto Chest: TẮT"
-                ToggleBtn.TextColor3 = Color3.fromRGB(255, 70, 70)
-                ToggleBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
-                StatusLabel.Text = "Đã dừng do có Key/Chén!"
-                return
-            end
-            
-            local char = LocalPlayer.Character
-            if char and char:FindFirstChild("HumanoidRootPart") then
-                local rootPart = char.HumanoidRootPart
-                local humanoid = char:FindFirstChildOfClass("Humanoid")
-                
-                if humanoid then
-                    humanoid.PlatformStand = true
-                end
-                
-                if targetChest and targetChest.Parent then
-                    local chestModel = targetChest.Parent
-                    if not chestModel:IsA("Model") then chestModel = targetChest end
-                    
-                    local targetPos = targetChest.Position + Vector3.new(0, 3, 0)
-                    local currentPos = rootPart.Position
-                    local dist = (currentPos - targetPos).Magnitude
-                    
-                    if dist < 5 then
-                        collectedChests[chestModel] = true
-                        targetChest = nil
-                        rootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-                    else
-                        local direction = (targetPos - currentPos).Unit
-                        rootPart.AssemblyLinearVelocity = direction * moveSpeed
-                    end
-                else
-                    rootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-                end
-            end
-        end)
-    else
-        pcall(function()
-            local char = LocalPlayer.Character
-            if char and char:FindFirstChild("HumanoidRootPart") then
-                char.HumanoidRootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-            end
-        end)
-    end
-end)
+                                and
+                                        
