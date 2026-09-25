@@ -1,10 +1,11 @@
--- ==================== BLOX FRUITS - PORTAL C DELAY & TELEPORT FIX HUB ====================
+-- ==================== BLOX FRUITS - PORTAL C SYNC CAMERA & PLAYER HUB ====================
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
 local VirtualInputManager = game:GetService("VirtualInputManager")
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+local Camera = Workspace.CurrentCamera
 
 local autoChestEnabled = false
 local stopOnSpecialItem = true
@@ -46,7 +47,7 @@ local Title = Instance.new("TextLabel")
 Title.Size = UDim2.new(1, 0, 0, 35)
 Title.BackgroundTransparency = 1
 Title.Font = Enum.Font.SourceSansBold
-Title.Text = "auto catch chest v1.3 beta"
+Title.Text = "auto catch chest v1.3.3 beta"
 Title.TextColor3 = Color3.fromRGB(100, 180, 255)
 Title.TextSize = 13
 Title.Parent = MainFrame
@@ -229,16 +230,24 @@ PortalCToggleBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- Khóa vận tốc ngầm chống rung lắc
+-- Ép Camera luôn bám chặt vào nhân vật và khóa vận tốc chống giật
 RunService.Stepped:Connect(function()
     if autoChestEnabled then
         pcall(function()
             local char = LocalPlayer.Character
             if char and char:FindFirstChild("HumanoidRootPart") then
                 local rootPart = char.HumanoidRootPart
+                local humanoid = char:FindFirstChildOfClass("Humanoid")
+                
+                -- Khóa đứng yên vật lý chống quăng quật
                 rootPart.Velocity = Vector3.new(0, 0, 0)
                 rootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
                 rootPart.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+                
+                -- Luôn giữ Camera đồng bộ theo nhân vật
+                if humanoid and Camera.CameraSubject ~= humanoid then
+                    Camera.CameraSubject = humanoid
+                end
             end
         end)
     end
@@ -287,10 +296,10 @@ task.spawn(function()
     end
 end)
 
--- Hệ thống di chuyển & xử lý delay cổng Portal C
+-- Hệ thống di chuyển trực tiếp (Mượt mà, cam và nhân vật đi chung)
 task.spawn(function()
     while true do
-        task.wait(0.05)
+        task.wait(0.03)
         if autoChestEnabled then
             if stopOnSpecialItem and HasSpecialItem() then
                 autoChestEnabled = false
@@ -303,12 +312,13 @@ task.spawn(function()
                 local char = LocalPlayer.Character
                 if char and char:FindFirstChild("HumanoidRootPart") then
                     local rootPart = char.HumanoidRootPart
+                    local humanoid = char:FindFirstChildOfClass("Humanoid")
                     
                     if targetChest and targetChest.Parent then
                         local destCFrame = targetChest.CFrame + Vector3.new(0, 3, 0)
                         local distance = (rootPart.Position - targetChest.Position).Magnitude
                         
-                        -- Nếu ở xa > 100 studs và đủ thời gian hồi chiêu
+                        -- Nếu ở xa > 100 studs và đủ thời gian hồi chiêu -> Dùng C Portal
                         if portalCEnabled and distance > 100 and (tick() - lastCPortalTime > 4.5) then
                             lastCPortalTime = tick()
                             pcall(function()
@@ -327,50 +337,57 @@ task.spawn(function()
                                     portalTool.Parent = char
                                 end
                                 
-                                -- 1. Hướng camera thẳng vào rương
-                                local camera = Workspace.CurrentCamera
-                                if camera then
-                                    camera.CFrame = CFrame.new(camera.CFrame.Position, targetChest.Position)
+                                -- Hướng camera về phía rương để mở cổng
+                                if Camera then
+                                    Camera.CFrame = CFrame.new(Camera.CFrame.Position, targetChest.Position)
                                 end
-                                
-                                -- 2. Nhấn C lần 1 mở cổng
-                                VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.C, false, game)
                                 task.wait(0.04)
+                                
+                                -- Nhấn C lần 1
+                                VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.C, false, game)
+                                task.wait(0.03)
                                 VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.C, false, game)
                                 
                                 task.wait(0.2)
                                 
-                                -- 3. Nhấn C lần 2 phóng cổng tới rương
+                                -- Nhấn C lần 2
                                 VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.C, false, game)
-                                task.wait(0.04)
+                                task.wait(0.03)
                                 VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.C, false, game)
                             end)
                             
-                            -- Đứng lại chờ game xử lý delay cổng mở và nhân vật kịp bước qua cổng (khoảng 0.8 giây)
+                            -- Chờ cổng mở và dịch chuyển qua, đồng thời ép camera theo nhân vật
                             local waitDelay = 0
-                            while waitDelay < 0.8 and autoChestEnabled do
+                            while waitDelay < 0.9 and autoChestEnabled do
                                 task.wait(0.05)
                                 waitDelay = waitDelay + 0.05
-                                rootPart.Velocity = Vector3.new(0,0,0)
+                                if humanoid then
+                                    Camera.CameraSubject = humanoid
+                                end
                             end
                         end
                         
-                        -- Cập nhật lại khoảng cách sau khi đã dịch chuyển qua cổng (nếu thành công)
-                        local currentDist = (rootPart.Position - targetChest.Position).Magnitude
-                        local stepTime = currentDist / chestSpeed
-                        if stepTime < 0.05 then stepTime = 0.05 end
-                        
-                        local tweenInfo = TweenInfo.new(stepTime, Enum.EasingStyle.Linear)
-                        local tween = game:GetService("TweenService"):Create(rootPart, tweenInfo, {CFrame = destCFrame})
-                        tween:Play()
-                        
-                        local elapsed = 0
-                        while elapsed < stepTime and autoChestEnabled and targetChest and targetChest.Parent do
-                            task.wait(0.05)
-                            elapsed = elapsed + 0.05
-                            if (rootPart.Position - targetChest.Position).Magnitude < 10 then
+                        -- Dịch chuyển trực tiếp từng bước mượt mà tới rương (Không dùng Tween dài gây kẹt cam)
+                        while autoChestEnabled and targetChest and targetChest.Parent do
+                            local currentPos = rootPart.Position
+                            local targetPos = targetChest.Position + Vector3.new(0, 3, 0)
+                            local remainDist = (currentPos - targetPos).Magnitude
+                            
+                            if remainDist < 5 then
+                                rootPart.CFrame = CFrame.new(targetPos)
                                 break
                             end
+                            
+                            -- Tính toán bước nhảy di chuyển trực tiếp theo tốc độ cài đặt
+                            local step = (targetPos - currentPos).Unit * math.min(chestSpeed * 0.03, remainDist)
+                            rootPart.CFrame = CFrame.new(currentPos + step)
+                            
+                            -- Đảm bảo camera luôn dính theo nhân vật trong từng khung hình dịch chuyển
+                            if humanoid and Camera.CameraSubject ~= humanoid then
+                                Camera.CameraSubject = humanoid
+                            end
+                            
+                            task.wait(0.03)
                         end
                     end
                 end
