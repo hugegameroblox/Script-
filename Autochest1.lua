@@ -1,4 +1,4 @@
--- ==================== BLOX FRUITS - Auto catch chest v1.2 (FIXED) ====================
+-- ==================== BLOX FRUITS - Auto catch chest v1.2 (REAL RANGE FIX) ====================
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
@@ -8,7 +8,7 @@ local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 local autoChestEnabled = false
 local stopOnSpecialItem = true
 local moveSpeed = 350 
-local scanRange = 100000 -- Tầm quét 100k đã được tối ưu hiệu năng
+local scanRange = 100000 -- Giá trị thực tế sẽ thay đổi theo ô nhập
 local collectedChests = {}
 
 -- Xóa Menu cũ nếu tồn tại
@@ -148,6 +148,7 @@ SpeedBox.FocusLost:Connect(function()
     end
 end)
 
+-- Liên kết CHUẨN XÁC giá trị ô nhập tầm quét vào biến thực tế
 RangeBox.FocusLost:Connect(function()
     local num = tonumber(RangeBox.Text:match("%d+"))
     if num and num > 0 then
@@ -232,7 +233,7 @@ StopToggleBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- Tối ưu hóa bộ lọc quét rương mượt mà ngay cả với tầm quét 100k
+-- Thuật toán quét rương sử dụng TRỰC TIẾP biến scanRange từ ô nhập
 local targetChest = nil
 task.spawn(function()
     while true do
@@ -256,6 +257,7 @@ task.spawn(function()
                                 local part = obj:FindFirstChild("HumanoidRootPart") or obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
                                 if part and not collectedChests[obj] then
                                     local dist = (rootPos - part.Position).Magnitude
+                                    -- Áp dụng trực tiếp giá trị scanRange thực tế từ người dùng chỉnh
                                     if dist <= scanRange and dist < shortest then
                                         shortest = dist
                                         nearest = part
@@ -270,11 +272,11 @@ task.spawn(function()
         else
             targetChest = nil
         end
-        task.wait(0.5) -- Tăng thời gian quét lên 0.5s để giảm tải lag khi quét 100k studs
+        task.wait(0.3)
     end
 end)
 
--- Hệ thống chống rớt vĩnh viễn (Khóa cứng trạng thái và triệt tiêu trọng lực hoàn toàn)
+-- Chống rớt vĩnh viễn và Noclip chuẩn xác
 RunService.Stepped:Connect(function()
     if autoChestEnabled then
         pcall(function()
@@ -311,7 +313,6 @@ RunService.Stepped:Connect(function()
                     humanoid:ChangeState(Enum.HumanoidStateType.Physics)
                 end
                 
-                -- Ép Noclip liên tục từng khung hình
                 for _, part in pairs(char:GetDescendants()) do
                     if part:IsA("BasePart") then
                         part.CanCollide = false
@@ -335,7 +336,6 @@ RunService.Stepped:Connect(function()
                         rootPart.AssemblyLinearVelocity = direction * moveSpeed
                     end
                 else
-                    -- Khóa cứng triệt tiêu hoàn toàn trọng lực trục Y, chống rớt vĩnh viễn
                     rootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
                 end
             end
