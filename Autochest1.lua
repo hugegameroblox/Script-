@@ -1,4 +1,4 @@
--- ==================== BLOX FRUITS - PORTAL C GATE TARGET HUB ====================
+-- ==================== BLOX FRUITS - PORTAL C DELAY & TELEPORT FIX HUB ====================
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
@@ -10,6 +10,7 @@ local autoChestEnabled = false
 local stopOnSpecialItem = true
 local portalCEnabled = true
 local chestSpeed = 350
+local lastCPortalTime = 0
 
 -- Xóa Menu cũ nếu tồn tại
 pcall(function()
@@ -45,9 +46,9 @@ local Title = Instance.new("TextLabel")
 Title.Size = UDim2.new(1, 0, 0, 35)
 Title.BackgroundTransparency = 1
 Title.Font = Enum.Font.SourceSansBold
-Title.Text = "auto catch chest v1.2 beta"
+Title.Text = "auto catch chest v1.3 beta"
 Title.TextColor3 = Color3.fromRGB(100, 180, 255)
-Title.TextSize = 14
+Title.TextSize = 13
 Title.Parent = MainFrame
 
 -- Nút Thu Gọn / Mở Rộng Menu (-)
@@ -243,7 +244,7 @@ RunService.Stepped:Connect(function()
     end
 end)
 
--- Quét rương toàn map
+-- Quét rương toàn map liên tục
 local targetChest = nil
 
 task.spawn(function()
@@ -282,14 +283,14 @@ task.spawn(function()
         else
             targetChest = nil
         end
-        task.wait(1)
+        task.wait(0.5)
     end
 end)
 
--- Hệ thống di chuyển kết hợp chiêu C Portal (Mở cổng và tự động chọn điểm đến là vị trí rương)
+-- Hệ thống di chuyển & xử lý delay cổng Portal C
 task.spawn(function()
     while true do
-        task.wait(0.1)
+        task.wait(0.05)
         if autoChestEnabled then
             if stopOnSpecialItem and HasSpecialItem() then
                 autoChestEnabled = false
@@ -307,8 +308,9 @@ task.spawn(function()
                         local destCFrame = targetChest.CFrame + Vector3.new(0, 3, 0)
                         local distance = (rootPart.Position - targetChest.Position).Magnitude
                         
-                        -- Nếu khoảng cách xa (trên 100 studs), tự động kích hoạt C Portal và định hướng cổng đến rương
-                        if portalCEnabled and distance > 100 then
+                        -- Nếu ở xa > 100 studs và đủ thời gian hồi chiêu
+                        if portalCEnabled and distance > 100 and (tick() - lastCPortalTime > 4.5) then
+                            lastCPortalTime = tick()
                             pcall(function()
                                 local backpack = LocalPlayer:FindFirstChild("Backpack")
                                 local portalTool = nil
@@ -325,33 +327,51 @@ task.spawn(function()
                                     portalTool.Parent = char
                                 end
                                 
-                                -- 1. Hướng camera về phía rương để cổng hiểu hướng bắn
+                                -- 1. Hướng camera thẳng vào rương
                                 local camera = Workspace.CurrentCamera
                                 if camera then
                                     camera.CFrame = CFrame.new(camera.CFrame.Position, targetChest.Position)
                                 end
                                 
-                                -- 2. Nhấn phím C để mở/bắn cổng
+                                -- 2. Nhấn C lần 1 mở cổng
                                 VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.C, false, game)
-                                task.wait(0.05)
+                                task.wait(0.04)
                                 VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.C, false, game)
                                 
-                                -- 3. Giả lập click chuột trái để xác nhận điểm đến của cổng ngay tại vị trí rương
-                                task.wait(0.1)
-                                VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 0)
-                                task.wait(0.05)
-                                VirtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, 0)
+                                task.wait(0.2)
+                                
+                                -- 3. Nhấn C lần 2 phóng cổng tới rương
+                                VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.C, false, game)
+                                task.wait(0.04)
+                                VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.C, false, game)
                             end)
+                            
+                            -- Đứng lại chờ game xử lý delay cổng mở và nhân vật kịp bước qua cổng (khoảng 0.8 giây)
+                            local waitDelay = 0
+                            while waitDelay < 0.8 and autoChestEnabled do
+                                task.wait(0.05)
+                                waitDelay = waitDelay + 0.05
+                                rootPart.Velocity = Vector3.new(0,0,0)
+                            end
                         end
                         
-                        -- Di chuyển tween mượt mà tiếp tục quãng đường
-                        local stepTime = distance / chestSpeed
+                        -- Cập nhật lại khoảng cách sau khi đã dịch chuyển qua cổng (nếu thành công)
+                        local currentDist = (rootPart.Position - targetChest.Position).Magnitude
+                        local stepTime = currentDist / chestSpeed
                         if stepTime < 0.05 then stepTime = 0.05 end
                         
                         local tweenInfo = TweenInfo.new(stepTime, Enum.EasingStyle.Linear)
                         local tween = game:GetService("TweenService"):Create(rootPart, tweenInfo, {CFrame = destCFrame})
                         tween:Play()
-                        task.wait(stepTime)
+                        
+                        local elapsed = 0
+                        while elapsed < stepTime and autoChestEnabled and targetChest and targetChest.Parent do
+                            task.wait(0.05)
+                            elapsed = elapsed + 0.05
+                            if (rootPart.Position - targetChest.Position).Magnitude < 10 then
+                                break
+                            end
+                        end
                     end
                 end
             end
