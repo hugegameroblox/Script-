@@ -1,4 +1,4 @@
--- ==================== BLOX FRUITS - PORTAL F AUTO CHEST HUB + SEA CASTLE GATE ====================
+-- ==================== BLOX FRUITS - PORTAL C TELEPORT HUB ====================
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
@@ -8,7 +8,7 @@ local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
 local autoChestEnabled = false
 local stopOnSpecialItem = true
-local portalFEnabled = true
+local portalCEnabled = true -- Bật/Tắt dùng chiêu C mở cổng Portal
 local chestSpeed = 350
 
 -- Xóa Menu cũ nếu tồn tại
@@ -45,7 +45,7 @@ local Title = Instance.new("TextLabel")
 Title.Size = UDim2.new(1, 0, 0, 35)
 Title.BackgroundTransparency = 1
 Title.Font = Enum.Font.SourceSansBold
-Title.Text = "⚡ Portal F - Hub + Sea Gate"
+Title.Text = "auto catch chest v1.1"
 Title.TextColor3 = Color3.fromRGB(100, 180, 255)
 Title.TextSize = 14
 Title.Parent = MainFrame
@@ -86,17 +86,17 @@ StopToggleBtn.TextSize = 12
 StopToggleBtn.Parent = MainFrame
 Instance.new("UICorner", StopToggleBtn).CornerRadius = UDim.new(0, 6)
 
--- Nút Bật/Tắt F Portal
-local PortalFToggleBtn = Instance.new("TextButton")
-PortalFToggleBtn.Size = UDim2.new(0, 200, 0, 32)
-PortalFToggleBtn.Position = UDim2.new(0, 10, 0, 112)
-PortalFToggleBtn.BackgroundColor3 = Color3.fromRGB(20, 40, 60)
-PortalFToggleBtn.Font = Enum.Font.SourceSansBold
-PortalFToggleBtn.Text = "Dùng F Portal: BẬT"
-PortalFToggleBtn.TextColor3 = Color3.fromRGB(70, 255, 70)
-PortalFToggleBtn.TextSize = 12
-PortalFToggleBtn.Parent = MainFrame
-Instance.new("UICorner", PortalFToggleBtn).CornerRadius = UDim.new(0, 6)
+-- Nút Bật/Tắt C Portal (Mở cổng tele)
+local PortalCToggleBtn = Instance.new("TextButton")
+PortalCToggleBtn.Size = UDim2.new(0, 200, 0, 32)
+PortalCToggleBtn.Position = UDim2.new(0, 10, 0, 112)
+PortalCToggleBtn.BackgroundColor3 = Color3.fromRGB(20, 40, 60)
+PortalCToggleBtn.Font = Enum.Font.SourceSansBold
+PortalCToggleBtn.Text = "Dùng C Portal: BẬT"
+PortalCToggleBtn.TextColor3 = Color3.fromRGB(70, 255, 70)
+PortalCToggleBtn.TextSize = 12
+PortalCToggleBtn.Parent = MainFrame
+Instance.new("UICorner", PortalCToggleBtn).CornerRadius = UDim.new(0, 6)
 
 -- Ô nhập tốc độ trực tiếp trong game
 local SpeedBox = Instance.new("TextBox")
@@ -131,7 +131,7 @@ MinimizeBtn.MouseButton1Click:Connect(function()
         MainFrame.Size = UDim2.new(0, 220, 0, 45)
         ToggleBtn.Visible = false
         StopToggleBtn.Visible = false
-        PortalFToggleBtn.Visible = false
+        PortalCToggleBtn.Visible = false
         SpeedBox.Visible = false
         StatusLabel.Visible = false
     else
@@ -139,7 +139,7 @@ MinimizeBtn.MouseButton1Click:Connect(function()
         MainFrame.Size = UDim2.new(0, 220, 0, 265)
         ToggleBtn.Visible = true
         StopToggleBtn.Visible = true
-        PortalFToggleBtn.Visible = true
+        PortalCToggleBtn.Visible = true
         SpeedBox.Visible = true
         StatusLabel.Visible = true
     end
@@ -184,33 +184,6 @@ local function HasSpecialItem()
     return found
 end
 
--- Hàm kiểm tra cổng dịch chuyển Pháo đài trên biển (Sea Castle) ở Sea 3 đã mở hay chưa
-local function IsSeaCastlePortalUnlocked()
-    local unlocked = false
-    pcall(function()
-        -- Kiểm tra trong Workspace hoặc dữ liệu game xem cổng Sea Castle đã hoạt động chưa
-        for _, obj in pairs(Workspace:GetDescendants()) do
-            if obj.Name:lower():find("portal") or obj.Name:lower():find("gate") or obj.Name:lower():find("teleport") then
-                local nameLower = obj.Name:lower()
-                if nameLower:find("sea") or nameLower:find("castle") or nameLower:find("mansion") then
-                    -- Nếu tìm thấy đối tượng cổng và nó có thể tương tác/hoạt động
-                    if obj:IsA("BasePart") and obj.Transparency < 1 then
-                        unlocked = true
-                    end
-                end
-            end
-        end
-        -- Kiểm tra thêm điều kiện quest/level hoặc progress đặc trưng của Sea 3 nếu có
-        local dataFolder = LocalPlayer:FindFirstChild("Data")
-        if dataFolder and dataFolder:FindFirstChild("Level") then
-            if dataFolder.Level.Value >= 1500 then
-                unlocked = true -- Mặc định từ cấp độ mở Sea 3 / Pháo đài trên biển
-            end
-        end
-    end)
-    return unlocked
-end
-
 -- Bật/Tắt Auto Chest
 ToggleBtn.MouseButton1Click:Connect(function()
     autoChestEnabled = not autoChestEnabled
@@ -241,17 +214,17 @@ StopToggleBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- Bật/Tắt F Portal
-PortalFToggleBtn.MouseButton1Click:Connect(function()
-    portalFEnabled = not portalFEnabled
-    if portalFEnabled then
-        PortalFToggleBtn.Text = "Dùng F Portal: BẬT"
-        PortalFToggleBtn.TextColor3 = Color3.fromRGB(70, 255, 70)
-        PortalFToggleBtn.BackgroundColor3 = Color3.fromRGB(20, 40, 60)
+-- Bật/Tắt C Portal
+PortalCToggleBtn.MouseButton1Click:Connect(function()
+    portalCEnabled = not portalCEnabled
+    if portalCEnabled then
+        PortalCToggleBtn.Text = "Dùng C Portal: BẬT"
+        PortalCToggleBtn.TextColor3 = Color3.fromRGB(70, 255, 70)
+        PortalCToggleBtn.BackgroundColor3 = Color3.fromRGB(20, 40, 60)
     else
-        PortalFToggleBtn.Text = "Dùng F Portal: TẮT"
-        PortalFToggleBtn.TextColor3 = Color3.fromRGB(255, 70, 70)
-        PortalFToggleBtn.BackgroundColor3 = Color3.fromRGB(45, 35, 35)
+        PortalCToggleBtn.Text = "Dùng C Portal: TẮT"
+        PortalCToggleBtn.TextColor3 = Color3.fromRGB(255, 70, 70)
+        PortalCToggleBtn.BackgroundColor3 = Color3.fromRGB(45, 35, 35)
     end
 end)
 
@@ -313,7 +286,7 @@ task.spawn(function()
     end
 end)
 
--- Hệ thống di chuyển kết hợp F Portal và kiểm tra cổng Sea Castle
+-- Hệ thống di chuyển kết hợp chiêu C Portal (World Warp - Mở cổng tele đoạn ngắn)
 task.spawn(function()
     while true do
         task.wait(0.1)
@@ -334,25 +307,8 @@ task.spawn(function()
                         local destCFrame = targetChest.CFrame + Vector3.new(0, 3, 0)
                         local distance = (rootPart.Position - targetChest.Position).Magnitude
                         
-                        -- Kiểm tra nếu gần khu vực Sea Castle và cổng đã mở thì ưu tiên định tuyến qua cổng
-                        if IsSeaCastlePortalUnlocked() and distance > 500 then
-                            pcall(function()
-                                -- Logic tận dụng cổng dịch chuyển Sea Castle nếu hợp lệ
-                                for _, part in pairs(Workspace:GetDescendants()) do
-                                    if part:IsA("BasePart") and part.Name:lower():find("portal") then
-                                        local distToPortal = (rootPart.Position - part.Position).Magnitude
-                                        if distToPortal < 150 then
-                                            -- Đã tiếp cận cổng Sea Castle mở, cho phép đi qua
-                                            rootPart.CFrame = part.CFrame + Vector3.new(0, 5, 0)
-                                            task.wait(0.2)
-                                        end
-                                    end
-                                end
-                            end)
-                        end
-                        
-                        -- Kích hoạt F Portal nếu được bật và khoảng cách xa
-                        if portalFEnabled and distance > 150 then
+                        -- Nếu khoảng cách hợp lý (trên 100 studs), tự động giả lập nhấn phím C để mở cổng tele lướt đoạn ngắn
+                        if portalCEnabled and distance > 100 then
                             pcall(function()
                                 local backpack = LocalPlayer:FindFirstChild("Backpack")
                                 local portalTool = nil
@@ -369,9 +325,10 @@ task.spawn(function()
                                     portalTool.Parent = char
                                 end
                                 
-                                VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.F, false, game)
+                                -- Gửi lệnh bấm phím C ảo để kích hoạt chiêu C (World Warp - Mở cổng)
+                                VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.C, false, game)
                                 task.wait(0.05)
-                                VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.F, false, game)
+                                VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.C, false, game)
                             end)
                         end
                         
