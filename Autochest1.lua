@@ -8,7 +8,8 @@ local Camera = Workspace.CurrentCamera
 
 local autoChestEnabled = false
 local stopOnSpecialItem = true
-local moveSpeed = 350 -- Tốc độ bay
+local moveSpeed = 450 -- Tốc độ bay
+local scanRange = 80000 -- Tầm quét tối đa
 local collectedChests = {}
 
 -- Xóa Menu cũ nếu tồn tại
@@ -25,7 +26,7 @@ ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = PlayerGui
 
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 220, 0, 230)
+MainFrame.Size = UDim2.new(0, 220, 0, 265)
 MainFrame.Position = UDim2.new(0, 60, 0, 140)
 MainFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 24)
 MainFrame.BorderSizePixel = 0
@@ -60,7 +61,7 @@ MinimizeBtn.Parent = MainFrame
 Instance.new("UICorner", MinimizeBtn).CornerRadius = UDim.new(0, 4)
 
 local ToggleBtn = Instance.new("TextButton")
-ToggleBtn.Size = UDim2.new(0, 200, 0, 32)
+ToggleBtn.Size = UDim2.new(0, 200, 0, 30)
 ToggleBtn.Position = UDim2.new(0, 10, 0, 38)
 ToggleBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
 ToggleBtn.Font = Enum.Font.SourceSansBold
@@ -71,8 +72,8 @@ ToggleBtn.Parent = MainFrame
 Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(0, 6)
 
 local StopToggleBtn = Instance.new("TextButton")
-StopToggleBtn.Size = UDim2.new(0, 200, 0, 32)
-StopToggleBtn.Position = UDim2.new(0, 10, 0, 75)
+StopToggleBtn.Size = UDim2.new(0, 200, 0, 30)
+StopToggleBtn.Position = UDim2.new(0, 10, 0, 73)
 StopToggleBtn.BackgroundColor3 = Color3.fromRGB(20, 50, 30)
 StopToggleBtn.Font = Enum.Font.SourceSansBold
 StopToggleBtn.Text = "Stop Key/Chén: BẬT"
@@ -82,8 +83,8 @@ StopToggleBtn.Parent = MainFrame
 Instance.new("UICorner", StopToggleBtn).CornerRadius = UDim.new(0, 6)
 
 local SpeedBox = Instance.new("TextBox")
-SpeedBox.Size = UDim2.new(0, 200, 0, 32)
-SpeedBox.Position = UDim2.new(0, 10, 0, 112)
+SpeedBox.Size = UDim2.new(0, 200, 0, 30)
+SpeedBox.Position = UDim2.new(0, 10, 0, 108)
 SpeedBox.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
 SpeedBox.Font = Enum.Font.SourceSansBold
 SpeedBox.Text = "Tốc độ: 350"
@@ -93,9 +94,21 @@ SpeedBox.ClearTextOnFocus = false
 SpeedBox.Parent = MainFrame
 Instance.new("UICorner", SpeedBox).CornerRadius = UDim.new(0, 6)
 
+local RangeBox = Instance.new("TextBox")
+RangeBox.Size = UDim2.new(0, 200, 0, 30)
+RangeBox.Position = UDim2.new(0, 10, 0, 143)
+RangeBox.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+RangeBox.Font = Enum.Font.SourceSansBold
+RangeBox.Text = "Tầm quét: 8000"
+RangeBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+RangeBox.TextSize = 12
+RangeBox.ClearTextOnFocus = false
+RangeBox.Parent = MainFrame
+Instance.new("UICorner", RangeBox).CornerRadius = UDim.new(0, 6)
+
 local StatusLabel = Instance.new("TextLabel")
 StatusLabel.Size = UDim2.new(1, 0, 0, 25)
-StatusLabel.Position = UDim2.new(0, 0, 0, 152)
+StatusLabel.Position = UDim2.new(0, 0, 0, 183)
 StatusLabel.BackgroundTransparency = 1
 StatusLabel.Font = Enum.Font.SourceSansItalic
 StatusLabel.Text = "Trạng thái: Đang chờ..."
@@ -113,13 +126,15 @@ MinimizeBtn.MouseButton1Click:Connect(function()
         ToggleBtn.Visible = false
         StopToggleBtn.Visible = false
         SpeedBox.Visible = false
+        RangeBox.Visible = false
         StatusLabel.Visible = false
     else
         MinimizeBtn.Text = "-"
-        MainFrame.Size = UDim2.new(0, 220, 0, 230)
+        MainFrame.Size = UDim2.new(0, 220, 0, 265)
         ToggleBtn.Visible = true
         StopToggleBtn.Visible = true
         SpeedBox.Visible = true
+        RangeBox.Visible = true
         StatusLabel.Visible = true
     end
 end)
@@ -131,6 +146,16 @@ SpeedBox.FocusLost:Connect(function()
         SpeedBox.Text = "Tốc độ: " .. moveSpeed
     else
         SpeedBox.Text = "Tốc độ: " .. moveSpeed
+    end
+end)
+
+RangeBox.FocusLost:Connect(function()
+    local num = tonumber(RangeBox.Text:match("%d+"))
+    if num and num > 0 then
+        scanRange = num
+        RangeBox.Text = "Tầm quét: " .. scanRange
+    else
+        RangeBox.Text = "Tầm quét: " .. scanRange
     end
 end)
 
@@ -173,6 +198,8 @@ ToggleBtn.MouseButton1Click:Connect(function()
         ToggleBtn.TextColor3 = Color3.fromRGB(255, 70, 70)
         ToggleBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
         StatusLabel.Text = "Trạng thái: Đã dừng."
+        
+        -- Reset hoàn toàn trạng thái nhân vật khi tắt
         pcall(function()
             local char = LocalPlayer.Character
             if char then
@@ -182,6 +209,9 @@ ToggleBtn.MouseButton1Click:Connect(function()
                     if part:IsA("BasePart") then
                         part.CanCollide = true
                     end
+                end
+                if char:FindFirstChild("HumanoidRootPart") then
+                    char.HumanoidRootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
                 end
             end
         end)
@@ -201,7 +231,7 @@ StopToggleBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- Quét tìm rương gần nhất
+-- Quét tìm rương (Chỉ chạy khi autoChestEnabled = true)
 local targetChest = nil
 task.spawn(function()
     while true do
@@ -220,5 +250,88 @@ task.spawn(function()
                                 and not nameLower:find("secret")
                                 and not nameLower:find("quest")
                                 and not nameLower:find("rengoku")
-                                and
-                                        
+                                and not nameLower:find("door") then
+                                
+                                local part = obj:FindFirstChild("HumanoidRootPart") or obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
+                                if part and not collectedChests[obj] then
+                                    local dist = (rootPos - part.Position).Magnitude
+                                    if dist <= scanRange and dist < shortest then
+                                        shortest = dist
+                                        nearest = part
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+            end)
+            targetChest = nearest
+        else
+            targetChest = nil
+        end
+        task.wait(0.2)
+    end
+end)
+
+-- Hệ thống bay, noclip, chống rớt (Tuyệt đối chỉ chạy khi BẬT Auto Chest)
+RunService.Stepped:Connect(function()
+    if autoChestEnabled then
+        pcall(function()
+            if stopOnSpecialItem and HasSpecialItem() then
+                autoChestEnabled = false
+                targetChest = nil
+                local char = LocalPlayer.Character
+                if char then
+                    local humanoid = char:FindFirstChildOfClass("Humanoid")
+                    if humanoid then humanoid.PlatformStand = false end
+                    for _, part in pairs(char:GetDescendants()) do
+                        if part:IsA("BasePart") then
+                            part.CanCollide = true
+                        end
+                    end
+                end
+                ToggleBtn.Text = "Auto Chest: TẮT"
+                ToggleBtn.TextColor3 = Color3.fromRGB(255, 70, 70)
+                ToggleBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+                StatusLabel.Text = "Đã dừng do có Key/Chén!"
+                return
+            end
+            
+            local char = LocalPlayer.Character
+            if char and char:FindFirstChild("HumanoidRootPart") then
+                local rootPart = char.HumanoidRootPart
+                local humanoid = char:FindFirstChildOfClass("Humanoid")
+                
+                if humanoid then
+                    humanoid.PlatformStand = true
+                end
+                
+                for _, part in pairs(char:GetDescendants()) do
+                    if part:IsA("BasePart") then
+                        part.CanCollide = false
+                    end
+                end
+                
+                if targetChest and targetChest.Parent then
+                    local chestModel = targetChest.Parent
+                    if not chestModel:IsA("Model") then chestModel = targetChest end
+                    
+                    local targetPos = targetChest.Position + Vector3.new(0, 3, 0)
+                    local currentPos = rootPart.Position
+                    local dist = (currentPos - targetPos).Magnitude
+                    
+                    if dist < 5 then
+                        collectedChests[chestModel] = true
+                        targetChest = nil
+                        rootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+                    else
+                        local direction = (targetPos - currentPos).Unit
+                        rootPart.AssemblyLinearVelocity = direction * moveSpeed
+                    end
+                else
+                    rootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+                end
+            end
+        end)
+    end
+end)
