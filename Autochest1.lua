@@ -1,27 +1,26 @@
--- ==================== BLOX FRUITS - TWEEN CHEST (FIX ROLLBACK + FREEZE NO FALL) ====================
+-- ==================== BLOX FRUITS - Auto catch chest v1.2 ====================
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
-local TweenService = game:GetService("TweenService")
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 local Camera = Workspace.CurrentCamera
 
 local autoChestEnabled = false
 local stopOnSpecialItem = true
-local tweenSpeed = 350 -- Tốc độ bay (studs/s)
+local moveSpeed = 350 -- Tốc độ bay
 local collectedChests = {}
 
 -- Xóa Menu cũ nếu tồn tại
 pcall(function()
-    if PlayerGui:FindFirstChild("FreezeTweenChestHub") then
-        PlayerGui.FreezeTweenChestHub:Destroy()
+    if PlayerGui:FindFirstChild("AutoCatchChestHub") then
+        PlayerGui.AutoCatchChestHub:Destroy()
     end
 end)
 
 -- Tạo GUI Giao diện Menu
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "FreezeTweenChestHub"
+ScreenGui.Name = "AutoCatchChestHub"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = PlayerGui
 
@@ -44,7 +43,7 @@ local Title = Instance.new("TextLabel")
 Title.Size = UDim2.new(1, 0, 0, 35)
 Title.BackgroundTransparency = 1
 Title.Font = Enum.Font.SourceSansBold
-Title.Text = "⚡ Freeze + Tween Chest"
+Title.Text = "Auto catch chest v1.2"
 Title.TextColor3 = Color3.fromRGB(100, 180, 255)
 Title.TextSize = 13
 Title.Parent = MainFrame
@@ -128,10 +127,10 @@ end)
 SpeedBox.FocusLost:Connect(function()
     local num = tonumber(SpeedBox.Text:match("%d+"))
     if num and num > 0 then
-        tweenSpeed = num
-        SpeedBox.Text = "Tốc độ: " .. tweenSpeed
+        moveSpeed = num
+        SpeedBox.Text = "Tốc độ: " .. moveSpeed
     else
-        SpeedBox.Text = "Tốc độ: " .. tweenSpeed
+        SpeedBox.Text = "Tốc độ: " .. moveSpeed
     end
 end)
 
@@ -196,34 +195,7 @@ StopToggleBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- Cơ chế Freeze chống rớt và khóa vận tốc vật lý triệt để
-RunService.Stepped:Connect(function()
-    if autoChestEnabled then
-        pcall(function()
-            local char = LocalPlayer.Character
-            if char and char:FindFirstChild("HumanoidRootPart") then
-                local rootPart = char.HumanoidRootPart
-                local humanoid = char:FindFirstChildOfClass("Humanoid")
-                
-                -- Khóa trạng thái đứng lơ lửng không bị trọng lực kéo rơi xuống
-                if humanoid then
-                    humanoid.PlatformStand = true
-                end
-                
-                -- Triệt tiêu hoàn toàn lực rơi / quán tính vật lý
-                rootPart.Velocity = Vector3.new(0, 0, 0)
-                rootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-                rootPart.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
-                
-                if Camera and humanoid and Camera.CameraSubject ~= humanoid then
-                    Camera.CameraSubject = humanoid
-                end
-            end
-        end)
-    end
-end)
-
--- Quét tìm rương gần nhất và loại bỏ rương cũ
+-- Quét tìm rương gần nhất
 local targetChest = nil
 task.spawn(function()
     while true do
@@ -265,73 +237,60 @@ task.spawn(function()
     end
 end)
 
--- Hệ thống Tween bay mượt mà, tự động fix lỗi bị giật lùi (rollback) không ngắt quãng
-local currentTween = nil
-task.spawn(function()
-    while true do
-        task.wait(0.05)
-        if autoChestEnabled then
+-- Hệ thống bay hoàn toàn bằng VectorVelocity thuần túy (Không dùng CFrame)
+RunService.Stepped:Connect(function()
+    if autoChestEnabled then
+        pcall(function()
             if stopOnSpecialItem and HasSpecialItem() then
                 autoChestEnabled = false
                 targetChest = nil
-                if currentTween then currentTween:Cancel() end
-                pcall(function()
-                    local char = LocalPlayer.Character
-                    if char and char:FindFirstChildOfClass("Humanoid") then
-                        char:FindFirstChildOfClass("Humanoid").PlatformStand = false
-                    end
-                end)
+                local char = LocalPlayer.Character
+                if char and char:FindFirstChildOfClass("Humanoid") then
+                    char:FindFirstChildOfClass("Humanoid").PlatformStand = false
+                end
                 ToggleBtn.Text = "Auto Chest: TẮT"
                 ToggleBtn.TextColor3 = Color3.fromRGB(255, 70, 70)
                 ToggleBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
                 StatusLabel.Text = "Đã dừng do có Key/Chén!"
-            else
-                local char = LocalPlayer.Character
-                if char and char:FindFirstChild("HumanoidRootPart") then
-                    local rootPart = char.HumanoidRootPart
+                return
+            end
+            
+            local char = LocalPlayer.Character
+            if char and char:FindFirstChild("HumanoidRootPart") then
+                local rootPart = char.HumanoidRootPart
+                local humanoid = char:FindFirstChildOfClass("Humanoid")
+                
+                if humanoid then
+                    humanoid.PlatformStand = true
+                end
+                
+                if targetChest and targetChest.Parent then
+                    local chestModel = targetChest.Parent
+                    if not chestModel:IsA("Model") then chestModel = targetChest end
                     
-                    if targetChest and targetChest.Parent then
-                        local chestModel = targetChest.Parent
-                        if not chestModel:IsA("Model") then chestModel = targetChest end
-                        
-                        local targetPos = targetChest.Position + Vector3.new(0, 3, 0)
-                        local startTime = tick()
-                        
-                        -- Vòng lặp liên tục Tween đến rương, nếu bị server giật lùi sẽ tự động bay tiếp lập tức
-                        while autoChestEnabled and targetChest and targetChest.Parent do
-                            local dist = (rootPart.Position - targetPos).Magnitude
-                            
-                            -- Nếu đã tới gần rương thì đánh dấu đã nhặt và thoát vòng lặp sang rương mới
-                            if dist < 5 then
-                                collectedChests[chestModel] = true
-                                targetChest = nil
-                                if currentTween then currentTween:Cancel() end
-                                break
-                            end
-                            
-                            -- Nếu kẹt quá 4 giây ở rương đó (rương biến mất), tự động bỏ qua
-                            if tick() - startTime > 4 then
-                                collectedChests[chestModel] = true
-                                targetChest = nil
-                                if currentTween then currentTween:Cancel() end
-                                break
-                            end
-                            
-                            -- Tính thời gian và thực hiện Tween liên tục chống đứng hình
-                            local timeTaken = dist / math.clamp(tweenSpeed, 50, 600)
-                            if currentTween then currentTween:Cancel() end
-                            
-                            local tweenInfo = TweenInfo.new(timeTaken, Enum.EasingStyle.Linear)
-                            currentTween = TweenService:Create(rootPart, tweenInfo, {CFrame = CFrame.new(targetPos)})
-                            currentTween:Play()
-                            
-                            task.wait(timeTaken)
-                        end
+                    local targetPos = targetChest.Position + Vector3.new(0, 3, 0)
+                    local currentPos = rootPart.Position
+                    local dist = (currentPos - targetPos).Magnitude
+                    
+                    if dist < 5 then
+                        collectedChests[chestModel] = true
+                        targetChest = nil
+                        rootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+                    else
+                        local direction = (targetPos - currentPos).Unit
+                        rootPart.AssemblyLinearVelocity = direction * moveSpeed
                     end
+                else
+                    rootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
                 end
             end
-        else
-            if currentTween then currentTween:Cancel() end
-        end
+        end)
+    else
+        pcall(function()
+            local char = LocalPlayer.Character
+            if char and char:FindFirstChild("HumanoidRootPart") then
+                char.HumanoidRootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+            end
+        end)
     end
 end)
